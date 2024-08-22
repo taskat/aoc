@@ -45,7 +45,7 @@ func (c *Config) GetHyperParams() []any {
 
 // GetInputFileName returns the input file name corresponding to the Config
 func (c *Config) GetInputFileName() string {
-	return fmt.Sprintf("years/%d/days/%d/inputs/%s.txt", c.year, c.day, c.inputType.String())
+	return fmt.Sprintf("../../internal/years/%d/%.2d/inputs/%s.txt", c.year, c.day, c.inputType.String())
 }
 
 // GetInputType returns the input type of the Config
@@ -56,6 +56,12 @@ func (c *Config) GetInputType() InputType {
 // GetPart returns the part of the Config
 func (c *Config) GetPart() int {
 	return c.part
+}
+
+// ReadInputFile reads the input file defined in the Config and returns the content
+// of the file as an array of lines
+func (c *Config) ReadInputFile() []string {
+	return ReadInputLines(c.GetInputFileName())
 }
 
 // ReadInputLines reads the input file and returns the lines of the file as a slice of strings
