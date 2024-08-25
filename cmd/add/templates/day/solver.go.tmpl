@@ -1,20 +1,20 @@
-package day01
+package day{{.Day}}
 
 import (
 	"fmt"
-	"taskat/aoc/internal/years/2023/days"
+	"taskat/aoc/internal/years/{{.Year}}/days"
 )
 
 // day is the day of the solver
-const day = 01
+const day = {{.Day}}
 
-// init registers the solver for day 01
+// init registers the solver for day {{.Day}}
 func init() {
 	fmt.Println("Registering day", day)
 	days.AddDay(day, &Solver{})
 }
 
-// Solver implements the puzzle solver for day 01
+// Solver implements the puzzle solver for day {{.Day}}
 type Solver struct{}
 
 // AddHyperParams adds hyper parameters to the solver
