@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -53,19 +54,42 @@ func parseArgs() arguments {
 	}
 	arguments := arguments{}
 	fs := &flag.FlagSet{}
+	flagStart := 2
 	switch os.Args[1] {
 	case "day":
 		arguments.mode = day
+		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+			day, err := strconv.Atoi(os.Args[2])
+			if err != nil {
+				fmt.Println("Error parsing day:", err)
+				printYearUsage()
+				os.Exit(1)
+			}
+			arguments.day = day
+			flagStart++
+		} else {
+			arguments.day = -1
+		}
 		fs = flag.NewFlagSet("day", flag.ExitOnError)
 		addFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-		addFlag(fs.IntVar, &arguments.day, "day", -1, "Day number")
 		addFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
 		fs.Usage = printDayUsage
 	case "year":
 		arguments.mode = year
+		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+			year, err := strconv.Atoi(os.Args[2])
+			if err != nil {
+				fmt.Println("Error parsing year:", err)
+				printYearUsage()
+				os.Exit(1)
+			}
+			arguments.year = year
+			flagStart++
+		} else {
+			arguments.year = getDefaultYear()
+		}
 		fs = flag.NewFlagSet("year", flag.ExitOnError)
 		addFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-		addFlag(fs.IntVar, &arguments.year, "year", getDefaultYear(), "Year number")
 		fs.Usage = printYearUsage
 	case "help":
 		printGlobalUsage()
@@ -75,7 +99,7 @@ func parseArgs() arguments {
 		printGlobalUsage()
 		os.Exit(1)
 	}
-	fs.Parse(os.Args[2:])
+	fs.Parse(os.Args[flagStart:])
 	if arguments.help {
 		fs.Usage()
 		os.Exit(0)
@@ -169,10 +193,9 @@ func listFolders(path string) []string {
 // printDayUsage prints the usage of the day mode
 func printDayUsage() {
 	fmt.Println("add day adds a new day to the repository based on templates")
-	fmt.Println("Usage: add day [flags]")
+	fmt.Println("Usage: add day [day] [flags]")
 	fmt.Println("  Flags:")
 	fmt.Println("    -h,  --help\t\tPrint this help message")
-	fmt.Println("    -d,  --day\t\tDay number, defaults to the next day in the year")
 	fmt.Println("    -y,  --year\t\tYear number, defaults to the current year in december")
 	fmt.Println("               \t\tOtherwise, it defaults to the latest year in the repository")
 }
@@ -191,8 +214,7 @@ func printGlobalUsage() {
 // printYearUsage prints the usage of the year mode
 func printYearUsage() {
 	fmt.Println("add year adds a new year to the repository based on templates")
-	fmt.Println("Usage: add year [flags]")
+	fmt.Println("Usage: add year [year] [flags]")
 	fmt.Println("  Flags:")
 	fmt.Println("    -h,  --help\t\tPrint this help message")
-	fmt.Println("    -y,  --year\t\tYear number, defaults to the next year in the repository")
 }
