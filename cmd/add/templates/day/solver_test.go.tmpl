@@ -13,10 +13,9 @@ var (
 	// this is used to prevent the compiler from optimizing the code
 	result any
 )
-
-{{define "testPart"}}
-// Test_Day_{{.Day}}_Part1 tests the day {{.Day}} solver for part 1
-func Test_Day_{{.Day}}_Part1(t *testing.T) {
+{{ $day := .Day }}{{range $part := .Parts}}
+// Test_Day_{{$day}}_Part{{$part}} tests the day {{$day}} solver for part {{$part}}
+func Test_Day_{{$day}}_Part{{$part}}(t *testing.T) {
 	testCases := []struct {
 		name          string
 		input         config.InputType
@@ -31,26 +30,22 @@ func Test_Day_{{.Day}}_Part1(t *testing.T) {
 			cfg := config.NewConfig(days.Year, day, 1, tc.input, tc.hyperParams...)
 			solver := &Solver{}
 			solver.AddHyperParams(tc.hyperParams...)
-			solver.ParsePart1(cfg.ReadInputFile())
-			solution := solver.SolvePart1()
+			solver.ParsePart{{$part}}(cfg.ReadInputFile())
+			solution := solver.SolvePart{{$part}}()
 			assert.Equal(t, tc.expectedValue, solution)
 		})
 	}
 }
 
-// Benchmark_Day_{{.Day}}_Part1 benchmarks the day {{.Day}} solver for part 1
-func Benchmark_Day_{{.Day}}_Part1(b *testing.B) {
+// Benchmark_Day_{{$day}}_Part{{$part}} benchmarks the day {{$day}} solver for part {{$part}}
+func Benchmark_Day_{{$day}}_Part{{$part}}(b *testing.B) {
 	cfg := config.NewConfig(days.Year, day, 1, config.RealInput{}, nil)
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
-	solver.ParsePart1(cfg.ReadInputFile())
+	solver.ParsePart{{$part}}(cfg.ReadInputFile())
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		result = solver.SolvePart1()
+		result = solver.SolvePart{{$part}}()
 	}
 }
-{{end}}
-
-{{range .Parts}}
-{{template "testPart" (dict "Day" .Day "Part" .)}}
 {{end}}
