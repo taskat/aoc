@@ -14,12 +14,14 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "git config --global --add safe.directory /workspaces/aoc",
 	// Configure tool-specific properties.
 	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	"remoteUser": "vscode",
+	"remoteUser": "root",
 	"mounts": [
-		"source=${localEnv:HOME}${localEnv:USERPROFILE}/container.gitconfig,target=/root/.gitconfig,type=bind"
-	]
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/container.gitconfig,target=/root/.gitconfig,type=bind",
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/id_ed25519,target=/root/.ssh/id_ed25519,type=bind,readonly"
+	],
+	"postCreateCommand": "cp /root/.ssh/id_ed25519 /root/.ssh/id_ed25519_copy && chmod 600 /root/.ssh/id_ed25519_copy"
+
 }
