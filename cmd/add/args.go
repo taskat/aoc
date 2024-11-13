@@ -30,6 +30,14 @@ func (args arguments) String() string {
 	return fmt.Sprintf("Arguments{help: %t, mode: %s, day: %d, year: %d}", args.help, args.mode, args.day, args.year)
 }
 
+// toTemplateValues converts the arguments to template values
+func (args arguments) toTemplateValues() templateValues {
+	return templateValues{
+		Day:  args.day,
+		Year: args.year,
+	}
+}
+
 // flagAddFunc is a function type that adds a flag to the flag set
 type flagAddFunc[T any] func(varRef *T, name string, defaultValue T, usage string)
 
@@ -136,10 +144,7 @@ func getDefaultYearForDay() int {
 		os.Exit(1)
 	}
 	year, err := strconv.Atoi(folders[0])
-	if err != nil {
-		fmt.Println("Error parsing year:", err)
-		os.Exit(1)
-	}
+	quitIfError(err, "Error parsing year:")
 	return year
 }
 
@@ -153,10 +158,7 @@ func isInt(s string) bool {
 // It also sorts the list in reverse order
 func listFolders(path string) []string {
 	entries, err := os.ReadDir(path)
-	if err != nil {
-		fmt.Println("Error reading directory:", err)
-		os.Exit(1)
-	}
+	quitIfError(err, "Error reading directory:")
 	var folders []string
 	for _, entry := range entries {
 		if entry.IsDir() {
