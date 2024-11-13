@@ -32,10 +32,7 @@ func (args arguments) String() string {
 
 // toTemplateValues converts the arguments to template values
 func (args arguments) toTemplateValues() templateValues {
-	return templateValues{
-		Day:  args.day,
-		Year: args.year,
-	}
+	return newTemplateValues(args.year, args.day)
 }
 
 // flagAddFunc is a function type that adds a flag to the flag set
