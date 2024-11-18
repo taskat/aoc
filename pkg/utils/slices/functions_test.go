@@ -50,6 +50,31 @@ func TestFilter(t *testing.T) {
 	}
 }
 
+func TestFind(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue T
+		expectedFound bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, 0, false},
+		{"Empty slice", []int{}, func(i int) bool { return true }, 0, false},
+		{"Find even number", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 0 }, 2, true},
+		{"Find odd number", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 1 }, 1, true},
+		{"Find first number", []int{1, 2, 3, 4}, func(i int) bool { return true }, 1, true},
+		{"Find no number", []int{1, 2, 3, 4}, func(i int) bool { return false }, 0, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result, found := Find(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+			assert.Equal(t, tc.expectedFound, found)
+		})
+	}
+}
+
 func TestMap(t *testing.T) {
 	type testCase[T, U any] struct {
 		testName      string
@@ -65,6 +90,26 @@ func TestMap(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := Map(tc.slice, tc.f)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestSum(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		slice         []int
+		expectedValue int
+	}{
+		{"Nil slice", nil, 0},
+		{"Empty slice", []int{}, 0},
+		{"Sum of positive numbers", []int{1, 2, 3}, 6},
+		{"Sum of negative numbers", []int{-1, -2, -3}, -6},
+		{"Sum of mixed numbers", []int{1, -2, 3}, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Sum(tc.slice)
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}

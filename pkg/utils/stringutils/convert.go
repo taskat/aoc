@@ -11,3 +11,12 @@ func Atoi(s string) int {
 	}
 	return result
 }
+
+// RuneToInt converts a rune to an integer
+// If the rune is not a digit, it panics
+func RuneToInt(r rune) int {
+	if !IsDigit(r) {
+		panic("Rune is not a digit")
+	}
+	return int(r - '0')
+}
