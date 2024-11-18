@@ -142,7 +142,7 @@ func getDefaultYear() int {
 	}
 	folders := common.ListFolders("internal/years")
 	if len(folders) == 0 {
-		return 2015
+		return common.FirstYear
 	}
 	year, err := strconv.Atoi(folders[0])
 	if err != nil {
