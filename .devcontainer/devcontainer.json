@@ -23,7 +23,9 @@
 			"settings": {
 				"git.autorefresh": true,
 				"files.eol": "\n",
-				"git.defaultBranchName": "master"
+				"git.defaultBranchName": "master",
+				"go.vetOnSave": "off"
+    
 			}
 		}
 	},
