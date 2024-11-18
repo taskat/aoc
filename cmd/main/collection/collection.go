@@ -1,6 +1,6 @@
 package collection
 
-import "taskat/aoc/cmd/main/solver"
+import "github.com/taskat/aoc/cmd/main/solver"
 
 // YearCollection is a map that contains all the solvers for a specific year
 type Collection[T any] map[int]T

@@ -1,8 +1,8 @@
 package days
 
 import (
-	"taskat/aoc/cmd/main/collection"
-	"taskat/aoc/cmd/main/solver"
+	"github.com/taskat/aoc/cmd/main/collection"
+	"github.com/taskat/aoc/cmd/main/solver"
 )
 
 // Year is the year of the solvers

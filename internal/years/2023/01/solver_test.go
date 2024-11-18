@@ -1,9 +1,10 @@
 package day01
 
 import (
-	"taskat/aoc/cmd/main/config"
-	"taskat/aoc/internal/years/2023/days"
 	"testing"
+
+	"github.com/taskat/aoc/cmd/main/config"
+	"github.com/taskat/aoc/internal/years/2023/days"
 
 	"github.com/stretchr/testify/assert"
 )

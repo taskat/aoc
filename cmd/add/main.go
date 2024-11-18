@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"taskat/aoc/pkg/utility"
 )
 
 // templateValues represents the values used in the templates
@@ -35,7 +37,7 @@ func addDay(args arguments) {
 	dest := fmt.Sprintf("internal/years/%d/%02d", args.year, args.day)
 	instantiateFolder(src, dest, args.toTemplateValues())
 	importFile := fmt.Sprintf("internal/years/%d/imports/imports.go", args.year)
-	line := fmt.Sprintf("\t_ \"taskat/aoc/internal/years/%d/%02d\"", args.year, args.day)
+	line := fmt.Sprintf("\t_ \"github.com/taskat/aoc/internal/years/%d/%02d\"", args.year, args.day)
 	addLineToFile(importFile, line)
 }
 
@@ -43,7 +45,7 @@ func addDay(args arguments) {
 // before the line of the closing parenthesis
 func addLineToFile(file, line string) {
 	f, err := os.Open(file)
-	quitIfError(err, "Error opening file:")
+	utility.QuitIfError(err, "Error opening file:")
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
@@ -57,7 +59,7 @@ func addLineToFile(file, line string) {
 	}
 	output := strings.Join(lines, "\n")
 	err = os.WriteFile(f.Name(), []byte(output), 0644)
-	quitIfError(err, "Error writing file:")
+	utility.QuitIfError(err, "Error writing file:")
 }
 
 // addYear creates the folder structure for a new year
@@ -69,7 +71,7 @@ func addYear(args arguments) {
 	dest := fmt.Sprintf("internal/years/%d", args.year)
 	instantiateFolder(src, dest, args.toTemplateValues())
 	importFile := "cmd/main/imports/imports.go"
-	line := fmt.Sprintf("\t_ \"taskat/aoc/internal/years/%d\"", args.year)
+	line := fmt.Sprintf("\t_ \"github.com/taskat/aoc/internal/years/%d\"", args.year)
 	addLineToFile(importFile, line)
 }
 
@@ -77,18 +79,18 @@ func addYear(args arguments) {
 func instantiateFile(src, dest string, values templateValues) {
 	fmt.Println("Creating file", dest, "from", src)
 	f, err := os.Create(dest)
-	quitIfError(err, "Error creating file:")
+	utility.QuitIfError(err, "Error creating file:")
 	defer f.Close()
 	if strings.HasSuffix(f.Name(), ".txt") {
 		return
 	}
 	err = os.Rename(f.Name(), strings.Replace(f.Name(), ".tmpl", "", 1))
-	quitIfError(err, "Error renaming file:")
+	utility.QuitIfError(err, "Error renaming file:")
 	templateText, err := os.ReadFile(src)
-	quitIfError(err, "Error reading template file:")
+	utility.QuitIfError(err, "Error reading template file:")
 	t := template.Must(template.New("file").Parse(string(templateText)))
 	err = t.Execute(f, values)
-	quitIfError(err, "Error executing template:")
+	utility.QuitIfError(err, "Error executing template:")
 }
 
 // instantiateFolder creates a folder from a template folder
@@ -96,9 +98,9 @@ func instantiateFile(src, dest string, values templateValues) {
 func instantiateFolder(src, dest string, values templateValues) {
 	fmt.Println("Creating folder", dest, "from", src)
 	err := os.Mkdir(dest, 0755)
-	quitIfError(err, "Error creating folder:")
+	utility.QuitIfError(err, "Error creating folder:")
 	entries, err := os.ReadDir(src)
-	quitIfError(err, "Error reading directory:")
+	utility.QuitIfError(err, "Error reading directory:")
 	for _, entry := range entries {
 		newSrc := filepath.Join(src, entry.Name())
 		newDest := filepath.Join(dest, entry.Name())
@@ -108,15 +110,6 @@ func instantiateFolder(src, dest string, values templateValues) {
 			instantiateFile(newSrc, newDest, values)
 		}
 	}
-}
-
-// quitIfError prints the message and error and exits if the error is not nil
-func quitIfError(err error, message string) {
-	if err == nil {
-		return
-	}
-	fmt.Println(message, err)
-	os.Exit(1)
 }
 
 func main() {

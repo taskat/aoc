@@ -2,7 +2,8 @@ package day01
 
 import (
 	"fmt"
-	"taskat/aoc/internal/years/2023/days"
+
+	"github.com/taskat/aoc/internal/years/2023/days"
 )
 
 // day is the day of the solver
@@ -35,10 +36,12 @@ func (s *Solver) parse(lines []string) {}
 
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1() string {
+	fmt.Println("Solving part 1")
 	return ""
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2() string {
+	fmt.Println("Solving part 2")
 	return ""
 }

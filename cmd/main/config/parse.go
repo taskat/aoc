@@ -4,6 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/taskat/aoc/pkg/utility"
 )
 
 // addVar is a helper function that adds a variable to the flag package
@@ -12,6 +15,18 @@ import (
 func addVar[T any](variable *T, name, usage string, defaultValue T, add func(*T, string, T, string)) {
 	add(variable, name, defaultValue, usage)
 	add(variable, name[:1], defaultValue, usage)
+}
+
+func getMaxYear() int {
+	date := time.Now()
+	if date.Month() == time.December {
+		return date.Year()
+	}
+	folders := utility.ListFolders("internal/years")
+	if len(folders) == 0 {
+		return utility.FirstYear
+	}
+	return 0
 }
 
 // parseArguments parses the command line arguments and returns the year, day, part, input type
@@ -47,7 +62,7 @@ func validateArguments(year, day, part int, inputType_ string) InputType {
 			os.Exit(1)
 		}
 	}
-	validate(year, 2015, 2023, "Year")
+	validate(year, utility.FirstYear, 2023, "Year")
 	validate(day, 1, 25, "Day")
 	validate(part, 1, 2, "Part")
 	inputType := parseInputType(inputType_)

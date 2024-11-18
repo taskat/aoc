@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"taskat/aoc/cmd/main/config"
-	_ "taskat/aoc/cmd/main/imports"
-	"taskat/aoc/cmd/main/years"
+	"github.com/taskat/aoc/cmd/main/config"
+	_ "github.com/taskat/aoc/cmd/main/imports"
+	"github.com/taskat/aoc/cmd/main/years"
 )
 
 func main() {

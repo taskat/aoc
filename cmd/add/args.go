@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/taskat/aoc/pkg/utility"
 )
 
 // mode represents the mode of the program
@@ -114,7 +115,7 @@ func parseArgs() arguments {
 // It returns 1 if there are no days in the year
 // It returns the next day number if there are days in the year
 func getDefaultDay(year int) int {
-	folders := listFolders(fmt.Sprintf("internal/years/%d", year))
+	folders := utility.ListFolders(fmt.Sprintf("internal/years/%d", year))
 	for i := 0; i < len(folders); i++ {
 		if !isInt(folders[i]) {
 			folders = append(folders[:i], folders[i+1:]...)
@@ -137,7 +138,7 @@ func getDefaultYear() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := listFolders("internal/years")
+	folders := utility.listFolders("internal/years")
 	if len(folders) == 0 {
 		return 2015
 	}
@@ -158,7 +159,7 @@ func getDefaultYearForDay() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := listFolders("internal/years")
+	folders := utility.listFolders("internal/years")
 	if len(folders) == 0 {
 		fmt.Println("No years found in internal/years")
 		fmt.Println("Please create a year first")
@@ -173,21 +174,6 @@ func getDefaultYearForDay() int {
 func isInt(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
-}
-
-// listFolders returns a list of folders in the given path
-// It also sorts the list in reverse order
-func listFolders(path string) []string {
-	entries, err := os.ReadDir(path)
-	quitIfError(err, "Error reading directory:")
-	var folders []string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			folders = append(folders, entry.Name())
-		}
-	}
-	sort.Sort(sort.Reverse(sort.StringSlice(folders)))
-	return folders
 }
 
 // printDayUsage prints the usage of the day mode

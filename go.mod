@@ -1,4 +1,4 @@
-module taskat/aoc
+module github.com/taskat/aoc
 
 go 1.22.6
 

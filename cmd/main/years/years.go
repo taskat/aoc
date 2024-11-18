@@ -1,7 +1,7 @@
 package years
 
 import (
-	"taskat/aoc/cmd/main/collection"
+	"github.com/taskat/aoc/cmd/main/collection"
 )
 
 // years is a map that contains all the yearCollections for all the years
