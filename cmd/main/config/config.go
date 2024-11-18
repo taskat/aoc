@@ -45,7 +45,7 @@ func (c *Config) GetHyperParams() []any {
 
 // GetInputFileName returns the input file name corresponding to the Config
 func (c *Config) GetInputFileName() string {
-	return fmt.Sprintf("../../internal/years/%d/%.2d/inputs/%s.txt", c.year, c.day, c.inputType.String())
+	return fmt.Sprintf("internal/years/%d/%.2d/inputs/%s.txt", c.year, c.day, c.inputType.String())
 }
 
 // GetInputType returns the input type of the Config
