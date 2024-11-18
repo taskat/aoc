@@ -27,7 +27,7 @@ func Test_Day_{{printf "%02d" $day}}_Part{{$part}}(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg := config.NewConfig(days.Year, day, 1, tc.input, tc.hyperParams...)
+			cfg := config.NewConfig(days.Year, day, {{$part}}, tc.input, tc.hyperParams...)
 			solver := &Solver{}
 			solver.AddHyperParams(tc.hyperParams...)
 			solver.ParsePart{{$part}}(cfg.ReadInputFile())
@@ -39,7 +39,7 @@ func Test_Day_{{printf "%02d" $day}}_Part{{$part}}(t *testing.T) {
 
 // Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}} benchmarks the day {{printf "%02d" $day}} solver for part {{$part}}
 func Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}}(b *testing.B) {
-	cfg := config.NewConfig(days.Year, day, 1, config.RealInput{}, nil)
+	cfg := config.NewConfig(days.Year, day, {{$part}}, config.RealInput{}, nil)
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	solver.ParsePart{{$part}}(cfg.ReadInputFile())
