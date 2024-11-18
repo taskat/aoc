@@ -4,43 +4,48 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
+	"strconv"
 
 	"github.com/taskat/aoc/pkg/utility"
 )
 
-// addVar is a helper function that adds a variable to the flag package
-// It adds the variable with the given name, usage, and default value
-// It also adds the variable with the first letter of the name as the name
-func addVar[T any](variable *T, name, usage string, defaultValue T, add func(*T, string, T, string)) {
-	add(variable, name, defaultValue, usage)
-	add(variable, name[:1], defaultValue, usage)
+// getMaxDay returns the maximum day that has been added to the repository
+func getMaxDay(year int) int {
+	folders := utility.ListFolders(fmt.Sprintf("internal/years/%d", year))
+	if len(folders) == 0 {
+		return 0
+	}
+	day, err := strconv.Atoi(folders[0])
+	utility.QuitIfError(err, "Error parsing day:")
+	return day
 }
 
+// getMaxYear returns the maximum year that has been added to the repository
 func getMaxYear() int {
-	date := time.Now()
-	if date.Month() == time.December {
-		return date.Year()
-	}
 	folders := utility.ListFolders("internal/years")
 	if len(folders) == 0 {
 		return utility.FirstYear
 	}
-	return 0
+	year, err := strconv.Atoi(folders[0])
+	utility.QuitIfError(err, "Error parsing year:")
+	return year
 }
 
 // parseArguments parses the command line arguments and returns the year, day, part, input type
 // and the hyper parameters
 func parseArguments() (year, day, part int, inputType string, hyperParams []any) {
-	addVar(&year, "year", "the year of the puzzle", 2023, flag.IntVar)
-	addVar(&day, "day", "the day of the puzzle", 1, flag.IntVar)
-	addVar(&part, "part", "the part of the puzzle", 1, flag.IntVar)
-	addVar(&inputType, "input", "the input type to use", "real", flag.StringVar)
+	utility.AddFlag(flag.IntVar, &year, "year", getMaxYear(), "the year of the puzzle")
+	utility.AddFlag(flag.IntVar, &day, "day", -1, "the day of the puzzle")
+	utility.AddFlag(flag.IntVar, &part, "part", 1, "the part of the puzzle")
+	utility.AddFlag(flag.StringVar, &inputType, "input", "real", "the input type to use")
 	flag.Parse()
 	args := flag.Args()
 	hyperParams = make([]any, len(args))
 	for i, arg := range args {
 		hyperParams[i] = arg
+	}
+	if day == -1 {
+		day = getMaxDay(year)
 	}
 	return year, day, part, inputType, hyperParams
 }
@@ -62,8 +67,8 @@ func validateArguments(year, day, part int, inputType_ string) InputType {
 			os.Exit(1)
 		}
 	}
-	validate(year, utility.FirstYear, 2023, "Year")
-	validate(day, 1, 25, "Day")
+	validate(year, utility.FirstYear, getMaxYear(), "Year")
+	validate(day, 1, getMaxDay(year), "Day")
 	validate(part, 1, 2, "Part")
 	inputType := parseInputType(inputType_)
 	if inputType == nil {

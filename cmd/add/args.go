@@ -37,16 +37,6 @@ func (args arguments) toTemplateValues() templateValues {
 	return newTemplateValues(args.year, args.day)
 }
 
-// flagAddFunc is a function type that adds a flag to the flag set
-type flagAddFunc[T any] func(varRef *T, name string, defaultValue T, usage string)
-
-// addFlag adds a flag to the flag set, it adds the flag with the full name and the first letter of the name
-// as a shorthand
-func addFlag[T any](addFunc flagAddFunc[T], varRef *T, name string, defaultValue T, usage string) {
-	addFunc(varRef, name, defaultValue, usage)
-	addFunc(varRef, name[:1], defaultValue, usage)
-}
-
 // parseArgs parses the command line arguments
 func parseArgs() arguments {
 	if len(os.Args) == 1 {
@@ -72,8 +62,8 @@ func parseArgs() arguments {
 			arguments.day = -1
 		}
 		fs = flag.NewFlagSet("day", flag.ExitOnError)
-		addFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-		addFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
+		utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+		utility.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
 		fs.Usage = printDayUsage
 	case "year":
 		arguments.mode = year
@@ -90,7 +80,7 @@ func parseArgs() arguments {
 			arguments.year = getDefaultYear()
 		}
 		fs = flag.NewFlagSet("year", flag.ExitOnError)
-		addFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+		utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
 		fs.Usage = printYearUsage
 	case "help":
 		printGlobalUsage()
@@ -138,7 +128,7 @@ func getDefaultYear() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := utility.listFolders("internal/years")
+	folders := utility.ListFolders("internal/years")
 	if len(folders) == 0 {
 		return 2015
 	}
@@ -159,14 +149,14 @@ func getDefaultYearForDay() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := utility.listFolders("internal/years")
+	folders := utility.ListFolders("internal/years")
 	if len(folders) == 0 {
 		fmt.Println("No years found in internal/years")
 		fmt.Println("Please create a year first")
 		os.Exit(1)
 	}
 	year, err := strconv.Atoi(folders[0])
-	quitIfError(err, "Error parsing year:")
+	utility.QuitIfError(err, "Error parsing year:")
 	return year
 }
 

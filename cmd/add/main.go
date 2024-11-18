@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"taskat/aoc/pkg/utility"
+	"github.com/taskat/aoc/pkg/utility"
 )
 
 // templateValues represents the values used in the templates
