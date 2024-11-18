@@ -37,6 +37,49 @@ func (args arguments) toTemplateValues() templateValues {
 	return newTemplateValues(args.year, args.day)
 }
 
+func parseDayArgs(arguments *arguments, fs *flag.FlagSet) int {
+	arguments.mode = day
+	flagStartOffset := 0
+	if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+		day, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("Error parsing day:", err)
+			printYearUsage()
+			os.Exit(1)
+		}
+		arguments.day = day
+		flagStartOffset++
+	} else {
+		arguments.day = -1
+	}
+	fs = flag.NewFlagSet("day", flag.ExitOnError)
+	utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+	utility.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
+	fs.Usage = printDayUsage
+	return flagStartOffset
+}
+
+func parseYearArgs(arguments *arguments, fs *flag.FlagSet) int {
+	arguments.mode = year
+	flagStartOffset := 0
+	if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
+		year, err := strconv.Atoi(os.Args[2])
+		if err != nil {
+			fmt.Println("Error parsing year:", err)
+			printYearUsage()
+			os.Exit(1)
+		}
+		arguments.year = year
+		flagStartOffset++
+	} else {
+		arguments.year = getDefaultYear()
+	}
+	fs = flag.NewFlagSet("year", flag.ExitOnError)
+	utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+	fs.Usage = printYearUsage
+	return flagStartOffset
+}
+
 // parseArgs parses the command line arguments
 func parseArgs() arguments {
 	if len(os.Args) == 1 {
@@ -48,40 +91,9 @@ func parseArgs() arguments {
 	flagStart := 2
 	switch os.Args[1] {
 	case "day":
-		arguments.mode = day
-		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
-			day, err := strconv.Atoi(os.Args[2])
-			if err != nil {
-				fmt.Println("Error parsing day:", err)
-				printYearUsage()
-				os.Exit(1)
-			}
-			arguments.day = day
-			flagStart++
-		} else {
-			arguments.day = -1
-		}
-		fs = flag.NewFlagSet("day", flag.ExitOnError)
-		utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-		utility.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
-		fs.Usage = printDayUsage
+		flagStart += parseDayArgs(&arguments, fs)
 	case "year":
-		arguments.mode = year
-		if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
-			year, err := strconv.Atoi(os.Args[2])
-			if err != nil {
-				fmt.Println("Error parsing year:", err)
-				printYearUsage()
-				os.Exit(1)
-			}
-			arguments.year = year
-			flagStart++
-		} else {
-			arguments.year = getDefaultYear()
-		}
-		fs = flag.NewFlagSet("year", flag.ExitOnError)
-		utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-		fs.Usage = printYearUsage
+		flagStart += parseYearArgs(&arguments, fs)
 	case "help":
 		printGlobalUsage()
 		os.Exit(0)
