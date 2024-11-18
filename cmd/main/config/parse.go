@@ -6,38 +6,38 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/taskat/aoc/pkg/utility"
+	"github.com/taskat/aoc/pkg/common"
 )
 
 // getMaxDay returns the maximum day that has been added to the repository
 func getMaxDay(year int) int {
-	folders := utility.ListFolders(fmt.Sprintf("internal/years/%d", year))
+	folders := common.ListFolders(fmt.Sprintf("internal/years/%d", year))
 	if len(folders) == 0 {
 		return 0
 	}
 	day, err := strconv.Atoi(folders[0])
-	utility.QuitIfError(err, "Error parsing day:")
+	common.QuitIfError(err, "Error parsing day:")
 	return day
 }
 
 // getMaxYear returns the maximum year that has been added to the repository
 func getMaxYear() int {
-	folders := utility.ListFolders("internal/years")
+	folders := common.ListFolders("internal/years")
 	if len(folders) == 0 {
-		return utility.FirstYear
+		return common.FirstYear
 	}
 	year, err := strconv.Atoi(folders[0])
-	utility.QuitIfError(err, "Error parsing year:")
+	common.QuitIfError(err, "Error parsing year:")
 	return year
 }
 
 // parseArguments parses the command line arguments and returns the year, day, part, input type
 // and the hyper parameters
 func parseArguments() (year, day, part int, inputType string, hyperParams []any) {
-	utility.AddFlag(flag.IntVar, &year, "year", getMaxYear(), "the year of the puzzle")
-	utility.AddFlag(flag.IntVar, &day, "day", -1, "the day of the puzzle")
-	utility.AddFlag(flag.IntVar, &part, "part", 1, "the part of the puzzle")
-	utility.AddFlag(flag.StringVar, &inputType, "input", "real", "the input type to use")
+	common.AddFlag(flag.IntVar, &year, "year", getMaxYear(), "the year of the puzzle")
+	common.AddFlag(flag.IntVar, &day, "day", -1, "the day of the puzzle")
+	common.AddFlag(flag.IntVar, &part, "part", 1, "the part of the puzzle")
+	common.AddFlag(flag.StringVar, &inputType, "input", "real", "the input type to use")
 	flag.Parse()
 	args := flag.Args()
 	hyperParams = make([]any, len(args))
@@ -67,7 +67,7 @@ func validateArguments(year, day, part int, inputType_ string) InputType {
 			os.Exit(1)
 		}
 	}
-	validate(year, utility.FirstYear, getMaxYear(), "Year")
+	validate(year, common.FirstYear, getMaxYear(), "Year")
 	validate(day, 1, getMaxDay(year), "Day")
 	validate(part, 1, 2, "Part")
 	inputType := parseInputType(inputType_)

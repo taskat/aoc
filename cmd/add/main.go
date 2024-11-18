@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/taskat/aoc/pkg/utility"
+	"github.com/taskat/aoc/pkg/common"
 )
 
 // templateValues represents the values used in the templates
@@ -45,7 +45,7 @@ func addDay(args arguments) {
 // before the line of the closing parenthesis
 func addLineToFile(file, line string) {
 	f, err := os.Open(file)
-	utility.QuitIfError(err, "Error opening file:")
+	common.QuitIfError(err, "Error opening file:")
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
@@ -59,7 +59,7 @@ func addLineToFile(file, line string) {
 	}
 	output := strings.Join(lines, "\n")
 	err = os.WriteFile(f.Name(), []byte(output), 0644)
-	utility.QuitIfError(err, "Error writing file:")
+	common.QuitIfError(err, "Error writing file:")
 }
 
 // addYear creates the folder structure for a new year
@@ -79,18 +79,18 @@ func addYear(args arguments) {
 func instantiateFile(src, dest string, values templateValues) {
 	fmt.Println("Creating file", dest, "from", src)
 	f, err := os.Create(dest)
-	utility.QuitIfError(err, "Error creating file:")
+	common.QuitIfError(err, "Error creating file:")
 	defer f.Close()
 	if strings.HasSuffix(f.Name(), ".txt") {
 		return
 	}
 	err = os.Rename(f.Name(), strings.Replace(f.Name(), ".tmpl", "", 1))
-	utility.QuitIfError(err, "Error renaming file:")
+	common.QuitIfError(err, "Error renaming file:")
 	templateText, err := os.ReadFile(src)
-	utility.QuitIfError(err, "Error reading template file:")
+	common.QuitIfError(err, "Error reading template file:")
 	t := template.Must(template.New("file").Parse(string(templateText)))
 	err = t.Execute(f, values)
-	utility.QuitIfError(err, "Error executing template:")
+	common.QuitIfError(err, "Error executing template:")
 }
 
 // instantiateFolder creates a folder from a template folder
@@ -98,9 +98,9 @@ func instantiateFile(src, dest string, values templateValues) {
 func instantiateFolder(src, dest string, values templateValues) {
 	fmt.Println("Creating folder", dest, "from", src)
 	err := os.Mkdir(dest, 0755)
-	utility.QuitIfError(err, "Error creating folder:")
+	common.QuitIfError(err, "Error creating folder:")
 	entries, err := os.ReadDir(src)
-	utility.QuitIfError(err, "Error reading directory:")
+	common.QuitIfError(err, "Error reading directory:")
 	for _, entry := range entries {
 		newSrc := filepath.Join(src, entry.Name())
 		newDest := filepath.Join(dest, entry.Name())

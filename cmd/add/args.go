@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskat/aoc/pkg/utility"
+	"github.com/taskat/aoc/pkg/common"
 )
 
 // mode represents the mode of the program
@@ -53,8 +53,8 @@ func parseDayArgs(arguments *arguments, fs *flag.FlagSet) int {
 		arguments.day = -1
 	}
 	fs = flag.NewFlagSet("day", flag.ExitOnError)
-	utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
-	utility.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
+	common.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+	common.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
 	fs.Usage = printDayUsage
 	return flagStartOffset
 }
@@ -75,7 +75,7 @@ func parseYearArgs(arguments *arguments, fs *flag.FlagSet) int {
 		arguments.year = getDefaultYear()
 	}
 	fs = flag.NewFlagSet("year", flag.ExitOnError)
-	utility.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
+	common.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
 	fs.Usage = printYearUsage
 	return flagStartOffset
 }
@@ -117,7 +117,7 @@ func parseArgs() arguments {
 // It returns 1 if there are no days in the year
 // It returns the next day number if there are days in the year
 func getDefaultDay(year int) int {
-	folders := utility.ListFolders(fmt.Sprintf("internal/years/%d", year))
+	folders := common.ListFolders(fmt.Sprintf("internal/years/%d", year))
 	for i := 0; i < len(folders); i++ {
 		if !isInt(folders[i]) {
 			folders = append(folders[:i], folders[i+1:]...)
@@ -140,7 +140,7 @@ func getDefaultYear() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := utility.ListFolders("internal/years")
+	folders := common.ListFolders("internal/years")
 	if len(folders) == 0 {
 		return 2015
 	}
@@ -161,14 +161,14 @@ func getDefaultYearForDay() int {
 	if date.Month() == time.December {
 		return date.Year()
 	}
-	folders := utility.ListFolders("internal/years")
+	folders := common.ListFolders("internal/years")
 	if len(folders) == 0 {
 		fmt.Println("No years found in internal/years")
 		fmt.Println("Please create a year first")
 		os.Exit(1)
 	}
 	year, err := strconv.Atoi(folders[0])
-	utility.QuitIfError(err, "Error parsing year:")
+	common.QuitIfError(err, "Error parsing year:")
 	return year
 }
 
