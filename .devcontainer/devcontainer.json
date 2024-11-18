@@ -15,7 +15,14 @@
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.go",
+				"eamodio.gitlens"
+			]
+		}
+	},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root",
 	"mounts": [
@@ -24,6 +31,6 @@
 	],
 	"postCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
 	"remoteEnv": {
-        "SSH_AUTH_SOCK": "/root/.ssh/agent.sock"
-    }
+		"SSH_AUTH_SOCK": "/root/.ssh/agent.sock"
+	}
 }
