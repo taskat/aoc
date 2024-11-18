@@ -1,4 +1,4 @@
-package day{{.Day}}
+package day{{printf "%02d" .Day}}
 
 import (
 	"fmt"
@@ -6,15 +6,15 @@ import (
 )
 
 // day is the day of the solver
-const day = {{.Day}}
+const day = {{printf "%02d" .Day}}
 
-// init registers the solver for day {{.Day}}
+// init registers the solver for day {{printf "%02d" .Day}}
 func init() {
 	fmt.Println("Registering day", day)
 	days.AddDay(day, &Solver{})
 }
 
-// Solver implements the puzzle solver for day {{.Day}}
+// Solver implements the puzzle solver for day {{printf "%02d" .Day}}
 type Solver struct{}
 
 // AddHyperParams adds hyper parameters to the solver

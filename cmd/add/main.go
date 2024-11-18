@@ -57,7 +57,7 @@ func addLineToFile(file, line string) {
 		}
 		lines = append(lines, nextLine)
 	}
-	output := strings.Join(lines, "\n")
+	output := strings.Join(lines, "\n") + "\n"
 	err = os.WriteFile(f.Name(), []byte(output), 0644)
 	common.QuitIfError(err, "Error writing file:")
 }
