@@ -181,9 +181,9 @@ func printGlobalUsage() {
 	fmt.Println("add adds a new day or year to the repository based on templates")
 	fmt.Println("Usage: add <command>")
 	fmt.Println("  Commands:")
-	fmt.Println("    help\t\tPrint this help message")
-	fmt.Println("    year\t\tGenerate a year")
-	fmt.Println("    day\t\tGenerate a day")
+	fmt.Println("    help\tPrint this help message")
+	fmt.Println("    year\tGenerate a year")
+	fmt.Println("    day\t\tenerate a day")
 	fmt.Println("Use 'add <command> --help' for more information about a command")
 }
 
