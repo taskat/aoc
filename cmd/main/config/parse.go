@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/taskat/aoc/pkg/common"
+	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
 
 // getMaxDay returns the maximum day that has been added to the repository
@@ -15,6 +17,7 @@ func getMaxDay(year int) int {
 	if len(folders) == 0 {
 		return 0
 	}
+	folders = slices.Filter(folders, stringutils.IsInteger)
 	day, err := strconv.Atoi(folders[0])
 	common.QuitIfError(err, "Error parsing day:")
 	return day
@@ -61,15 +64,20 @@ func ParseConfig() *Config {
 // validateArguments validates the year, day, part, and input type
 // It returns the input type if it is valid, otherwise it prints an error message and exits
 func validateArguments(year, day, part int, inputType_ string) InputType {
-	validate := func(value, min, max int, name string) {
-		if value < min || value > max {
-			fmt.Println(fmt.Sprintf("%s: %d is not between %d and %d", name, value, min, max))
+	validate := func(value int, values []int, name string) {
+		if !slices.Contains(values, value) {
+			fmt.Println(fmt.Sprintf("%s: %d is not in possible values: %v", name, value, values))
 			os.Exit(1)
 		}
 	}
-	validate(year, common.FirstYear, getMaxYear(), "Year")
-	validate(day, 1, getMaxDay(year), "Day")
-	validate(part, 1, 2, "Part")
+	yearFolders := common.ListFolders("internal/years")
+	years := slices.Map(yearFolders, stringutils.Atoi)
+	validate(year, years, "Year")
+	dayFolders := common.ListFolders(fmt.Sprintf("internal/years/%d", year))
+	dayFolders = slices.Filter(dayFolders, stringutils.IsInteger)
+	days := slices.Map(dayFolders, stringutils.Atoi)
+	validate(day, days, "Day")
+	validate(part, []int{1, 2}, "Part")
 	inputType := parseInputType(inputType_)
 	if inputType == nil {
 		fmt.Println("Input must be either 'real' or a 'test-n' where n is a number")
