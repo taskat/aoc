@@ -4,8 +4,6 @@ package solver
 // to solve a day's puzzle, and bench it.
 type Solver interface {
 	AddHyperParams(params ...any)
-	ParsePart1(lines []string)
-	ParsePart2(lines []string)
-	SolvePart1() string
-	SolvePart2() string
+	SolvePart1(lines []string) string
+	SolvePart2(lines []string) string
 }

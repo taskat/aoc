@@ -28,12 +28,12 @@ func main() {
 		fmt.Println("Input file not found")
 		return
 	}
+	solve := func(lines []string) string { return "" }
 	if cfg.GetPart() == 1 {
-		day.ParsePart1(input)
-		fmt.Println("Solution for part 1:", day.SolvePart1())
+		solve = day.SolvePart1
 	} else {
-		day.ParsePart2(input)
-		fmt.Println("Solution for part 2:", day.SolvePart2())
+		solve = day.SolvePart2
 	}
-
+	solution := solve(input)
+	fmt.Printf("Solution for part %d: %s\n", cfg.GetPart(), solution)
 }

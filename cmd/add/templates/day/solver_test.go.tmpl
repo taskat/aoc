@@ -30,8 +30,7 @@ func Test_Day_{{printf "%02d" $day}}_Part{{$part}}(t *testing.T) {
 			cfg := config.NewConfig(days.Year, day, {{$part}}, tc.input, tc.hyperParams...)
 			solver := &Solver{}
 			solver.AddHyperParams(tc.hyperParams...)
-			solver.ParsePart{{$part}}(cfg.ReadInputFile())
-			solution := solver.SolvePart{{$part}}()
+			solution := solver.SolvePart{{$part}}(cfg.ReadInputFile())
 			assert.Equal(t, tc.expectedValue, solution)
 		})
 	}
@@ -42,10 +41,10 @@ func Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}}(b *testing.B) {
 	cfg := config.NewConfig(days.Year, day, {{$part}}, config.RealInput{}, nil)
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
-	solver.ParsePart{{$part}}(cfg.ReadInputFile())
+	input := cfg.ReadInputFile()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		result = solver.SolvePart{{$part}}()
+		result = solver.SolvePart{{$part}}(input)
 	}
 }
 {{end}}
