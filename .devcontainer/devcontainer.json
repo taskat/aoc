@@ -35,7 +35,7 @@
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/container.gitconfig,target=/root/.gitconfig,type=bind",
 		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/github-dev-container,target=/root/.ssh/github-dev-container,type=bind,readonly"
 	],
-	"postCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
+	"postStartCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/post-create.sh",
 	"remoteEnv": {
 		"SSH_AUTH_SOCK": "/root/.ssh/agent.sock"
 	}
