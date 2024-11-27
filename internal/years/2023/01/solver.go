@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2023/days"
+	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
 )
 
@@ -76,5 +77,24 @@ var digits = map[string]int{
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	digits := maps.Merge(digits, extraDigits)
+	getCalibrationValue := func(line string) int {
+		return getCalibrationValue(line, digits)
+	}
+	calibrationValues := slices.Map(lines, getCalibrationValue)
+	sum := slices.Sum(calibrationValues)
+	return fmt.Sprintf("%d", sum)
+}
+
+// extraDigits is a map of possible digits made of words
+var extraDigits = map[string]int{
+	"one":   1,
+	"two":   2,
+	"three": 3,
+	"four":  4,
+	"five":  5,
+	"six":   6,
+	"seven": 7,
+	"eight": 8,
+	"nine":  9,
 }
