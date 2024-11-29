@@ -7,3 +7,6 @@ RUN apt-get install -y git-crypt
 
 # Add a script to source the SSH agent environment automatically
 RUN echo 'export SSH_AUTH_SOCK=/root/.ssh/agent.sock' >> /root/.bashrc
+
+# Set AOC_HOME env var
+ENV AOC_HOME=/workspaces/aoc
