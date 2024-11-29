@@ -1,22 +1,31 @@
 name: "Common Setup"
 description: "Setup steps for all jobs"
+
+inputs:
+  git_crypt_key:
+    description: "The git-crypt key"
+    required: true
+
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Install git-crypt
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y git-crypt
 
     - name: Decrypt files with git-crypt
+      shell: bash
       env:
-        GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
+        GIT_CRYPT_KEY: ${{ inputs.git_crypt_key }}
       run: |
         echo "${GIT_CRYPT_KEY}" | base64 --decode > git-crypt-key
         git-crypt unlock git-crypt-key
-        rm git-crypt-key 
+        rm git-crypt-key
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -24,4 +33,5 @@ runs:
         go-version: '1.22'
 
     - name: Build
+      shell: bash
       run: go build -v ./...

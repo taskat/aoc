@@ -19,9 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup
+
+      - name: Run Common Setup
         uses: ./.github/actions/common-setup
+        with:
+          git_crypt_key: ${{ secrets.GIT_CRYPT_KEY }}
 
       - name: Test
         run: go test -v ./...
