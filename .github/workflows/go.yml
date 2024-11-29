@@ -18,28 +18,8 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - name: Setup
+          uses: ./.github/actions/common-setup
 
-    - name: Install git-crypt
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git-crypt
-
-    - name: Decrypt files with git-crypt
-      env:
-        GIT_CRYPT_KEY: ${{ secrets.GIT_CRYPT_KEY }}
-      run: |
-        echo "${GIT_CRYPT_KEY}" | base64 --decode > git-crypt-key
-        git-crypt unlock git-crypt-key
-        rm git-crypt-key 
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22'
-
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
