@@ -42,9 +42,8 @@ func (s *Solver) parse(lines []string) ([]int, []int) {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	left, right := s.parse(lines)
-	distances := slices.Map_i(left, func(v int, i int) int {
-		return intutils.Abs(v - right[i])
-	})
+	distances := slices.ZipWith(left, right, intutils.Diff)
+	distances = slices.Map(distances, intutils.Abs)
 	sum := slices.Sum(distances)
 	return strconv.Itoa(sum)
 }
@@ -57,9 +56,7 @@ func (s *Solver) SolvePart2(lines []string) string {
 			return r == v
 		})
 	})
-	scores := slices.Map_i(appearances, func(v int, i int) int {
-		return v * left[i]
-	})
+	scores := slices.ZipWith(left, appearances, intutils.Product)
 	sum := slices.Sum(scores)
 	return strconv.Itoa(sum)
 }
