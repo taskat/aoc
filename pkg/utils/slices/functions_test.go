@@ -27,6 +27,29 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestCount(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue int
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, 0},
+		{"Empty slice", []int{}, func(i int) bool { return true }, 0},
+		{"Count even numbers", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 0 }, 2},
+		{"Count odd numbers", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 1 }, 2},
+		{"Count all numbers", []int{1, 2, 3, 4}, func(i int) bool { return true }, 4},
+		{"Count no numbers", []int{1, 2, 3, 4}, func(i int) bool { return false }, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Count(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestFilter(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string

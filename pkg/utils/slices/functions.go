@@ -12,6 +12,17 @@ func Contains[T comparable](slice []T, item T) bool {
 	return false
 }
 
+// Count returns the number of elements in the slice that satisfy the predicate
+func Count[T any](slice []T, predicate func(T) bool) int {
+	count := 0
+	for _, v := range slice {
+		if predicate(v) {
+			count++
+		}
+	}
+	return count
+}
+
 // Filter returns a new slice with the elements that satisfy the predicate
 func Filter[T any](slice []T, predicate func(T) bool) []T {
 	result := make([]T, 0)
