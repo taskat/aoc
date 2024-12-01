@@ -95,6 +95,26 @@ func TestMap(t *testing.T) {
 	}
 }
 
+func TestMap_i(t *testing.T) {
+	type testCase[T, U any] struct {
+		testName      string
+		slice         []T
+		f             func(T, int) U
+		expectedValue []U
+	}
+	testCases := []testCase[int, string]{
+		{"Nil slice", nil, func(i int, j int) string { return "a" }, []string{}},
+		{"Empty slice", []int{}, func(i int, j int) string { return "a" }, []string{}},
+		{"Map from int to string", []int{1, 2, 3}, func(i int, j int) string { return fmt.Sprintf("%d", i+j) }, []string{"1", "3", "5"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Map_i(tc.slice, tc.f)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestSum(t *testing.T) {
 	testCases := []struct {
 		testName      string
