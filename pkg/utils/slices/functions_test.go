@@ -157,3 +157,27 @@ func TestSum(t *testing.T) {
 		})
 	}
 }
+
+func TestZipWith(t *testing.T) {
+	type testCase[T, U, V any] struct {
+		testName      string
+		slice1        []T
+		slice2        []U
+		f             func(T, U) V
+		expectedValue []V
+	}
+	testCases := []testCase[int, int, string]{
+		{"Nil slices", nil, nil, func(i int, j int) string { return "a" }, []string{}},
+		{"Empty slices", []int{}, []int{}, func(i int, j int) string { return "a" }, []string{}},
+		{"Empty and non-empty slices", []int{}, []int{1, 2, 3}, func(i int, j int) string { return "a" }, []string{}},
+		{"Non-empty and empty slices", []int{1, 2, 3}, []int{}, func(i int, j int) string { return "a" }, []string{}},
+		{"Zip with sum", []int{1, 2, 3}, []int{4, 5, 6}, func(i int, j int) string { return fmt.Sprintf("%d", i+j) }, []string{"5", "7", "9"}},
+		{"Zip with different lengths", []int{1, 2, 3}, []int{4, 5}, func(i int, j int) string { return fmt.Sprintf("%d", i+j) }, []string{"5", "7"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := ZipWith(tc.slice1, tc.slice2, tc.f)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}

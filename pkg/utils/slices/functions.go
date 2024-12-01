@@ -74,3 +74,18 @@ func Sum[T types.Summable](slice []T) T {
 	}
 	return sum
 }
+
+// ZipWith applies the function f to each pair of elements from the two slices
+// and returns a new slice with the results. If the slices have different
+// lengths, the result will have the length of the shortest slice
+func ZipWith[T, U, V any](slice1 []T, slice2 []U, f func(T, U) V) []V {
+	minLen := len(slice1)
+	if len(slice2) < minLen {
+		minLen = len(slice2)
+	}
+	result := make([]V, minLen)
+	for i := 0; i < minLen; i++ {
+		result[i] = f(slice1[i], slice2[i])
+	}
+	return result
+}
