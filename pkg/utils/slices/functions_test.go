@@ -27,6 +27,25 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestCopy(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		expectedValue []T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, []int{}},
+		{"Empty slice", []int{}, []int{}},
+		{"Copy slice", []int{1, 2, 3}, []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Copy(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestCount(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -134,6 +153,46 @@ func TestMap_i(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := Map_i(tc.slice, tc.f)
 			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestRemoveNth(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		index         int
+		expectedValue []T
+	}
+	testCases := []testCase[int]{
+		{"Remove first element", []int{1, 2, 3}, 0, []int{2, 3}},
+		{"Remove middle element", []int{1, 2, 3}, 1, []int{1, 3}},
+		{"Remove last element", []int{1, 2, 3}, 2, []int{1, 2}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := RemoveNth(tc.slice, tc.index)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestRemoveNthPanic(t *testing.T) {
+	testCases := []struct {
+		testName string
+		slice    []int
+		index    int
+	}{
+		{"Nil slice", nil, 0},
+		{"Empty slice", []int{}, 0},
+		{"Remove out of bounds", []int{1, 2, 3}, 3},
+		{"Remove negative index", []int{1, 2, 3}, -1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				RemoveNth(tc.slice, tc.index)
+			})
 		})
 	}
 }

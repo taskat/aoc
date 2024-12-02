@@ -12,6 +12,13 @@ func Contains[T comparable](slice []T, item T) bool {
 	return false
 }
 
+// Copy returns a new slice with the same elements as the original
+func Copy[T any](slice []T) []T {
+	result := make([]T, len(slice))
+	copy(result, slice)
+	return result
+}
+
 // Count returns the number of elements in the slice that satisfy the predicate
 func Count[T any](slice []T, predicate func(T) bool) int {
 	count := 0
@@ -64,6 +71,17 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 		result[i] = f(v, i)
 	}
 	return result
+}
+
+// RemoveNth returns a new slice with the element at the given index removed
+// If the index is out of bounds, it panics
+func RemoveNth[T any](slice []T, index int) []T {
+	if index < 0 || index >= len(slice) {
+		panic("index out of bounds")
+	}
+	result := make([]T, 0, len(slice)-1)
+	result = append(result, slice[:index]...)
+	return append(result, slice[index+1:]...)
 }
 
 // Sum returns the sum of all the elements in the slice
