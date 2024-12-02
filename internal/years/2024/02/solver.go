@@ -80,6 +80,18 @@ func (r report) isSafe() bool {
 	return (r.isDecreasing() || r.isIncreasing()) && r.isDifferenceSafe()
 }
 
+func (r report) tolerable() bool {
+	for i := range r {
+		dampened := make(report, len(r)-1)
+		copy(dampened[:i], r[:i])
+		copy(dampened[i:], r[i+1:])
+		if dampened.isSafe() {
+			return true
+		}
+	}
+	return false
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	reports := s.parse(lines)
@@ -89,5 +101,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	reports := s.parse(lines)
+	tolerableCount := slices.Count(reports, report.tolerable)
+	return strconv.Itoa(tolerableCount)
 }
