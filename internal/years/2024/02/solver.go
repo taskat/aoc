@@ -8,6 +8,7 @@ import (
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
 
 // day is the day of the solver
@@ -34,21 +35,19 @@ func (s *Solver) parse(lines []string) []report {
 	return reports
 }
 
+// report is one line of report values
 type report []int
 
+// parseReport parses a report from a line
+// The line is space separated integers
+// In case of error, it panics
 func parseReport(line string) report {
 	parts := strings.Split(line, " ")
-	report := make(report, len(parts))
-	var err error
-	for i, part := range parts {
-		report[i], err = strconv.Atoi(part)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return report
+	values := slices.Map(parts, stringutils.Atoi)
+	return report(values)
 }
 
+// isDecreasing checks if the report is strictly decreasing
 func (r report) isDecreasing() bool {
 	for i := 1; i < len(r); i++ {
 		if r[i] >= r[i-1] {
@@ -58,6 +57,8 @@ func (r report) isDecreasing() bool {
 	return true
 }
 
+// isDifferenceSafe checks if the report has no difference greater than 3
+// between any two consecutive values
 func (r report) isDifferenceSafe() bool {
 	for i := 1; i < len(r); i++ {
 		if intutils.Abs(r[i]-r[i-1]) > 3 {
@@ -67,6 +68,7 @@ func (r report) isDifferenceSafe() bool {
 	return true
 }
 
+// isIncreasing checks if the report is strictly increasing
 func (r report) isIncreasing() bool {
 	for i := 1; i < len(r); i++ {
 		if r[i] <= r[i-1] {
@@ -76,20 +78,11 @@ func (r report) isIncreasing() bool {
 	return true
 }
 
+// isSafe checks if the report is safe
+// A report is safe if it is either decreasing or increasing
+// and the difference between any two consecutive values is safe
 func (r report) isSafe() bool {
 	return (r.isDecreasing() || r.isIncreasing()) && r.isDifferenceSafe()
-}
-
-func (r report) tolerable() bool {
-	for i := range r {
-		dampened := make(report, len(r)-1)
-		copy(dampened[:i], r[:i])
-		copy(dampened[i:], r[i+1:])
-		if dampened.isSafe() {
-			return true
-		}
-	}
-	return false
 }
 
 // SolvePart1 solves part 1 of the puzzle
@@ -104,4 +97,16 @@ func (s *Solver) SolvePart2(lines []string) string {
 	reports := s.parse(lines)
 	tolerableCount := slices.Count(reports, report.tolerable)
 	return strconv.Itoa(tolerableCount)
+}
+
+// tolerable checks if the report is tolerable with the Problem Dampener.
+// It means that removing any value from the report makes it safe
+func (r report) tolerable() bool {
+	for i := range r {
+		dampened := report(slices.RemoveNth(r, i))
+		if dampened.isSafe() {
+			return true
+		}
+	}
+	return false
 }
