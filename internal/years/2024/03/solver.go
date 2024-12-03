@@ -3,6 +3,7 @@ package day03
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/slices"
@@ -24,15 +25,62 @@ type Solver struct{}
 func (s *Solver) AddHyperParams(params ...any) {}
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) []mul {
-	r := regexp.MustCompile(`mul\(\d{1,3},\d{1,3}\)`)
-	muls := make([]mul, 0)
+func (s *Solver) parse(lines, operations []string) []operation {
+	r := strings.Join(operations, "|")
+	mulRegexp := regexp.MustCompile(r)
+	muls := make([]operation, 0)
 	for _, line := range lines {
-		matches := r.FindAllString(line, -1)
-		newMuls := slices.Map(matches, newMul)
+		matches := mulRegexp.FindAllString(line, -1)
+		newMuls := slices.Map(matches, parseOperation)
 		muls = append(muls, newMuls...)
 	}
 	return muls
+}
+
+type operation interface {
+	eval(enable *bool) int
+	regexp() string
+}
+
+// parseOperation parses the operation from a string
+func parseOperation(s string) operation {
+	switch {
+	case strings.HasPrefix(s, "m"):
+		return newMul(s)
+	case strings.HasPrefix(s, "do("):
+		return do{}
+	case strings.HasPrefix(s, "don"):
+		return dont{}
+	}
+	return nil
+}
+
+// do represents a do operation
+type do struct{}
+
+// eval evaluates the do operation
+func (d do) eval(enable *bool) int {
+	*enable = true
+	return 0
+}
+
+// regexp returns the regular expression for the operation
+func (do) regexp() string {
+	return `do\(\)`
+}
+
+// dont represents a dont operation
+type dont struct{}
+
+// eval evaluates the dont operation
+func (d dont) eval(enable *bool) int {
+	*enable = false
+	return 0
+}
+
+// regexp returns the regular expression for the operation
+func (dont) regexp() string {
+	return `don't\(\)`
 }
 
 // mul represents a multiplication operation
@@ -49,19 +97,39 @@ func newMul(s string) mul {
 }
 
 // eval evaluates the multiplication operation
-func (m mul) eval() int {
+func (m mul) eval(enable *bool) int {
+	if !*enable {
+		return 0
+	}
 	return m.left * m.right
+}
+
+// regexp returns the regular expression for the operation
+func (mul) regexp() string {
+	return `mul\(\d{1,3},\d{1,3}\)`
 }
 
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
-	muls := s.parse(lines)
-	results := slices.Map(muls, mul.eval)
+	operations := s.parse(lines, []string{mul.regexp(mul{})})
+	enable := true
+	eval := func(op operation) int {
+		return op.eval(&enable)
+	}
+	results := slices.Map(operations, eval)
 	sum := slices.Sum(results)
 	return fmt.Sprint(sum)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	operators := []string{mul.regexp(mul{}), do{}.regexp(), dont{}.regexp()}
+	operations := s.parse(lines, operators)
+	enable := true
+	eval := func(op operation) int {
+		return op.eval(&enable)
+	}
+	results := slices.Map(operations, eval)
+	sum := slices.Sum(results)
+	return fmt.Sprint(sum)
 }
