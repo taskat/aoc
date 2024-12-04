@@ -38,6 +38,12 @@ type coordinate struct {
 	y int
 }
 
+func (c coordinate) move_new(d Direction) coordinate {
+	c1 := c
+	c1.move(d)
+	return c1
+}
+
 func (c *coordinate) move(d Direction) {
 	unit := d.unit()
 	c.x += unit.x
@@ -113,5 +119,31 @@ func containsWordInDirection(coordinates map[rune][]coordinate, start coordinate
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	coordinates := s.parse(lines)
+	count := 0
+	for _, c := range coordinates['A'] {
+		newcount := countXs(coordinates, c)
+		count += newcount
+	}
+	return fmt.Sprint(count)
+}
+
+func countXs(coordinates map[rune][]coordinate, start coordinate) int {
+	line1 := []coordinate{start.move_new(UpLeft), start.move_new(DownRight)}
+	line2 := []coordinate{start.move_new(UpRight), start.move_new(DownLeft)}
+	lines := [][]coordinate{line1, line2}
+	for _, line := range lines {
+		if !(isPartOfX(coordinates, line[0]) && isPartOfX(coordinates, line[1]) && !isSame(coordinates, line[0], line[1])) {
+			return 0
+		}
+	}
+	return 1
+}
+
+func isPartOfX(coordinates map[rune][]coordinate, c coordinate) bool {
+	return slices.Contains(coordinates['M'], c) || slices.Contains(coordinates['S'], c)
+}
+
+func isSame(coordinates map[rune][]coordinate, c1, c2 coordinate) bool {
+	return (slices.Contains(coordinates['M'], c1) && slices.Contains(coordinates['M'], c2)) || (slices.Contains(coordinates['S'], c1) && slices.Contains(coordinates['S'], c2))
 }
