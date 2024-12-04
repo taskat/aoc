@@ -2,6 +2,42 @@ package maps
 
 import "testing"
 
+func TestContains(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]string
+		k           int
+		expectedRes bool
+	}{
+		{
+			"Empty map",
+			map[int]string{},
+			1,
+			false,
+		},
+		{
+			"Key not present",
+			map[int]string{1: "a", 2: "b"},
+			3,
+			false,
+		},
+		{
+			"Key present",
+			map[int]string{1: "a", 2: "b"},
+			2,
+			true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			res := Contains(tc.m, tc.k)
+			if res != tc.expectedRes {
+				t.Errorf("Expected %t, got %t", tc.expectedRes, res)
+			}
+		})
+	}
+}
+
 func TestMerge(t *testing.T) {
 	testCases := []struct {
 		testName    string

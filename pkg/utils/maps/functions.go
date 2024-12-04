@@ -1,5 +1,11 @@
 package maps
 
+// Contains checks if a map contains a key.
+func Contains[K comparable, V any](m map[K]V, k K) bool {
+	_, ok := m[k]
+	return ok
+}
+
 // Merge merges two maps into a new map. If a key is present in both maps,
 // the value from the second map is used.
 func Merge[K comparable, V any](m1, m2 map[K]V) map[K]V {
