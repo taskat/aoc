@@ -91,6 +91,16 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 	return result
 }
 
+// Middle returns the middle element of the slice. If the slice has an even
+// number of elements, it returns the first element of the second half. If the
+// slice is empty, it panics
+func Middle[T any, U ~[]T](slice U) T {
+	if len(slice) == 0 {
+		panic("empty slice")
+	}
+	return slice[len(slice)/2]
+}
+
 // RemoveNth returns a new slice with the element at the given index removed
 // If the index is out of bounds, it panics
 func RemoveNth[T any](slice []T, index int) []T {
@@ -109,6 +119,15 @@ func Sum[T types.Summable](slice []T) T {
 		sum += v
 	}
 	return sum
+}
+
+// Swap swaps the elements at the given indices in the slice. If the indices are
+// out of bounds, it panics
+func Swap[T any](slice []T, i, j int) {
+	if i < 0 || i >= len(slice) || j < 0 || j >= len(slice) {
+		panic("index out of bounds")
+	}
+	slice[i], slice[j] = slice[j], slice[i]
 }
 
 // ZipWith applies the function f to each pair of elements from the two slices

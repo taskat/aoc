@@ -200,6 +200,41 @@ func TestMap_i(t *testing.T) {
 	}
 }
 
+func TestMiddle(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Middle of odd length slice", []int{1, 2, 3}, 2},
+		{"Middle of even length slice", []int{1, 2, 3, 4}, 3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Middle(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestMiddlePanic(t *testing.T) {
+	testCases := []struct {
+		testName string
+		slice    []int
+	}{
+		{"Nil slice", nil},
+		{"Empty slice", []int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				Middle(tc.slice)
+			})
+		})
+	}
+}
+
 func TestRemoveNth(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -256,6 +291,50 @@ func TestSum(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := Sum(tc.slice)
 			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestSwap(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		i             int
+		j             int
+		expectedValue []T
+	}
+	testCases := []testCase[int]{
+		{"Swap first and last elements", []int{1, 2, 3}, 0, 2, []int{3, 2, 1}},
+		{"Swap two elements", []int{1, 2, 3}, 0, 1, []int{2, 1, 3}},
+		{"Swap same element", []int{1, 2, 3}, 1, 1, []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			Swap(tc.slice, tc.i, tc.j)
+			assert.Equal(t, tc.expectedValue, tc.slice)
+		})
+	}
+}
+
+func TestSwapPanic(t *testing.T) {
+	testCases := []struct {
+		testName string
+		slice    []int
+		i        int
+		j        int
+	}{
+		{"Nil slice", nil, 0, 0},
+		{"Empty slice", []int{}, 0, 0},
+		{"Swap out of bounds", []int{1, 2, 3}, 3, 0},
+		{"Swap negative index", []int{1, 2, 3}, -1, 0},
+		{"Swap out of bounds", []int{1, 2, 3}, 0, 3},
+		{"Swap negative index", []int{1, 2, 3}, 0, -1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				Swap(tc.slice, tc.i, tc.j)
+			})
 		})
 	}
 }
