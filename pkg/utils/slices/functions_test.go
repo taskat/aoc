@@ -117,6 +117,29 @@ func TestFind(t *testing.T) {
 	}
 }
 
+func TestFindIndex(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue int
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, -1},
+		{"Empty slice", []int{}, func(i int) bool { return true }, -1},
+		{"Find even number", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 0 }, 1},
+		{"Find odd number", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 1 }, 0},
+		{"Find first number", []int{1, 2, 3, 4}, func(i int) bool { return true }, 0},
+		{"Find no number", []int{1, 2, 3, 4}, func(i int) bool { return false }, -1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := FindIndex(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestMap(t *testing.T) {
 	type testCase[T, U any] struct {
 		testName      string

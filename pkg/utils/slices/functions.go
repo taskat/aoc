@@ -52,6 +52,17 @@ func Find[T any](arr []T, predicate func(T) bool) (T, bool) {
 	return zero, false
 }
 
+// FindIndex returns the index of the first element that satisfies the predicate
+// and -1 if no element satisfies the predicate
+func FindIndex[T any](slice []T, predicate func(T) bool) int {
+	for i, v := range slice {
+		if predicate(v) {
+			return i
+		}
+	}
+	return -1
+}
+
 // Map applies the function f to each element of the slice and returns a
 // new slice with the results
 func Map[T, U any](slice []T, f func(T) U) []U {
