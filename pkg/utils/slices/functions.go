@@ -63,6 +63,13 @@ func FindIndex[T any](slice []T, predicate func(T) bool) int {
 	return -1
 }
 
+// ForEach applies the function f to each element of the slice
+func ForEach[T any](slice []T, f func(T)) {
+	for _, v := range slice {
+		f(v)
+	}
+}
+
 // Map applies the function f to each element of the slice and returns a
 // new slice with the results
 func Map[T, U any](slice []T, f func(T) U) []U {

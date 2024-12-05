@@ -140,6 +140,26 @@ func TestFindIndex(t *testing.T) {
 	}
 }
 
+func TestForEach(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		f             func(T)
+		expectedSlice []T
+	}
+	testCases := []testCase[[]int]{
+		{"Nil slice", nil, func(i []int) {}, nil},
+		{"Empty slice", [][]int{}, func(i []int) {}, [][]int{}},
+		{"For each element", [][]int{{1}, {2, 3}}, func(i []int) { i[0] += 1 }, [][]int{{2}, {3, 3}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			ForEach(tc.slice, tc.f)
+			assert.Equal(t, tc.expectedSlice, tc.slice)
+		})
+	}
+}
+
 func TestMap(t *testing.T) {
 	type testCase[T, U any] struct {
 		testName      string
