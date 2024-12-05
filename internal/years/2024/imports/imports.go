@@ -7,4 +7,5 @@ import (
 	_ "github.com/taskat/aoc/internal/years/2024/02"
 	_ "github.com/taskat/aoc/internal/years/2024/03"
 	_ "github.com/taskat/aoc/internal/years/2024/04"
+	_ "github.com/taskat/aoc/internal/years/2024/05"
 )
