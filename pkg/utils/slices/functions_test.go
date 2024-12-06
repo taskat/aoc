@@ -5,15 +5,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/taskat/aoc/pkg/utils/types"
 )
 
+type numbers []int
+
 func TestContains(t *testing.T) {
-	testCases := []struct {
+	type testCase[T comparable] struct {
 		testName      string
-		slice         []int
+		slice         []T
 		item          int
 		expectedValue bool
-	}{
+	}
+	testCases := []testCase[int]{
 		{"Nil slice", nil, 1, false},
 		{"Empty slice", []int{}, 1, false},
 		{"Item not in slice", []int{2, 3, 4}, 1, false},
@@ -44,6 +48,8 @@ func TestCopy(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Copy)
 }
 
 func TestCount(t *testing.T) {
@@ -140,6 +146,43 @@ func TestFindIndex(t *testing.T) {
 	}
 }
 
+func TestFirst(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"First element", []int{1, 2, 3}, 1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := First(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, First)
+}
+
+func TestFirstPanic(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		slice    []T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil},
+		{"Empty slice", []int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				First(tc.slice)
+			})
+		})
+	}
+}
+
 func TestForEach(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -156,6 +199,86 @@ func TestForEach(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			ForEach(tc.slice, tc.f)
 			assert.Equal(t, tc.expectedSlice, tc.slice)
+		})
+	}
+}
+
+func TestIsEmpty(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		expectedValue bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, true},
+		{"Empty slice", []int{}, true},
+		{"Non-empty slice", []int{1, 2, 3}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := IsEmpty(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, IsEmpty)
+}
+
+// TestIsInBounds tests the IsInBounds function
+func TestIsInBounds(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		index         int
+		expectedValue bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, 0, false},
+		{"Empty slice", []int{}, 0, false},
+		{"Index out of bounds", []int{1, 2, 3}, 3, false},
+		{"Index in bounds", []int{1, 2, 3}, 2, true},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := IsInBounds(tc.slice, tc.index)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestLast(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Last element", []int{1, 2, 3}, 3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Last(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Last)
+}
+
+func TestLastPanic(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		slice    []T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil},
+		{"Empty slice", []int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				Last(tc.slice)
+			})
 		})
 	}
 }
@@ -216,13 +339,16 @@ func TestMiddle(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Middle)
 }
 
 func TestMiddlePanic(t *testing.T) {
-	testCases := []struct {
+	type testCase[T any] struct {
 		testName string
-		slice    []int
-	}{
+		slice    []T
+	}
+	testCases := []testCase[int]{
 		{"Nil slice", nil},
 		{"Empty slice", []int{}},
 	}
@@ -256,11 +382,12 @@ func TestRemoveNth(t *testing.T) {
 }
 
 func TestRemoveNthPanic(t *testing.T) {
-	testCases := []struct {
+	type testCase[T any] struct {
 		testName string
-		slice    []int
+		slice    []T
 		index    int
-	}{
+	}
+	testCases := []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
 		{"Remove out of bounds", []int{1, 2, 3}, 3},
@@ -276,11 +403,12 @@ func TestRemoveNthPanic(t *testing.T) {
 }
 
 func TestSum(t *testing.T) {
-	testCases := []struct {
+	type testCase[T types.Summable] struct {
 		testName      string
-		slice         []int
-		expectedValue int
-	}{
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
 		{"Sum of positive numbers", []int{1, 2, 3}, 6},
@@ -293,6 +421,8 @@ func TestSum(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Sum)
 }
 
 func TestSwap(t *testing.T) {

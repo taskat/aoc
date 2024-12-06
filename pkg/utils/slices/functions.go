@@ -13,8 +13,8 @@ func Contains[T comparable](slice []T, item T) bool {
 }
 
 // Copy returns a new slice with the same elements as the original
-func Copy[T any](slice []T) []T {
-	result := make([]T, len(slice))
+func Copy[S Slice[T], T any](slice S) S {
+	result := make(S, len(slice))
 	copy(result, slice)
 	return result
 }
@@ -63,11 +63,38 @@ func FindIndex[T any](slice []T, predicate func(T) bool) int {
 	return -1
 }
 
+// First returns the first element of the slice. If the slice is empty, it panics
+func First[S Slice[T], T any](slice S) T {
+	if IsEmpty(slice) {
+		panic("empty slice")
+	}
+	return slice[0]
+}
+
 // ForEach applies the function f to each element of the slice
 func ForEach[T any](slice []T, f func(T)) {
 	for _, v := range slice {
 		f(v)
 	}
+}
+
+// IsEmpty returns true if the slice is empty and false otherwise
+func IsEmpty[S Slice[T], T any](slice S) bool {
+	return len(slice) == 0
+}
+
+// IsInBounds returns true if the index is within the bounds of the slice and
+// false otherwise
+func IsInBounds[T any](slice []T, index int) bool {
+	return index >= 0 && index < len(slice)
+}
+
+// Last returns the last element of the slice. If the slice is empty, it panics
+func Last[S Slice[T], T any](slice S) T {
+	if IsEmpty(slice) {
+		panic("empty slice")
+	}
+	return slice[len(slice)-1]
 }
 
 // Map applies the function f to each element of the slice and returns a
@@ -94,8 +121,8 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 // Middle returns the middle element of the slice. If the slice has an even
 // number of elements, it returns the first element of the second half. If the
 // slice is empty, it panics
-func Middle[T any, U ~[]T](slice U) T {
-	if len(slice) == 0 {
+func Middle[S Slice[T], T any](slice S) T {
+	if IsEmpty(slice) {
 		panic("empty slice")
 	}
 	return slice[len(slice)/2]
@@ -104,7 +131,7 @@ func Middle[T any, U ~[]T](slice U) T {
 // RemoveNth returns a new slice with the element at the given index removed
 // If the index is out of bounds, it panics
 func RemoveNth[T any](slice []T, index int) []T {
-	if index < 0 || index >= len(slice) {
+	if !IsInBounds(slice, index) {
 		panic("index out of bounds")
 	}
 	result := make([]T, 0, len(slice)-1)
@@ -113,7 +140,7 @@ func RemoveNth[T any](slice []T, index int) []T {
 }
 
 // Sum returns the sum of all the elements in the slice
-func Sum[T types.Summable](slice []T) T {
+func Sum[S Slice[T], T types.Summable](slice S) T {
 	var sum T
 	for _, v := range slice {
 		sum += v
@@ -124,7 +151,7 @@ func Sum[T types.Summable](slice []T) T {
 // Swap swaps the elements at the given indices in the slice. If the indices are
 // out of bounds, it panics
 func Swap[T any](slice []T, i, j int) {
-	if i < 0 || i >= len(slice) || j < 0 || j >= len(slice) {
+	if !IsInBounds(slice, i) || !IsInBounds(slice, j) {
 		panic("index out of bounds")
 	}
 	slice[i], slice[j] = slice[j], slice[i]
