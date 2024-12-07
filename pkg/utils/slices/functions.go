@@ -2,6 +2,18 @@ package slices
 
 import "github.com/taskat/aoc/pkg/utils/types"
 
+// Any returns true if at least one element in the slice satisfies the predicate
+// and false otherwise. It returns true at the first element that satisfies the
+// predicate, and does not check the rest of the elements
+func Any[T any](slice []T, predicate func(T) bool) bool {
+	for _, v := range slice {
+		if predicate(v) {
+			return true
+		}
+	}
+	return false
+}
+
 // Contains returns true if the item is in the slice and false otherwise
 func Contains[T comparable](slice []T, item T) bool {
 	for _, i := range slice {
@@ -126,6 +138,25 @@ func Middle[S Slice[T], T any](slice S) T {
 		panic("empty slice")
 	}
 	return slice[len(slice)/2]
+}
+
+// Reduce applies the function f to the elements of the slice and returns a
+// single value. The function f receives the accumulated value and the current
+// element as arguments
+func Reduce[T any](slice []T, f func(T, T) T, initialValue T) T {
+	functionWithIndex := func(accumulated T, current T, _ int) T { return f(accumulated, current) }
+	return Reduce_i(slice, functionWithIndex, initialValue)
+}
+
+// Reduce_i applies the function f to the elements of the slice and returns a
+// single value. The function f receives the index of the element as a third
+// argument
+func Reduce_i[T any](slice []T, f func(T, T, int) T, initialValue T) T {
+	result := initialValue
+	for i, value := range slice {
+		result = f(result, value, i)
+	}
+	return result
 }
 
 // RemoveNth returns a new slice with the element at the given index removed

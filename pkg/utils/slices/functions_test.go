@@ -10,6 +10,28 @@ import (
 
 type numbers []int
 
+func TestAny(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, false},
+		{"Empty slice", []int{}, func(i int) bool { return true }, false},
+		{"Any even numbers", []int{1, 2, 3}, func(i int) bool { return i%2 == 0 }, true},
+		{"Any odd numbers", []int{1, 2, 3}, func(i int) bool { return i%2 == 1 }, true},
+		{"Any no numbers", []int{1, 2, 3}, func(i int) bool { return false }, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Any(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestContains(t *testing.T) {
 	type testCase[T comparable] struct {
 		testName      string
@@ -357,6 +379,52 @@ func TestMiddlePanic(t *testing.T) {
 			assert.Panics(t, func() {
 				Middle(tc.slice)
 			})
+		})
+	}
+}
+
+func TestReduce(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		f             func(T, T) T
+		initialValue  T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(a, b int) int { return a + b }, 0, 0},
+		{"Empty slice", []int{}, func(a, b int) int { return a + b }, 0, 0},
+		{"Sum of positive numbers", []int{1, 2, 3}, func(a, b int) int { return a + b }, 0, 6},
+		{"Sum of negative numbers", []int{-1, -2, -3}, func(a, b int) int { return a + b }, 0, -6},
+		{"Sum of mixed numbers", []int{1, -2, 3}, func(a, b int) int { return a + b }, 0, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Reduce(tc.slice, tc.f, tc.initialValue)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestReduce_i(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		f             func(T, T, int) T
+		initialValue  T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(a, b, i int) int { return a + b + i }, 0, 0},
+		{"Empty slice", []int{}, func(a, b, i int) int { return a + b + i }, 0, 0},
+		{"Sum of positive numbers", []int{1, 2, 3}, func(a, b, i int) int { return a + b + i }, 0, 9},
+		{"Sum of negative numbers", []int{-1, -2, -3}, func(a, b, i int) int { return a + b + i }, 0, -3},
+		{"Sum of mixed numbers", []int{1, -2, 3}, func(a, b, i int) int { return a + b + i }, 0, 5},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Reduce_i(tc.slice, tc.f, tc.initialValue)
+			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
 }
