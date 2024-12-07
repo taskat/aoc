@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/combinatorics"
 	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
@@ -30,11 +31,15 @@ func (s *Solver) parse(lines []string) []equation {
 	return slices.Map(lines, parseEquation)
 }
 
+// equation represents a poossible equation. It has a result,
+// and a list of operands in order, without any operators
 type equation struct {
 	result   int
 	operands []int
 }
 
+// parseEquation parses a line into an equation
+// The line is expected to be in the format "result: operand1 operand2 ..."
 func parseEquation(line string) equation {
 	parts := strings.Split(line, ": ")
 	var e equation
@@ -44,71 +49,65 @@ func parseEquation(line string) equation {
 	return e
 }
 
+// canProduce returns true if the equation can be evaluated to the result, using
+// the given operators. It uses the CartesianProduct of the operators to find
+// all possible orderings of the operators
 func (e equation) canProduce(possuibleOpeartors []operator) bool {
-	orderings := cartesianProduct(possuibleOpeartors, len(e.operands)-1)
-	for _, ordering := range orderings {
-		if e.isPossible(ordering) {
-			fmt.Println("found", e, ordering)
-			return true
-		}
-	}
-	fmt.Println("not found", e)
-	return false
+	orderings := combinatorics.CartesianProduct(possuibleOpeartors, len(e.operands)-1)
+	return slices.Any(orderings, e.isPossible)
 }
 
+// isPossible returns true if the equation can be evaluated to the result
+// using the given operators
 func (e equation) isPossible(operators []operator) bool {
-	result := e.operands[0]
-	for i, operator := range operators {
-		result = operator.eval(result, e.operands[i+1])
+	f := func(left, right, index int) int {
+		return operators[index].eval(left, right)
 	}
+	result := slices.Reduce_i(e.operands[1:], f, e.operands[0])
 	return result == e.result
 }
 
-func cartesianProduct(element []operator, length int) [][]operator {
-	if length == 0 {
-		return [][]operator{{}}
-	}
-	result := make([][]operator, 0, intutils.Power(len(element), length))
-	for _, e := range element {
-		rest := cartesianProduct(element, length-1)
-		for _, r := range rest {
-			result = append(result, append([]operator{e}, r...))
-		}
-	}
-	return result
-}
-
+// operator is an interface that defines an operator that can be used in an equation
 type operator interface {
 	eval(left, right int) int
 }
 
+// sum is an operator that adds two numbers
 type sum struct{}
 
+// eval adds two numbers
 func (s sum) eval(left, right int) int {
 	return left + right
 }
 
+// String returns the string representation of the operator
 func (s sum) String() string {
 	return "+"
 }
 
+// product is an operator that multiplies two numbers
 type product struct{}
 
+// eval multiplies two numbers
 func (p product) eval(left, right int) int {
 	return left * right
 }
 
+// String returns the string representation of the operator
 func (p product) String() string {
 	return "*"
 }
 
+// concat is an operator that concatenates two numbers
 type concat struct{}
 
+// eval concatenates two numbers
 func (c concat) eval(left, right int) int {
 	offset := intutils.Power(10, intutils.Length(right))
 	return left*offset + right
 }
 
+// String returns the string representation of the operator
 func (c concat) String() string {
 	return "||"
 }
