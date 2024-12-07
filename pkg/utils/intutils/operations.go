@@ -1,6 +1,10 @@
 package intutils
 
-import "github.com/taskat/aoc/pkg/utils/types"
+import (
+	"math"
+
+	"github.com/taskat/aoc/pkg/utils/types"
+)
 
 // Abs returns the absolute value of the given number
 func Abs[INT types.SignedInteger](number INT) INT {
@@ -19,6 +23,15 @@ func Equals[INT types.Integer](a, b INT) bool {
 // as Diff(a, b) = a - b
 func Diff[INT types.SignedInteger](a, b INT) INT {
 	return a - b
+}
+
+// Power returns the power of the number
+// as Power(a, b) = a^b. If b is negatice, it panics
+func Power[INT types.Integer](a, b INT) INT {
+	if b < 0 {
+		panic("negative exponent is not supported")
+	}
+	return INT(math.Pow(float64(a), float64(b)))
 }
 
 // Product returns the product of the two numbers

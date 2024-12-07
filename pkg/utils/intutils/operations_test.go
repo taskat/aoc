@@ -73,6 +73,45 @@ func TestDiff(t *testing.T) {
 	}
 }
 
+func TestPower(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		a             int
+		b             int
+		expectedValue int
+	}{
+		{"Positive numbers", 5, 3, 125},
+		{"Negative numbers", -5, 3, -125},
+		{"Zero and positive numbers", 0, 3, 0},
+		{"Positive and zero numbers", 5, 0, 1},
+		{"Negative and zero numbers", -5, 0, 1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Power(tc.a, tc.b)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
+func TestPowerPanic(t *testing.T) {
+	testCases := []struct {
+		testName string
+		a        int
+		b        int
+	}{
+		{"Negative exponent", 5, -3},
+		{"Negative base and negative exponent", -5, -3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() {
+				Power(tc.a, tc.b)
+			})
+		})
+	}
+}
+
 func TestProduct(t *testing.T) {
 	testCases := []struct {
 		testName      string
