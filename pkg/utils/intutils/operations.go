@@ -25,6 +25,14 @@ func Diff[INT types.SignedInteger](a, b INT) INT {
 	return a - b
 }
 
+// Length returns the number of digits in the number
+func Length[INT types.SignedInteger](number INT) INT {
+	if number == 0 {
+		return 1
+	}
+	return INT(math.Log10(float64(Abs(number)))) + 1
+}
+
 // Power returns the power of the number
 // as Power(a, b) = a^b. If b is negatice, it panics
 func Power[INT types.Integer](a, b INT) INT {

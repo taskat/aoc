@@ -73,6 +73,28 @@ func TestDiff(t *testing.T) {
 	}
 }
 
+func TestLength(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		number        int
+		expectedValue int
+	}{
+		{"Positive number", 5, 1},
+		{"Negative number", -5, 1},
+		{"Zero", 0, 1},
+		{"Positive number with multiple digits", 123, 3},
+		{"Negative number with multiple digits", -123, 3},
+		{"Long positive number", 1234567890, 10},
+		{"Long negative number", -1234567890, 10},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Length(tc.number)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestPower(t *testing.T) {
 	testCases := []struct {
 		testName      string
