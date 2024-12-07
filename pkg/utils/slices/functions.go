@@ -1,6 +1,10 @@
 package slices
 
-import "github.com/taskat/aoc/pkg/utils/types"
+import (
+	"cmp"
+
+	"github.com/taskat/aoc/pkg/utils/types"
+)
 
 // Any returns true if at least one element in the slice satisfies the predicate
 // and false otherwise. It returns true at the first element that satisfies the
@@ -130,6 +134,20 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 	return result
 }
 
+// Max returns the maximum element in the slice. If the slice is empty, it panics
+func Max[S Slice[T], T cmp.Ordered](slice S) T {
+	if IsEmpty(slice) {
+		panic("empty slice")
+	}
+	max := slice[0]
+	for _, v := range slice {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
 // Middle returns the middle element of the slice. If the slice has an even
 // number of elements, it returns the first element of the second half. If the
 // slice is empty, it panics
@@ -138,6 +156,20 @@ func Middle[S Slice[T], T any](slice S) T {
 		panic("empty slice")
 	}
 	return slice[len(slice)/2]
+}
+
+// Min returns the minimum element in the slice. If the slice is empty, it panics
+func Min[S Slice[T], T cmp.Ordered](slice S) T {
+	if IsEmpty(slice) {
+		panic("empty slice")
+	}
+	min := slice[0]
+	for _, v := range slice {
+		if v < min {
+			min = v
+		}
+	}
+	return min
 }
 
 // Reduce applies the function f to the elements of the slice and returns a

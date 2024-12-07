@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"cmp"
 	"fmt"
 	"testing"
 
@@ -345,6 +346,27 @@ func TestMap_i(t *testing.T) {
 	}
 }
 
+func TestMax(t *testing.T) {
+	type testCase[T cmp.Ordered] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Max of positive numbers", []int{1, 2, 3}, 3},
+		{"Max of negative numbers", []int{-1, -2, -3}, -1},
+		{"Max of mixed numbers", []int{1, -2, 3}, 3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Max(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Max)
+}
+
 func TestMiddle(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -363,6 +385,27 @@ func TestMiddle(t *testing.T) {
 	}
 	// Test that it works with a custom type
 	Map([]numbers{}, Middle)
+}
+
+func TestMin(t *testing.T) {
+	type testCase[T cmp.Ordered] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Min of positive numbers", []int{1, 2, 3}, 1},
+		{"Min of negative numbers", []int{-1, -2, -3}, -3},
+		{"Min of mixed numbers", []int{1, -2, 3}, -2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Min(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Min)
 }
 
 func TestMiddlePanic(t *testing.T) {
