@@ -48,9 +48,11 @@ func (e equation) canProduce(possuibleOpeartors []operator) bool {
 	orderings := cartesianProduct(possuibleOpeartors, len(e.operands)-1)
 	for _, ordering := range orderings {
 		if e.isPossible(ordering) {
+			fmt.Println("found", e, ordering)
 			return true
 		}
 	}
+	fmt.Println("not found", e)
 	return false
 }
 
@@ -100,6 +102,17 @@ func (p product) String() string {
 	return "*"
 }
 
+type concat struct{}
+
+func (c concat) eval(left, right int) int {
+	offset := intutils.Power(10, intutils.Length(right))
+	return left*offset + right
+}
+
+func (c concat) String() string {
+	return "||"
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	equations := s.parse(lines)
@@ -111,5 +124,9 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	equations := s.parse(lines)
+	operators := []operator{sum{}, product{}, concat{}}
+	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators) })
+	sum := slices.Sum(slices.Map(possibleEquations, func(e equation) int { return e.result }))
+	return fmt.Sprint(sum)
 }
