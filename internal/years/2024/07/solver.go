@@ -53,8 +53,19 @@ func parseEquation(line string) equation {
 // the given operators. It uses the CartesianProduct of the operators to find
 // all possible orderings of the operators
 func (e equation) canProduce(possibleOpeartors []operator) bool {
-	orderings := combinatorics.CartesianProduct(possibleOpeartors, len(e.operands)-1)
+	orderings := cartesianWithCache(possibleOpeartors, len(e.operands)-1)
 	return slices.Any(orderings, e.isPossible)
+}
+
+var cartesianCache = make(map[int][][]operator)
+
+func cartesianWithCache(possibleOpeartors []operator, length int) [][]operator {
+	if v, ok := cartesianCache[length]; ok {
+		return v
+	}
+	orderings := combinatorics.CartesianProduct(possibleOpeartors, length)
+	cartesianCache[length] = orderings
+	return orderings
 }
 
 // isPossible returns true if the equation can be evaluated to the result
