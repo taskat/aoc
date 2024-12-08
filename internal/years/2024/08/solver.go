@@ -67,6 +67,25 @@ func (am antennaMap) getAntinodes() map[coordinate][]rune {
 	return antinodes
 }
 
+func (am antennaMap) getAntinodesWithHarmonics() map[coordinate][]rune {
+	antinodes := make(map[coordinate][]rune)
+	for antennaType, antennas := range am.antennas {
+		for i := 0; i < len(antennas); i++ {
+			for j := i + 1; j < len(antennas); j++ {
+				dist1 := antennas[i].distanceTo(antennas[j])
+				dist2 := antennas[j].distanceTo(antennas[i])
+				for point := antennas[i]; am.inBounds(point); point = point.add(dist1) {
+					antinodes[point] = append(antinodes[point], antennaType)
+				}
+				for point := antennas[j]; am.inBounds(point); point = point.add(dist2) {
+					antinodes[point] = append(antinodes[point], antennaType)
+				}
+			}
+		}
+	}
+	return antinodes
+}
+
 func (am antennaMap) inBounds(c coordinate) bool {
 	return c.x >= 0 && c.x < am.width && c.y >= 0 && c.y < am.height
 }
@@ -93,5 +112,8 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	antennaMap := s.parse(lines)
+	antinodes := antennaMap.getAntinodesWithHarmonics()
+	uniqueCount := len(antinodes)
+	return fmt.Sprint(uniqueCount)
 }
