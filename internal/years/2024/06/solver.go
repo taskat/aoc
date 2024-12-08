@@ -8,7 +8,7 @@ import (
 )
 
 // day is the day of the solver
-const day = 06
+const day = 6
 
 // init registers the solver for day 06
 func init() {

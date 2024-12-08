@@ -12,7 +12,7 @@ import (
 )
 
 // day is the day of the solver
-const day = 02
+const day = 2
 
 // init registers the solver for day 02
 func init() {
