@@ -52,9 +52,6 @@ func (s system) checksum() int {
 
 func (s *system) compact() {
 	for i := 0; i < len(*s); i++ {
-		if s.isCompact() {
-			break
-		}
 		if !(*s)[i].isEmpty() {
 			continue
 		}
@@ -62,6 +59,26 @@ func (s *system) compact() {
 		newBlocks := s.getBlocksFromEnd(block.len(), i)
 		s.insert(newBlocks, i)
 		i += len(newBlocks) - 1
+	}
+}
+
+func (s *system) compactWithoutFragmentation() {
+	for i := len(*s) - 1; i >= 0; i-- {
+		if (*s)[i].isEmpty() {
+			continue
+		}
+		blockToMove := (*s)[i]
+		space := s.getEmptyBlockIndex(blockToMove.len(), i)
+		if space == -1 {
+			continue
+		}
+		emptyBlock := (*s)[space]
+		newBlocks := []block{blockToMove}
+		if blockToMove.len() != emptyBlock.len() {
+			newBlocks = append(newBlocks, newEmptyBlock(emptyBlock.len()-blockToMove.len()))
+		}
+		(*s)[i] = newEmptyBlock(blockToMove.len())
+		s.insert(newBlocks, space)
 	}
 }
 
@@ -79,25 +96,21 @@ func (s *system) getBlocksFromEnd(length int, dest int) []block {
 	return blocks
 }
 
+func (s system) getEmptyBlockIndex(length, start int) int {
+	for i := 0; i < start; i++ {
+		if s[i].isEmpty() && s[i].len() >= length {
+			return i
+		}
+	}
+	return -1
+}
+
 func (s *system) insert(blocks []block, start int) {
 	newSystem := make(system, len(*s)+len(blocks)-1)
 	copy(newSystem, (*s)[:start])
 	copy(newSystem[start:], blocks)
 	copy(newSystem[start+len(blocks):], (*s)[start+1:])
 	*s = newSystem
-}
-
-func (s system) isCompact() bool {
-	foundEmpty := false
-	for _, b := range s {
-		if b.isEmpty() {
-			foundEmpty = true
-		}
-		if foundEmpty && !b.isEmpty() {
-			return false
-		}
-	}
-	return true
 }
 
 func (s system) String() string {
@@ -199,5 +212,8 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	system := s.parse(lines)
+	system.compactWithoutFragmentation()
+	checksum := system.checksum()
+	return fmt.Sprintf("%d", checksum)
 }
