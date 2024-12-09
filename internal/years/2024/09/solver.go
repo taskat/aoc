@@ -45,7 +45,7 @@ func (s system) checksum() int {
 	start := 0
 	for _, b := range s {
 		checksum += b.checksum(start)
-		start += b.len()
+		start += b.length
 	}
 	return checksum
 }
@@ -56,7 +56,7 @@ func (s *system) compact() {
 			continue
 		}
 		block := (*s)[i]
-		newBlocks := s.getBlocksFromEnd(block.len(), i)
+		newBlocks := s.getBlocksFromEnd(block.length, i)
 		s.insert(newBlocks, i)
 		i += len(newBlocks) - 1
 	}
@@ -68,16 +68,16 @@ func (s *system) compactWithoutFragmentation() {
 			continue
 		}
 		blockToMove := (*s)[i]
-		space := s.getEmptyBlockIndex(blockToMove.len(), i)
+		space := s.getEmptyBlockIndex(blockToMove.length, i)
 		if space == -1 {
 			continue
 		}
 		emptyBlock := (*s)[space]
 		newBlocks := []block{blockToMove}
-		if blockToMove.len() != emptyBlock.len() {
-			newBlocks = append(newBlocks, newEmptyBlock(emptyBlock.len()-blockToMove.len()))
+		if blockToMove.length != emptyBlock.length {
+			newBlocks = append(newBlocks, newEmptyBlock(emptyBlock.length-blockToMove.length))
 		}
-		(*s)[i] = newEmptyBlock(blockToMove.len())
+		(*s)[i] = newEmptyBlock(blockToMove.length)
 		s.insert(newBlocks, space)
 	}
 }
@@ -91,14 +91,14 @@ func (s *system) getBlocksFromEnd(length int, dest int) []block {
 		newBlock, remainings := (*s)[i].move(length)
 		s.insert(remainings, i)
 		blocks = append(blocks, newBlock)
-		length -= newBlock.len()
+		length -= newBlock.length
 	}
 	return blocks
 }
 
 func (s system) getEmptyBlockIndex(length, start int) int {
 	for i := 0; i < start; i++ {
-		if s[i].isEmpty() && s[i].len() >= length {
+		if s[i].isEmpty() && s[i].length >= length {
 			return i
 		}
 	}
@@ -142,10 +142,6 @@ func (b block) checksum(start int) int {
 	}
 	checksum := (b.length - 1) * b.length / 2
 	return (checksum + b.length*start) * b.id
-}
-
-func (b block) getId() int {
-	return b.id
 }
 
 func (b block) isEmpty() bool {
