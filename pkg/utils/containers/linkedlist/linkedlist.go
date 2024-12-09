@@ -45,9 +45,16 @@ func (l *LinkedList[T]) getNode(index int) *node[T] {
 	if index < 0 || index >= l.length {
 		panic("index out of bounds")
 	}
-	current := l.first
-	for i := 0; i < index; i++ {
-		current = current.next
+	if index < l.length/2 {
+		current := l.first
+		for i := 0; i < index; i++ {
+			current = current.next
+		}
+		return current
+	}
+	current := l.last
+	for i := l.length - 1; i > index; i-- {
+		current = current.prev
 	}
 	return current
 }
@@ -130,7 +137,7 @@ func (l *LinkedList[T]) RemoveLast() {
 
 // Set sets the value at the given index. If the index is out of bounds, it
 // panics.
-func (l *LinkedList[T]) Set(value T, index int) {
+func (l *LinkedList[T]) Set(index int, value T) {
 	l.getNode(index).value = value
 }
 

@@ -256,7 +256,7 @@ func TestSet(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			tc.ll.Set(tc.value, tc.index)
+			tc.ll.Set(tc.index, tc.value)
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
