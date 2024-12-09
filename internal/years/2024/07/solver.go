@@ -52,19 +52,17 @@ func parseEquation(line string) equation {
 // canProduce returns true if the equation can be evaluated to the result, using
 // the given operators. It uses the CartesianProduct of the operators to find
 // all possible orderings of the operators
-func (e equation) canProduce(possibleOpeartors []operator) bool {
-	orderings := cartesianWithCache(possibleOpeartors, len(e.operands)-1)
+func (e equation) canProduce(possibleOpeartors []operator, cache map[int][][]operator) bool {
+	orderings := cartesianWithCache(possibleOpeartors, len(e.operands)-1, cache)
 	return slices.Any(orderings, e.isPossible)
 }
 
-var cartesianCache = make(map[int][][]operator)
-
-func cartesianWithCache(possibleOpeartors []operator, length int) [][]operator {
-	if v, ok := cartesianCache[length]; ok {
+func cartesianWithCache(possibleOpeartors []operator, length int, cache map[int][][]operator) [][]operator {
+	if v, ok := cache[length]; ok {
 		return v
 	}
 	orderings := combinatorics.CartesianProduct(possibleOpeartors, length)
-	cartesianCache[length] = orderings
+	cache[length] = orderings
 	return orderings
 }
 
@@ -127,7 +125,8 @@ func (c concat) String() string {
 func (s *Solver) SolvePart1(lines []string) string {
 	equations := s.parse(lines)
 	operators := []operator{sum{}, product{}}
-	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators) })
+	cache := make(map[int][][]operator)
+	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators, cache) })
 	sum := slices.Sum(slices.Map(possibleEquations, func(e equation) int { return e.result }))
 	return fmt.Sprint(sum)
 }
@@ -136,7 +135,8 @@ func (s *Solver) SolvePart1(lines []string) string {
 func (s *Solver) SolvePart2(lines []string) string {
 	equations := s.parse(lines)
 	operators := []operator{sum{}, product{}, concat{}}
-	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators) })
+	cache := make(map[int][][]operator)
+	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators, cache) })
 	sum := slices.Sum(slices.Map(possibleEquations, func(e equation) int { return e.result }))
 	return fmt.Sprint(sum)
 }
