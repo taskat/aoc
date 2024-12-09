@@ -29,7 +29,7 @@ func (s *Solver) parse(lines []string) system {
 	for i, length := range lines[0] {
 		len := int(length - '0')
 		if i%2 == 0 {
-			blocks[i] = newFileBlock(startId, len)
+			blocks[i] = newBlock(startId, len)
 			startId++
 		} else {
 			blocks[i] = newEmptyBlock(len)
@@ -116,90 +116,59 @@ func (s *system) insert(blocks []block, start int) {
 func (s system) String() string {
 	var sb strings.Builder
 	for _, b := range s {
-		if b != nil {
+		if b != (block{}) {
 			sb.WriteString(b.String())
 		}
 	}
 	return sb.String()
 }
 
-type block interface {
-	checksum(start int) int
-	getId() int
-	isEmpty() bool
-	len() int
-	move(len int) (block, []block)
-	fmt.Stringer
-}
-
-type fileBlock struct {
+type block struct {
 	id     int
 	length int
 }
 
-func newFileBlock(id, length int) *fileBlock {
-	return &fileBlock{id: id, length: length}
+func newBlock(id, length int) block {
+	return block{id: id, length: length}
 }
 
-func (b *fileBlock) checksum(start int) int {
+func newEmptyBlock(length int) block {
+	return block{id: -1, length: length}
+}
+
+func (b block) checksum(start int) int {
+	if b.isEmpty() {
+		return 0
+	}
 	checksum := (b.length - 1) * b.length / 2
 	return (checksum + b.length*start) * b.id
 }
 
-func (b *fileBlock) getId() int {
+func (b block) getId() int {
 	return b.id
 }
 
-func (b *fileBlock) isEmpty() bool {
-	return false
+func (b block) isEmpty() bool {
+	return b.id == -1
 }
 
-func (b *fileBlock) len() int {
+func (b block) len() int {
 	return b.length
 }
 
-func (b *fileBlock) move(len int) (moved block, remaining []block) {
+func (b block) move(len int) (moved block, remaining []block) {
 	if len >= b.length {
 		return b, []block{newEmptyBlock(b.length)}
 	}
 	b.length -= len
-	return newFileBlock(b.id, len), []block{b, newEmptyBlock(len)}
+	return newBlock(b.id, len), []block{b, newEmptyBlock(len)}
 }
 
-func (b *fileBlock) String() string {
+func (b block) String() string {
+	if b.isEmpty() {
+		return strings.Repeat(".", b.length)
+	}
 	return strings.Repeat(fmt.Sprintf("%d", b.id), b.length)
-}
-
-type emptyBlock struct {
-	length int
-}
-
-func newEmptyBlock(length int) emptyBlock {
-	return emptyBlock{length: length}
-}
-
-func (b emptyBlock) checksum(start int) int {
-	return 0
-}
-
-func (b emptyBlock) getId() int {
-	return 0
-}
-
-func (b emptyBlock) isEmpty() bool {
-	return true
-}
-
-func (b emptyBlock) len() int {
-	return b.length
-}
-
-func (b emptyBlock) move(len int) (block, []block) {
-	panic("Empty block cannot be moved")
-}
-
-func (b emptyBlock) String() string {
-	return strings.Repeat(".", b.length)
 }
 
 // SolvePart1 solves part 1 of the puzzle
