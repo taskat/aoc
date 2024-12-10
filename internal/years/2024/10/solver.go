@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
+	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
 // day is the day of the solver
@@ -23,6 +25,9 @@ type Solver struct{}
 // AddHyperParams adds hyper parameters to the solver
 func (s *Solver) AddHyperParams(params ...any) {}
 
+// coord is an alias for coordinate.Coordinate2D[int]
+type coord = coordinate.Coordinate2D[int]
+
 type mountains [][]int
 
 func parseMountains(lines []string) mountains {
@@ -33,45 +38,31 @@ func parseMountains(lines []string) mountains {
 	return m
 }
 
-func (m mountains) get(c coordinate) int {
-	return m[c.y][c.x]
+func (m mountains) get(c coord) int {
+	return m[c.Y][c.X]
 }
 
-func (m mountains) getHikingGoals(start coordinate) int {
-	currents := map[coordinate]struct{}{
+func (m mountains) getTrails(start coord) int {
+	currents := map[coord]struct{}{
 		start: {},
 	}
 	currentHeight := m.get(start)
 	for currentHeight < 9 {
-		neighbors := make(map[coordinate]struct{}, 0)
-		for c := range currents {
-			for _, n := range c.neighbors() {
-				if m.inBounds(n) && m.get(n) == currentHeight+1 {
-					neighbors[n] = struct{}{}
-				}
-			}
-		}
+		neighbors := m.getNextSteps(maps.Keys(currents))
 		if len(neighbors) == 0 {
 			return 0
 		}
-		currents = neighbors
+		currents = slices.ToMap(neighbors, slices.Repeat(struct{}{}, len(neighbors)))
 		currentHeight++
 	}
 	return len(currents)
 }
 
-func (m mountains) getDistinctTrails(start coordinate) int {
-	currents := []coordinate{start}
+func (m mountains) getDistinctTrails(start coord) int {
+	currents := []coord{start}
 	currentHeight := m.get(start)
 	for currentHeight < 9 {
-		neighbors := make([]coordinate, 0)
-		for _, c := range currents {
-			for _, n := range c.neighbors() {
-				if m.inBounds(n) && m.get(n) == currentHeight+1 {
-					neighbors = append(neighbors, n)
-				}
-			}
-		}
+		neighbors := m.getNextSteps(currents)
 		if len(neighbors) == 0 {
 			return 0
 		}
@@ -81,16 +72,41 @@ func (m mountains) getDistinctTrails(start coordinate) int {
 	return len(currents)
 }
 
-func (m mountains) inBounds(c coordinate) bool {
-	return c.y >= 0 && c.y < len(m) && c.x >= 0 && c.x < len(m[0])
+// getNeighbors returns the neighbors of the coordinate in the 4 directions
+func (m mountains) getNeighbors(c coord) []coord {
+	directions := []coordinate.Direction{coordinate.Up(), coordinate.Right(),
+		coordinate.Down(), coordinate.Left()}
+	neighbors := slices.Map(directions, c.Go)
+	inBounds := func(c coord) bool { return coord.In2DSlice(c, len(m[0]), len(m)) }
+	neighbors = slices.Filter(neighbors, inBounds)
+	return neighbors
 }
 
-func (m mountains) trailheads() []coordinate {
-	heads := make([]coordinate, 0)
+func (m mountains) getNextSteps(currents []coord) []coord {
+	neighbors := make([]coord, 0)
+	for _, c := range currents {
+		neighbors = append(neighbors, m.getNextFrom(c)...)
+	}
+	return neighbors
+}
+
+func (m mountains) getNextFrom(from coord) []coord {
+	neighbors := make([]coord, 0)
+	nextHeight := m.get(from) + 1
+	for _, n := range m.getNeighbors(from) {
+		if m.get(n) == nextHeight {
+			neighbors = append(neighbors, n)
+		}
+	}
+	return neighbors
+}
+
+func (m mountains) trailheads() []coord {
+	heads := make([]coord, 0)
 	for y, row := range m {
 		for x, cell := range row {
 			if cell == 0 {
-				heads = append(heads, coordinate{x, y})
+				heads = append(heads, coordinate.NewCoordinate2D(x, y))
 			}
 		}
 	}
@@ -102,24 +118,11 @@ func (s *Solver) parse(lines []string) mountains {
 	return parseMountains(lines)
 }
 
-type coordinate struct {
-	x, y int
-}
-
-func (c coordinate) neighbors() []coordinate {
-	return []coordinate{
-		{c.x - 1, c.y},
-		{c.x + 1, c.y},
-		{c.x, c.y - 1},
-		{c.x, c.y + 1},
-	}
-}
-
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	m := s.parse(lines)
 	heads := m.trailheads()
-	hikingGoals := slices.Map(heads, m.getHikingGoals)
+	hikingGoals := slices.Map(heads, m.getTrails)
 	sum := slices.Sum(hikingGoals)
 	return fmt.Sprint(sum)
 }
