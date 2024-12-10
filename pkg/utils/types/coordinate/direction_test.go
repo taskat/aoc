@@ -1,10 +1,9 @@
-package direction
+package coordinate
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
 func TestUp(t *testing.T) {
@@ -198,16 +197,16 @@ func TestToCoordinate2D(t *testing.T) {
 	testCases := []struct {
 		testName string
 		d        Direction
-		expected coordinate.Coordinate2D[int]
+		expected Coordinate2D[int]
 	}{
-		{"Up", Up(), coordinate.Coordinate2D[int]{X: 0, Y: -1}},
-		{"UpRight", UpRight(), coordinate.Coordinate2D[int]{X: 1, Y: -1}},
-		{"Right", Right(), coordinate.Coordinate2D[int]{X: 1, Y: 0}},
-		{"DownRight", DownRight(), coordinate.Coordinate2D[int]{X: 1, Y: 1}},
-		{"Down", Down(), coordinate.Coordinate2D[int]{X: 0, Y: 1}},
-		{"DownLeft", DownLeft(), coordinate.Coordinate2D[int]{X: -1, Y: 1}},
-		{"Left", Left(), coordinate.Coordinate2D[int]{X: -1, Y: 0}},
-		{"UpLeft", UpLeft(), coordinate.Coordinate2D[int]{X: -1, Y: -1}},
+		{"Up", Up(), Coordinate2D[int]{X: 0, Y: -1}},
+		{"UpRight", UpRight(), Coordinate2D[int]{X: 1, Y: -1}},
+		{"Right", Right(), Coordinate2D[int]{X: 1, Y: 0}},
+		{"DownRight", DownRight(), Coordinate2D[int]{X: 1, Y: 1}},
+		{"Down", Down(), Coordinate2D[int]{X: 0, Y: 1}},
+		{"DownLeft", DownLeft(), Coordinate2D[int]{X: -1, Y: 1}},
+		{"Left", Left(), Coordinate2D[int]{X: -1, Y: 0}},
+		{"UpLeft", UpLeft(), Coordinate2D[int]{X: -1, Y: -1}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {

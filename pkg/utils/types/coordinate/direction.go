@@ -1,9 +1,7 @@
-package direction
+package coordinate
 
 import (
 	"fmt"
-
-	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
 // Direction represents a direction
@@ -11,7 +9,7 @@ type Direction interface {
 	// Opposite returns the opposite direction
 	Opposite() Direction
 	// ToCoordinate2D returns the coordinate2D representation of the direction
-	ToCoordinate2D() coordinate.Coordinate2D[int]
+	ToCoordinate2D() Coordinate2D[int]
 	// toInt converts the direction to an integer. It is used internally to
 	// calculate the next direction easier. It also 'closes' the interface
 	toInt() int
@@ -39,7 +37,7 @@ const (
 )
 
 // coordinates stores the coordinates for each direction
-var coordinates = []coordinate.Coordinate2D[int]{
+var coordinates = []Coordinate2D[int]{
 	{X: 0, Y: -1},  // up
 	{X: 1, Y: -1},  // up-right
 	{X: 1, Y: 0},   // right
@@ -140,7 +138,7 @@ func (d direction) Opposite() Direction {
 }
 
 // ToCoordinate2D returns the coordinate2D representation of the direction
-func (d direction) ToCoordinate2D() coordinate.Coordinate2D[int] {
+func (d direction) ToCoordinate2D() Coordinate2D[int] {
 	return coordinates[d.toInt()]
 }
 

@@ -28,6 +28,52 @@ func TestNewCoordinate2D(t *testing.T) {
 	}
 }
 
+func TestAdd(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		other    Coordinate2D[T]
+		expected Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 3, Y: 4}, Coordinate2D[int]{X: 4, Y: 6}},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 4, Y: 6}},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 0, Y: 0}},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, Coordinate2D[int]{X: 0, Y: 0}, Coordinate2D[int]{X: 0, Y: 0}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Add(tc.other)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestGo(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName  string
+		c         Coordinate2D[T]
+		direction Direction
+		expected  Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Up", Coordinate2D[int]{X: 1, Y: 2}, Up(), Coordinate2D[int]{X: 1, Y: 1}},
+		{"Up Right", Coordinate2D[int]{X: 1, Y: 2}, UpRight(), Coordinate2D[int]{X: 2, Y: 1}},
+		{"Right", Coordinate2D[int]{X: 1, Y: 2}, Right(), Coordinate2D[int]{X: 2, Y: 2}},
+		{"Down Right", Coordinate2D[int]{X: 1, Y: 2}, DownRight(), Coordinate2D[int]{X: 2, Y: 3}},
+		{"Down", Coordinate2D[int]{X: 1, Y: 2}, Down(), Coordinate2D[int]{X: 1, Y: 3}},
+		{"Down Left", Coordinate2D[int]{X: 1, Y: 2}, DownLeft(), Coordinate2D[int]{X: 0, Y: 3}},
+		{"Left", Coordinate2D[int]{X: 1, Y: 2}, Left(), Coordinate2D[int]{X: 0, Y: 2}},
+		{"Up Left", Coordinate2D[int]{X: 1, Y: 2}, UpLeft(), Coordinate2D[int]{X: 0, Y: 1}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Go(tc.direction)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestIn2DSlice(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string

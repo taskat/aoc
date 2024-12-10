@@ -13,6 +13,17 @@ func NewCoordinate2D[T types.Real](x T, y T) Coordinate2D[T] {
 	return Coordinate2D[T]{X: x, Y: y}
 }
 
+// Add adds the coordinates
+func (c Coordinate2D[T]) Add(other Coordinate2D[T]) Coordinate2D[T] {
+	return NewCoordinate2D(c.X+other.X, c.Y+other.Y)
+}
+
+// Go returns the coordinate after moving in the direction
+func (c Coordinate2D[T]) Go(direction Direction) Coordinate2D[T] {
+	vec := direction.ToCoordinate2D()
+	return c.Add(NewCoordinate2D(T(vec.X), T(vec.Y)))
+}
+
 // In2DSlice checks if the coordinate is in the slice
 func (c Coordinate2D[T]) In2DSlice(width, height T) bool {
 	return c.InLimits(0, 0, width-1, height-1)
