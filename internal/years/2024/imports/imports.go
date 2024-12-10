@@ -12,4 +12,5 @@ import (
 	_ "github.com/taskat/aoc/internal/years/2024/07"
 	_ "github.com/taskat/aoc/internal/years/2024/08"
 	_ "github.com/taskat/aoc/internal/years/2024/09"
+	_ "github.com/taskat/aoc/internal/years/2024/10"
 )
