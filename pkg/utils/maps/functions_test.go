@@ -1,6 +1,10 @@
 package maps
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestContains(t *testing.T) {
 	testCases := []struct {
@@ -34,6 +38,25 @@ func TestContains(t *testing.T) {
 			if res != tc.expectedRes {
 				t.Errorf("Expected %t, got %t", tc.expectedRes, res)
 			}
+		})
+	}
+}
+
+func TestKeys(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName     string
+		m            map[T]string
+		expectedKeys []T
+	}
+	testCases := []testCase[int]{
+		{"Nil map", nil, []int{}},
+		{"Empty map", map[int]string{}, []int{}},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, []int{1, 2}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			keys := Keys(tc.m)
+			assert.Equal(t, tc.expectedKeys, keys)
 		})
 	}
 }

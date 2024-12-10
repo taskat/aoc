@@ -202,6 +202,15 @@ func RemoveNth[T any](slice []T, index int) []T {
 	return append(result, slice[index+1:]...)
 }
 
+// Repeat returns a new slice with the element repeated n times
+func Repeat[T any](element T, n int) []T {
+	result := make([]T, n)
+	for i := range result {
+		result[i] = element
+	}
+	return result
+}
+
 // Sum returns the sum of all the elements in the slice
 func Sum[S Slice[T], T types.Summable](slice S) T {
 	var sum T
@@ -218,6 +227,20 @@ func Swap[T any](slice []T, i, j int) {
 		panic("index out of bounds")
 	}
 	slice[i], slice[j] = slice[j], slice[i]
+}
+
+// ToMap converts two slices into a map. The first slice contains the keys and
+// the second slice contains the values. If the slices have different lengths,
+// it panics
+func ToMap[K comparable, V any](keys []K, values []V) map[K]V {
+	if len(keys) != len(values) {
+		panic("slices have different lengths")
+	}
+	result := make(map[K]V)
+	for i, key := range keys {
+		result[key] = values[i]
+	}
+	return result
 }
 
 // ZipWith applies the function f to each pair of elements from the two slices

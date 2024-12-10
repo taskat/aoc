@@ -500,6 +500,26 @@ func TestRemoveNth(t *testing.T) {
 	}
 }
 
+func TestRepeat(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		item          T
+		times         int
+		expectedValue []T
+	}
+	testCases := []testCase[int]{
+		{"Repeat 0 times", 1, 0, []int{}},
+		{"Repeat 1 time", 1, 1, []int{1}},
+		{"Repeat 3 times", 1, 3, []int{1, 1, 1}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Repeat(tc.item, tc.times)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestSum(t *testing.T) {
 	type testCase[T types.Summable] struct {
 		testName      string
@@ -554,6 +574,35 @@ func TestSwap(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			assert.Panics(t, func() { Swap(tc.slice, tc.i, tc.j) })
+		})
+	}
+}
+
+func TestToMap(t *testing.T) {
+	type testCase[T comparable, U any] struct {
+		testName      string
+		keys          []T
+		values        []U
+		expectedValue map[T]U
+	}
+	testCases := []testCase[int, string]{
+		{"Nil slices", nil, nil, map[int]string{}},
+		{"Empty slices", []int{}, []string{}, map[int]string{}},
+		{"To map", []int{1, 2, 3}, []string{"a", "b", "c"}, map[int]string{1: "a", 2: "b", 3: "c"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := ToMap(tc.keys, tc.values)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test for panics
+	testCases = []testCase[int, string]{
+		{"Different lengths", []int{1, 2, 3}, []string{"a", "b"}, map[int]string{}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() { ToMap(tc.keys, tc.values) })
 		})
 	}
 }

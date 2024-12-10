@@ -6,6 +6,15 @@ func Contains[K comparable, V any](m map[K]V, k K) bool {
 	return ok
 }
 
+// Keys returns the keys of a map.
+func Keys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // Merge merges two maps into a new map. If a key is present in both maps,
 // the value from the second map is used.
 func Merge[K comparable, V any](m1, m2 map[K]V) map[K]V {
