@@ -60,6 +60,27 @@ func (m mountains) getHikingGoals(start coordinate) int {
 	return len(currents)
 }
 
+func (m mountains) getDistinctTrails(start coordinate) int {
+	currents := []coordinate{start}
+	currentHeight := m.get(start)
+	for currentHeight < 9 {
+		neighbors := make([]coordinate, 0)
+		for _, c := range currents {
+			for _, n := range c.neighbors() {
+				if m.inBounds(n) && m.get(n) == currentHeight+1 {
+					neighbors = append(neighbors, n)
+				}
+			}
+		}
+		if len(neighbors) == 0 {
+			return 0
+		}
+		currents = neighbors
+		currentHeight++
+	}
+	return len(currents)
+}
+
 func (m mountains) inBounds(c coordinate) bool {
 	return c.y >= 0 && c.y < len(m) && c.x >= 0 && c.x < len(m[0])
 }
@@ -105,5 +126,9 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	m := s.parse(lines)
+	heads := m.trailheads()
+	hikingGoals := slices.Map(heads, m.getDistinctTrails)
+	sum := slices.Sum(hikingGoals)
+	return fmt.Sprint(sum)
 }
