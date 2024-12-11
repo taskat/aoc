@@ -21,7 +21,7 @@ func New[T any]() *LinkedList[T] {
 func FromSlice[T any](values []T) *LinkedList[T] {
 	ll := New[T]()
 	for _, v := range values {
-		ll.Insert(v, ll.length)
+		ll.Insert(ll.length, v)
 	}
 	return ll
 }
@@ -33,10 +33,48 @@ func (l *LinkedList[T]) Clear() {
 	l.length = 0
 }
 
+// ForEach iterates over the list and applies the given function to each node
+func (l *LinkedList[T]) ForEach(f func(Node[T])) {
+	f_i := func(n Node[T], _ int) {
+		f(n)
+	}
+	l.ForEach_i(f_i)
+}
+
+// ForEach_i iterates over the list and applies the given function to each node
+// with the index.
+func (l *LinkedList[T]) ForEach_i(f func(Node[T], int)) {
+	for current, i := l.first, 0; current != nil; current, i = current.next, i+1 {
+		f(current, i)
+	}
+}
+
+// ForEach_i_m iterates over the list and applies the given function to each node
+// with the index. It also allows to modify the list during iteration, by returning
+// an offset, which is added to the index after the current iteration. If no modification
+// is needed, the function should return 0.
+func (l *LinkedList[T]) ForEach_i_m(f func(Node[T], int) int) {
+	for current, i := l.first, 0; current != nil; current, i = current.next, i+1 {
+		offset := f(current, i)
+		i += offset
+		for j := 0; j < offset; j++ {
+			if current.next != nil {
+				current = current.next
+			}
+		}
+	}
+}
+
 // Get returns the value at the given index. If the index is out of bounds, it
 // panics.
 func (l *LinkedList[T]) Get(index int) T {
 	return l.getNode(index).value
+}
+
+// GetNode returns the node at the given index. If the index is out of bounds,
+// it panics.
+func (l *LinkedList[T]) GetNode(index int) Node[T] {
+	return l.getNode(index)
 }
 
 // getNode returns the node at the given index. If the index is out of bounds,
@@ -61,7 +99,7 @@ func (l *LinkedList[T]) getNode(index int) *node[T] {
 
 // Insert inserts a value at the given index. If the index is out of bounds,
 // it panics.
-func (l *LinkedList[T]) Insert(value T, index int) {
+func (l *LinkedList[T]) Insert(index int, value T) {
 	if index < 0 || index > l.length {
 		panic("index out of bounds")
 	}
@@ -89,12 +127,12 @@ func (l *LinkedList[T]) Insert(value T, index int) {
 
 // InsertFirst inserts a value at the beginning of the list
 func (l *LinkedList[T]) InsertFirst(value T) {
-	l.Insert(value, 0)
+	l.Insert(0, value)
 }
 
 // InsertLast inserts a value at the end of the list
 func (l *LinkedList[T]) InsertLast(value T) {
-	l.Insert(value, l.length)
+	l.Insert(l.length, value)
 }
 
 // Length returns the length of the list
@@ -133,6 +171,12 @@ func (l *LinkedList[T]) RemoveFirst() {
 // RemoveLast removes the last value
 func (l *LinkedList[T]) RemoveLast() {
 	l.Remove(l.length - 1)
+}
+
+// Replace replaces the value at the given index. If the index is out of bounds,
+// it panics.
+func (l *LinkedList[T]) Replace(index int, value T) {
+	l.getNode(index).value = value
 }
 
 // Set sets the value at the given index. If the index is out of bounds, it

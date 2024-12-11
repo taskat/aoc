@@ -57,6 +57,46 @@ func TestClear(t *testing.T) {
 	}
 }
 
+func TestForEach(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		ll       *LinkedList[T]
+		expected []T
+	}
+	testCases := []testCase[int]{
+		{"Empty list", New[int](), []int{}},
+		{"Single element", FromSlice([]int{1}), []int{1}},
+		{"Multiple elements", FromSlice([]int{1, 2, 3}), []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			values := []int{}
+			tc.ll.ForEach(func(node Node[int]) { values = append(values, node.Value()) })
+			assert.Equal(t, tc.expected, values)
+		})
+	}
+}
+
+func TestForEach_i(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		ll       *LinkedList[T]
+		expected []T
+	}
+	testCases := []testCase[int]{
+		{"Empty list", New[int](), []int{}},
+		{"Single element", FromSlice([]int{1}), []int{1}},
+		{"Multiple elements", FromSlice([]int{1, 2, 3}), []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			values := []int{}
+			tc.ll.ForEach_i(func(node Node[int], index int) { values = append(values, node.Value()) })
+			assert.Equal(t, tc.expected, values)
+		})
+	}
+}
+
 func TestGet(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -82,6 +122,36 @@ func TestGet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			assert.Panics(t, func() { tc.ll.Get(tc.index) })
+		})
+	}
+}
+
+func TestGetNode(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		ll            *LinkedList[T]
+		index         int
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Single element", FromSlice([]int{1}), 0, 1},
+		{"Multiple elements", FromSlice([]int{1, 2, 3, 4}), 1, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			node := tc.ll.GetNode(tc.index)
+			assert.Equal(t, tc.expectedValue, node.Value())
+		})
+	}
+	// Test for panics
+	testCases = []testCase[int]{
+		{"Empty list", New[int](), 0, 0},
+		{"Out of bounds", FromSlice([]int{1}), 1, 0},
+		{"Negative index", FromSlice([]int{1}), -1, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() { tc.ll.GetNode(tc.index) })
 		})
 	}
 }
@@ -238,6 +308,37 @@ func TestRemoveLast(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			tc.ll.RemoveLast()
 			assert.Equal(t, tc.expected, tc.ll)
+		})
+	}
+}
+
+func TestReplace(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		ll       *LinkedList[T]
+		value    T
+		index    int
+		expected *LinkedList[T]
+	}
+	testCases := []testCase[int]{
+		{"Single element", FromSlice([]int{1}), 2, 0, FromSlice([]int{2})},
+		{"Multiple elements", FromSlice([]int{1, 2, 3}), 4, 1, FromSlice([]int{1, 4, 3})},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			tc.ll.Replace(tc.index, tc.value)
+			assert.Equal(t, tc.expected, tc.ll)
+		})
+	}
+	// Test for panics
+	testCases = []testCase[int]{
+		{"Empty list", New[int](), 1, 0, New[int]()},
+		{"Out of bounds", FromSlice([]int{1}), 2, 1, FromSlice([]int{1})},
+		{"Negative index", FromSlice([]int{1}), 2, -1, FromSlice([]int{1})},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() { tc.ll.Replace(tc.value, tc.index) })
 		})
 	}
 }
