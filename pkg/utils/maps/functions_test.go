@@ -1,6 +1,7 @@
 package maps
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -38,6 +39,26 @@ func TestContains(t *testing.T) {
 			if res != tc.expectedRes {
 				t.Errorf("Expected %t, got %t", tc.expectedRes, res)
 			}
+		})
+	}
+}
+
+func TestForEach(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int][]string
+		expectedMap map[int][]string
+	}{
+		{"Nil map", nil, nil},
+		{"Empty map", map[int][]string{}, map[int][]string{}},
+		{"Map with elements", map[int][]string{1: {"a"}, 2: {"b", "c"}}, map[int][]string{1: {"A"}, 2: {"B"}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			f := func(k int, v []string) {
+				v[0] = strings.ToUpper(v[0])
+			}
+			ForEach(tc.m, f)
 		})
 	}
 }
@@ -113,6 +134,25 @@ func TestMerge(t *testing.T) {
 					t.Errorf("Expected value %s for key %d, got %s", v, k, result[k])
 				}
 			}
+		})
+	}
+}
+
+func TestSum(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]int
+		expectedSum int
+	}{
+		{"Nil map", nil, 0},
+		{"Empty map", map[int]int{}, 0},
+		{"Map with elements", map[int]int{1: 2, 2: 3}, 5},
+		{"Map with negative elements", map[int]int{1: -2, 2: 3}, 1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			sum := Sum(tc.m)
+			assert.Equal(t, tc.expectedSum, sum)
 		})
 	}
 }

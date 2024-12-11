@@ -1,9 +1,18 @@
 package maps
 
+import "github.com/taskat/aoc/pkg/utils/types"
+
 // Contains checks if a map contains a key.
 func Contains[K comparable, V any](m map[K]V, k K) bool {
 	_, ok := m[k]
 	return ok
+}
+
+// ForEach iterates over the elements of a map.
+func ForEach[K comparable, V any](m map[K]V, f func(K, V)) {
+	for k, v := range m {
+		f(k, v)
+	}
 }
 
 // Keys returns the keys of a map.
@@ -26,4 +35,13 @@ func Merge[K comparable, V any](m1, m2 map[K]V) map[K]V {
 		result[k] = v
 	}
 	return result
+}
+
+// Sum sums the values of a map.
+func Sum[K comparable, V types.Summable](m map[K]V) V {
+	var sum V
+	for _, v := range m {
+		sum += v
+	}
+	return sum
 }
