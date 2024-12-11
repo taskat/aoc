@@ -80,5 +80,9 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	stones := s.parse(lines)
+	for i := 0; i < 75; i++ {
+		stones.blink()
+	}
+	return fmt.Sprint(stones.count())
 }
