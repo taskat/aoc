@@ -6,6 +6,7 @@ import (
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
+	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
@@ -27,35 +28,40 @@ func (s *Solver) AddHyperParams(params ...any) {}
 
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) stones {
-	stones := make(stones)
 	numbers := slices.Map(strings.Split(lines[0], " "), stringutils.Atoi)
-	for _, n := range numbers {
-		stones[n]++
-	}
-	return stones
+	return maps.Occurrences(numbers)
 }
 
+// stones contains the value of the stones and the count of each
+// value
 type stones map[int]int
 
+// blink evaluates the next state of the stones and updates the
+// current state
 func (s *stones) blink() {
 	newStones := make(stones)
-	for stone, count := range *s {
+	maps.ForEach(*s, func(stone, count int) {
 		values := nextValues(stone)
-		for _, v := range values {
-			newStones[v] += count
-		}
-	}
+		slices.ForEach(values, func(value int) {
+			maps.AddOccurence(newStones, value, count)
+		})
+	})
 	*s = newStones
 }
 
+// count returns the total count of stones
 func (s stones) count() int {
-	count := 0
-	for _, c := range s {
-		count += c
-	}
-	return count
+	return maps.Sum(s)
 }
 
+// simulate runs the blink for n times
+func (s *stones) simulate(n int) {
+	for i := 0; i < n; i++ {
+		s.blink()
+	}
+}
+
+// nextValues returns the next values based on the current value of the stone
 func nextValues(value int) [](int) {
 	valueLength := intutils.Length(value)
 	switch {
@@ -72,17 +78,13 @@ func nextValues(value int) [](int) {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	stones := s.parse(lines)
-	for i := 0; i < 25; i++ {
-		stones.blink()
-	}
+	stones.simulate(25)
 	return fmt.Sprint(stones.count())
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	stones := s.parse(lines)
-	for i := 0; i < 75; i++ {
-		stones.blink()
-	}
+	stones.simulate(75)
 	return fmt.Sprint(stones.count())
 }
