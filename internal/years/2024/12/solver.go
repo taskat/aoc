@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/containers/set"
 	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/types/coordinate"
@@ -29,135 +30,120 @@ func (s *Solver) parse(lines []string) garden {
 	return parseGarden(lines)
 }
 
+// garden represents the plots of the garden
 type garden map[rune][]region
 
+// parseGarden parses the garden from the lines
 func parseGarden(lines []string) garden {
 	plots := make(map[rune][]coord)
 	for i, line := range lines {
 		for j, c := range line {
-			if !maps.Contains(plots, c) {
-				plots[c] = make([]coord, 0)
-			}
-			plots[c] = append(plots[c], coordinate.NewCoordinate2D(j, i))
+			maps.Append(plots, c, coordinate.FromIndexes(i, j))
 		}
 	}
-	g := make(garden)
-	for k, coords := range plots {
-		g[k] = separateRegions(coords)
-	}
-	return g
+	return maps.MapValues(plots, separateRegions)
 }
 
+// separateRegions separates the plots with the same plant into regions
+// based on neighbors
 func separateRegions(plots []coord) []region {
 	regions := make([]region, 0)
-	for i := 0; len(plots) > 0; i = (i + 1) % len(plots) {
-		current := plots[i]
-		plots = append(plots[:i], plots[i+1:]...)
-		i--
-		currentRegion := make(region)
-		currentRegion.add(current)
-		neighborsToVisit := neighbors(current)
-		for j := 0; j < len(neighborsToVisit); j++ {
-			n := neighborsToVisit[j]
-			if maps.Contains(currentRegion, n) {
-				continue
-			}
-			index := slices.FindIndex(plots, func(c coord) bool {
-				return c == n
-			})
-			if index == -1 {
-				continue
-			}
-			currentRegion.add(n)
-			neighborsToVisit = append(neighborsToVisit, neighbors(n)...)
-			plots = append(plots[:index], plots[index+1:]...)
-			if index < i {
-				i--
-			}
+	for len(plots) > 0 {
+		current := plots[0]
+		plots = slices.RemoveNth(plots, 0)
+		currentRegion := newRegion()
+		currentRegion.Add(current)
+		filter := func(c coord) bool {
+			return slices.Contains(plots, c) && !currentRegion.Contains(c)
+		}
+		getNeighbors := func(c coord) []coord {
+			return slices.Filter(maps.Values(neighbors(c)), filter)
+		}
+		neighborsToVisit := getNeighbors(current)
+		for len(neighborsToVisit) > 0 {
+			n := neighborsToVisit[0]
+			neighborsToVisit = slices.RemoveNth(neighborsToVisit, 0)
+			currentRegion.Add(n)
+			neighborsToVisit = append(neighborsToVisit, getNeighbors(n)...)
+			neighborsToVisit = slices.Filter(neighborsToVisit, filter)
+			index := slices.FindIndex(plots, n.Equal)
+			plots = slices.RemoveNth(plots, index)
 		}
 		regions = append(regions, currentRegion)
-		if len(plots) == 0 {
-			break
-		}
 	}
 	return regions
 }
 
+// cost returns the cost of the garden
 func (g garden) cost(bulk bool) int {
-	costs := slices.Map(maps.Values(g), func(regions []region) int {
-		return slices.Sum(slices.Map(regions, func(r region) int { return r.cost(bulk) }))
+	costPerRegions := maps.MapValues(g, func(regions []region) []int {
+		return slices.Map(regions, func(r region) int { return r.cost(bulk) })
 	})
-	return slices.Sum(costs)
+	costPerType := maps.MapValues(costPerRegions, slices.Sum)
+	return slices.Sum(maps.Values(costPerType))
 }
 
-type region map[coord]struct{}
-
-func (r *region) add(c coord) {
-	(*r)[c] = struct{}{}
+// region represents a region of the garden with the same plant
+type region struct {
+	set.Set[coord]
 }
 
+// newRegion creates a new region
+func newRegion() region {
+	return region{set.New[coord]()}
+}
+
+// area returns the area of the region
 func (r region) area() int {
-	return len(r)
+	return len(r.Set)
 }
 
+// cost returns the cost of the region. If bulk is true, the cost is calculated
+// based on the number of sides of the region, otherwise it is calculated based
+// on the perimeter of the region
 func (r region) cost(bulk bool) int {
+	perimeter := r.perimeter()
 	if bulk {
-		return r.area() * r.sides()
+		perimeter = r.sides()
 	}
-	return r.area() * r.perimeter()
+	return r.area() * perimeter
 }
 
-func (r region) perimeter() int {
-	isDifferentPlant := func(c coord) bool {
-		return !maps.Contains(r, c)
-	}
-	plotPerimeter := func(c coord) int {
-		return slices.Count(neighbors(c), isDifferentPlant)
-	}
-	perimeters := slices.Map(maps.Keys(r), plotPerimeter)
-	return slices.Sum(perimeters)
-}
-
-type fence struct {
-	c   coord
-	dir coordinate.Direction
-}
-
-func (f fence) neighbors() []fence {
-	if f.dir == coordinate.Up() || f.dir == coordinate.Down() {
-		return []fence{
-			{f.c.Go(coordinate.Left()), f.dir},
-			{f.c.Go(coordinate.Right()), f.dir},
-		}
-	}
-	return []fence{
-		{f.c.Go(coordinate.Up()), f.dir},
-		{f.c.Go(coordinate.Down()), f.dir},
-	}
-}
-
-// String returns the string representation of the fence
-func (f fence) String() string {
-	return fmt.Sprintf("%v %v", f.c, f.dir)
-}
-
-func (r region) sides() int {
-	fences := make(map[fence]struct{})
-	for c := range r {
-		for i, n := range neighbors(c) {
-			if !maps.Contains(r, n) {
-				fences[fence{c, dirs[i]}] = struct{}{}
+// fences returns the fences of the region
+func (r region) fences() set.Set[fence] {
+	fences := set.New[fence]()
+	for c := range r.Set {
+		for dir, n := range neighbors(c) {
+			if !r.Contains(n) {
+				fences.Add(newFence(c, dir))
 			}
 		}
 	}
+	return fences
+}
+
+// perimeter returns the perimeter of the region
+func (r region) perimeter() int {
+	isPerimeter := func(other coord) bool {
+		return !r.Contains(other)
+	}
+	perimeterLength := func(c coord) int {
+		return slices.Count(maps.Values(neighbors(c)), isPerimeter)
+	}
+	perimeters := slices.Map(r.ToSlice(), perimeterLength)
+	return slices.Sum(perimeters)
+}
+
+// sides returns the number of sides of the region
+func (r region) sides() int {
+	fences := r.fences()
 	count := 0
 	for f := range fences {
 		delete(fences, f)
 		neighborFences := f.neighbors()
 		for i := 0; i < len(neighborFences); i++ {
 			nf := neighborFences[i]
-			_, ok := fences[nf]
-			if !ok {
+			if !fences.Contains(nf) {
 				continue
 			}
 			delete(fences, nf)
@@ -168,12 +154,38 @@ func (r region) sides() int {
 	return count
 }
 
+// fence represents a fenc on the dir side of the c ccordinate
+type fence struct {
+	c   coord
+	dir coordinate.Direction
+}
+
+// newFence creates a new fence
+func newFence(c coord, dir coordinate.Direction) fence {
+	return fence{c, dir}
+}
+
+// neighbors returns the continuation of the fence
+func (f fence) neighbors() []fence {
+	var dirs []coordinate.Direction
+	if f.dir.Vertical() {
+		dirs = coordinate.Horizontals()
+	} else {
+		dirs = coordinate.Verticals()
+	}
+	coords := slices.Map(dirs, f.c.Go)
+	return slices.Map(coords, func(c coord) fence { return newFence(c, f.dir) })
+}
+
+// String returns the string representation of the fence
+func (f fence) String() string {
+	return fmt.Sprintf("%v %v", f.c, f.dir)
+}
+
 type coord = coordinate.Coordinate2D[int]
 
-var dirs = []coordinate.Direction{coordinate.Up(), coordinate.Right(), coordinate.Down(), coordinate.Left()}
-
-func neighbors(c coord) []coord {
-	return c.Neighbors(dirs)
+func neighbors(c coord) map[coordinate.Direction]coord {
+	return c.Neighbors(coordinate.Straights())
 }
 
 // SolvePart1 solves part 1 of the puzzle
