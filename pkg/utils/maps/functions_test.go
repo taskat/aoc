@@ -156,3 +156,26 @@ func TestSum(t *testing.T) {
 		})
 	}
 }
+
+func TestValues(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName        string
+		m               map[T]string
+		expectedValues  []string
+		expectedLength  int
+		expectedCapcity int
+	}
+	testCases := []testCase[int]{
+		{"Nil map", nil, []string{}, 0, 0},
+		{"Empty map", map[int]string{}, []string{}, 0, 0},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, []string{"a", "b"}, 2, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			values := Values(tc.m)
+			assert.Equal(t, tc.expectedValues, values)
+			assert.Equal(t, tc.expectedLength, len(values))
+			assert.Equal(t, tc.expectedCapcity, cap(values))
+		})
+	}
+}

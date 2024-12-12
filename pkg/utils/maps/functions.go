@@ -45,3 +45,12 @@ func Sum[K comparable, V types.Summable](m map[K]V) V {
 	}
 	return sum
 }
+
+// Values returns the values of a map.
+func Values[K comparable, V any](m map[K]V) []V {
+	values := make([]V, 0, len(m))
+	for _, v := range m {
+		values = append(values, v)
+	}
+	return values
+}
