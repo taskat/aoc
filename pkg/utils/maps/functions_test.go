@@ -7,6 +7,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestAppend(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int][]string
+		k           int
+		v           string
+		expectedMap map[int][]string
+	}{
+		{"Empty map", map[int][]string{}, 1, "a", map[int][]string{1: {"a"}}},
+		{"Key not present", map[int][]string{1: {"a"}}, 2, "b", map[int][]string{1: {"a"}, 2: {"b"}}},
+		{"Key present", map[int][]string{1: {"a"}}, 1, "b", map[int][]string{1: {"a", "b"}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			Append(tc.m, tc.k, tc.v)
+			assert.Equal(t, tc.expectedMap, tc.m)
+		})
+	}
+	// Test for panic
+	assert.Panics(t, func() {
+		Append(nil, 1, "a")
+	})
+}
+
 func TestContains(t *testing.T) {
 	testCases := []struct {
 		testName    string
@@ -82,6 +106,48 @@ func TestKeys(t *testing.T) {
 	}
 }
 
+func TestMap(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]string
+		expectedMap map[string]int
+	}{
+		{"Nil map", nil, map[string]int{}},
+		{"Empty map", map[int]string{}, map[string]int{}},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, map[string]int{"a": 1, "b": 2}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			f := func(k int, v string) (string, int) {
+				return v, k
+			}
+			result := Map(tc.m, f)
+			assert.Equal(t, tc.expectedMap, result)
+		})
+	}
+}
+
+func TestMapValues(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]string
+		expectedMap map[int]int
+	}{
+		{"Nil map", nil, map[int]int{}},
+		{"Empty map", map[int]string{}, map[int]int{}},
+		{"Map with elements", map[int]string{1: "2", 2: "32"}, map[int]int{1: 1, 2: 2}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			f := func(v string) int {
+				return len(v)
+			}
+			result := MapValues(tc.m, f)
+			assert.Equal(t, tc.expectedMap, result)
+		})
+	}
+}
+
 func TestMerge(t *testing.T) {
 	testCases := []struct {
 		testName    string
@@ -89,42 +155,12 @@ func TestMerge(t *testing.T) {
 		map2        map[int]string
 		expectedMap map[int]string
 	}{
-		{
-			"Nil maps",
-			nil,
-			nil,
-			map[int]string{},
-		},
-		{
-			"Empty maps",
-			map[int]string{},
-			map[int]string{},
-			map[int]string{},
-		},
-		{
-			"First map empty",
-			map[int]string{},
-			map[int]string{1: "a", 2: "b"},
-			map[int]string{1: "a", 2: "b"},
-		},
-		{
-			"Second map empty",
-			map[int]string{1: "a", 2: "b"},
-			map[int]string{},
-			map[int]string{1: "a", 2: "b"},
-		},
-		{
-			"Both maps have elements",
-			map[int]string{1: "a", 2: "b"},
-			map[int]string{3: "c", 4: "d"},
-			map[int]string{1: "a", 2: "b", 3: "c", 4: "d"},
-		},
-		{
-			"Overlapping keys",
-			map[int]string{1: "a", 2: "b"},
-			map[int]string{2: "c", 3: "d"},
-			map[int]string{1: "a", 2: "c", 3: "d"},
-		},
+		{"Nil maps", nil, nil, map[int]string{}},
+		{"Empty maps", map[int]string{}, map[int]string{}, map[int]string{}},
+		{"Map1 empty", map[int]string{}, map[int]string{1: "a", 2: "b"}, map[int]string{1: "a", 2: "b"}},
+		{"Map2 empty", map[int]string{1: "a", 2: "b"}, map[int]string{}, map[int]string{1: "a", 2: "b"}},
+		{"Maps with elements", map[int]string{1: "a", 2: "b"}, map[int]string{2: "c", 3: "d"}, map[int]string{1: "a", 2: "c", 3: "d"}},
+		{"Overlapping keys", map[int]string{1: "a", 2: "b"}, map[int]string{2: "c", 3: "d"}, map[int]string{1: "a", 2: "c", 3: "d"}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {

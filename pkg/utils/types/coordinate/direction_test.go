@@ -38,6 +38,22 @@ func TestUpLeft(t *testing.T) {
 	assert.Equal(t, UpLeft(), fromInt(upLeft))
 }
 
+func TestDiagonals(t *testing.T) {
+	assert.Equal(t, []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}, Diagonals())
+}
+
+func TestHorizontals(t *testing.T) {
+	assert.Equal(t, []Direction{Right(), Left()}, Horizontals())
+}
+
+func TestStraights(t *testing.T) {
+	assert.Equal(t, []Direction{Up(), Right(), Down(), Left()}, Straights())
+}
+
+func TestVerticals(t *testing.T) {
+	assert.Equal(t, []Direction{Up(), Down()}, Verticals())
+}
+
 func TestParse(t *testing.T) {
 	type testCase struct {
 		testName      string
@@ -167,6 +183,50 @@ func TestFromInt(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			assert.Equal(t, tc.expected, fromInt(tc.i))
+		})
+	}
+}
+
+func TestDiagonal(t *testing.T) {
+	testCases := []struct {
+		testName string
+		d        Direction
+		expected bool
+	}{
+		{"Up", Up(), false},
+		{"UpRight", UpRight(), true},
+		{"Right", Right(), false},
+		{"DownRight", DownRight(), true},
+		{"Down", Down(), false},
+		{"DownLeft", DownLeft(), true},
+		{"Left", Left(), false},
+		{"UpLeft", UpLeft(), true},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.d.Diagonal())
+		})
+	}
+}
+
+func TestHorizontal(t *testing.T) {
+	testCases := []struct {
+		testName string
+		d        Direction
+		expected bool
+	}{
+		{"Up", Up(), false},
+		{"UpRight", UpRight(), false},
+		{"Right", Right(), true},
+		{"DownRight", DownRight(), false},
+		{"Down", Down(), false},
+		{"DownLeft", DownLeft(), false},
+		{"Left", Left(), true},
+		{"UpLeft", UpLeft(), false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.d.Horizontal())
 		})
 	}
 }
@@ -414,6 +474,28 @@ func TestString(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			Format = tc.format
 			assert.Equal(t, tc.expected, tc.d.String())
+		})
+	}
+}
+
+func TestVertical(t *testing.T) {
+	testCases := []struct {
+		testName string
+		d        Direction
+		expected bool
+	}{
+		{"Up", Up(), true},
+		{"UpRight", UpRight(), false},
+		{"Right", Right(), false},
+		{"DownRight", DownRight(), false},
+		{"Down", Down(), true},
+		{"DownLeft", DownLeft(), false},
+		{"Left", Left(), false},
+		{"UpLeft", UpLeft(), false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.d.Vertical())
 		})
 	}
 }

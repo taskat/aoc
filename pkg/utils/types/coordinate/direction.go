@@ -6,6 +6,10 @@ import (
 
 // Direction represents a direction
 type Direction interface {
+	// Diagonal returns true if the direction is diagonal
+	Diagonal() bool
+	// Horizontal returns true if the direction is horizontal
+	Horizontal() bool
 	// Opposite returns the opposite direction
 	Opposite() Direction
 	// ToCoordinate2D returns the coordinate2D representation of the direction
@@ -21,6 +25,8 @@ type Direction interface {
 	TurnLeft() Direction
 	// TurnLeft45 returns the direction after turning 45 degrees to the left
 	TurnLeft45() Direction
+	// Vertical returns true if the direction is vertical
+	Vertical() bool
 	fmt.Stringer
 }
 
@@ -114,6 +120,26 @@ func UpLeft() Direction {
 	return fromInt(upLeft)
 }
 
+// Diagonals returns the diagonal directions
+func Diagonals() []Direction {
+	return []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}
+}
+
+// Horizontals returns the horizontal directions
+func Horizontals() []Direction {
+	return []Direction{Right(), Left()}
+}
+
+// Straights returns the straight directions
+func Straights() []Direction {
+	return []Direction{Up(), Right(), Down(), Left()}
+}
+
+// Verticals returns the vertical directions
+func Verticals() []Direction {
+	return []Direction{Up(), Down()}
+}
+
 // Parse parses a string to a direction based on Format
 func Parse(s string) (Direction, error) {
 	for i, f := range Format {
@@ -131,6 +157,16 @@ func fromInt(i int) Direction {
 
 // direction implements the Direction interface
 type direction int
+
+// Diagonal returns true if the direction is diagonal
+func (d direction) Diagonal() bool {
+	return d.toInt()%2 == 1
+}
+
+// Horizontal returns true if the direction is horizontal
+func (d direction) Horizontal() bool {
+	return d == right || d == left
+}
 
 // Opposite returns the opposite direction
 func (d direction) Opposite() Direction {
@@ -170,4 +206,9 @@ func (d direction) TurnLeft45() Direction {
 // String returns the string representation of the direction
 func (d direction) String() string {
 	return Format[d.toInt()]
+}
+
+// Vertical returns true if the direction is vertical
+func (d direction) Vertical() bool {
+	return d == up || d == down
 }

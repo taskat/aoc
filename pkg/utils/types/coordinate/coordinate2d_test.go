@@ -7,6 +7,27 @@ import (
 	"github.com/taskat/aoc/pkg/utils/types"
 )
 
+func TestFromIndexes(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		i        T
+		j        T
+		expected Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Test 1", 1, 2, Coordinate2D[int]{X: 2, Y: 1}},
+		{"Test 2", 3, 4, Coordinate2D[int]{X: 4, Y: 3}},
+		{"Test negative", -1, -2, Coordinate2D[int]{X: -2, Y: -1}},
+		{"Test zero", 0, 0, Coordinate2D[int]{X: 0, Y: 0}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := FromIndexes(tc.i, tc.j)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestNewCoordinate2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
@@ -49,6 +70,45 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func TestColumn(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		expected T
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, 1},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, 3},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, -1},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Column()
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestEqual(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		other    Coordinate2D[T]
+		expected bool
+	}
+	testCases := []testCase[int]{
+		{"Equal", Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 1, Y: 2}, true},
+		{"Not equal", Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 3, Y: 4}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Equal(tc.other)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestGo(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName  string
@@ -69,6 +129,26 @@ func TestGo(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := tc.c.Go(tc.direction)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestI(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		expected T
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, 1},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, 3},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, -1},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.I()
 			assert.Equal(t, tc.expected, result)
 		})
 	}
@@ -128,23 +208,63 @@ func TestInLimits(t *testing.T) {
 	}
 }
 
+func TestJ(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		expected T
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, 2},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, 4},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, -2},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.J()
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestNeighbors(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName   string
 		c          Coordinate2D[T]
 		directions []Direction
-		expected   []Coordinate2D[T]
+		expected   map[Direction]Coordinate2D[T]
 	}
 	testCases := []testCase[int]{
-		{"Nil directions", Coordinate2D[int]{X: 1, Y: 2}, nil, []Coordinate2D[int]{}},
-		{"Empty directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{}, []Coordinate2D[int]{}},
-		{"Up", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up()}, []Coordinate2D[int]{{X: 1, Y: 1}}},
-		{"4 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), Right(), Down(), Left()}, []Coordinate2D[int]{{X: 1, Y: 1}, {X: 2, Y: 2}, {X: 1, Y: 3}, {X: 0, Y: 2}}},
-		{"8 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}, []Coordinate2D[int]{{X: 1, Y: 1}, {X: 2, Y: 1}, {X: 2, Y: 2}, {X: 2, Y: 3}, {X: 1, Y: 3}, {X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}}},
+		{"Nil directions", Coordinate2D[int]{X: 1, Y: 2}, nil, map[Direction]Coordinate2D[int]{}},
+		{"Empty directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{}, map[Direction]Coordinate2D[int]{}},
+		{"Up", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up()}, map[Direction]Coordinate2D[int]{Up(): {X: 1, Y: 1}}},
+		{"4 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), Right(), Down(), Left()}, map[Direction]Coordinate2D[int]{Up(): {X: 1, Y: 1}, Right(): {X: 2, Y: 2}, Down(): {X: 1, Y: 3}, Left(): {X: 0, Y: 2}}},
+		{"8 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}, map[Direction]Coordinate2D[int]{Up(): {X: 1, Y: 1}, UpRight(): {X: 2, Y: 1}, Right(): {X: 2, Y: 2}, DownRight(): {X: 2, Y: 3}, Down(): {X: 1, Y: 3}, DownLeft(): {X: 0, Y: 3}, Left(): {X: 0, Y: 2}, UpLeft(): {X: 0, Y: 1}}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := tc.c.Neighbors(tc.directions)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestRow(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		expected T
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, 2},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, 4},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, -2},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Row()
 			assert.Equal(t, tc.expected, result)
 		})
 	}

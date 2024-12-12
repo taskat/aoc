@@ -2,6 +2,7 @@ package slices
 
 import (
 	"cmp"
+	"fmt"
 
 	"github.com/taskat/aoc/pkg/utils/types"
 )
@@ -195,7 +196,7 @@ func Reduce_i[T any](slice []T, f func(T, T, int) T, initialValue T) T {
 // If the index is out of bounds, it panics
 func RemoveNth[T any](slice []T, index int) []T {
 	if !IsInBounds(slice, index) {
-		panic("index out of bounds")
+		panic(fmt.Sprintf("index %d out of bounds: %d", index, len(slice)))
 	}
 	result := make([]T, 0, len(slice)-1)
 	result = append(result, slice[:index]...)
@@ -223,8 +224,11 @@ func Sum[S Slice[T], T types.Summable](slice S) T {
 // Swap swaps the elements at the given indices in the slice. If the indices are
 // out of bounds, it panics
 func Swap[T any](slice []T, i, j int) {
-	if !IsInBounds(slice, i) || !IsInBounds(slice, j) {
-		panic("index out of bounds")
+	if !IsInBounds(slice, i) {
+		panic(fmt.Sprintf("index %d out of bounds: %d", i, len(slice)))
+	}
+	if !IsInBounds(slice, j) {
+		panic(fmt.Sprintf("index %d out of bounds: %d", j, len(slice)))
 	}
 	slice[i], slice[j] = slice[j], slice[i]
 }
