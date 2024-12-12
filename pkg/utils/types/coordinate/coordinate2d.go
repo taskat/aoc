@@ -1,6 +1,8 @@
 package coordinate
 
 import (
+	"fmt"
+
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/types"
 )
@@ -41,4 +43,9 @@ func (c Coordinate2D[T]) InLimits(minX, minY, maxX, maxY T) bool {
 // Neighbors returns the neighbors of the coordinate in the given directions
 func (c Coordinate2D[T]) Neighbors(directions []Direction) []Coordinate2D[T] {
 	return slices.Map(directions, c.Go)
+}
+
+// String returns the string representation of the coordinate
+func (c Coordinate2D[T]) String() string {
+	return fmt.Sprintf("(%v, %v)", c.X, c.Y)
 }

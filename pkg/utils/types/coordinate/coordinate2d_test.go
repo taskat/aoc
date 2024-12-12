@@ -149,3 +149,23 @@ func TestNeighbors(t *testing.T) {
 		})
 	}
 }
+
+func TestCoordinateString(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		expected string
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, "(1, 2)"},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, "(3, 4)"},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, "(-1, -2)"},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, "(0, 0)"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.String()
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
