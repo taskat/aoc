@@ -38,7 +38,7 @@ func parseGarden(lines []string) garden {
 			if !maps.Contains(plots, c) {
 				plots[c] = make([]coord, 0)
 			}
-			plots[c] = append(plots[c], coordinate.NewCoordinate2D(i, j))
+			plots[c] = append(plots[c], coordinate.NewCoordinate2D(j, i))
 		}
 	}
 	g := make(garden)
@@ -83,15 +83,10 @@ func separateRegions(plots []coord) []region {
 	return regions
 }
 
-func (g garden) cost() int {
-	costs := make([]int, 0, len(g))
-	for k, regions := range g {
-		fmt.Println("Plant ", string(k))
-		for _, region := range regions {
-			costs = append(costs, region.cost())
-		}
-	}
-	// costs := slices.Map(maps.Values(g), region.cost)
+func (g garden) cost(bulk bool) int {
+	costs := slices.Map(maps.Values(g), func(regions []region) int {
+		return slices.Sum(slices.Map(regions, func(r region) int { return r.cost(bulk) }))
+	})
 	return slices.Sum(costs)
 }
 
@@ -105,9 +100,10 @@ func (r region) area() int {
 	return len(r)
 }
 
-func (r region) cost() int {
-	fmt.Println("  area", r.area())
-	fmt.Println("  perimeter", r.perimeter())
+func (r region) cost(bulk bool) int {
+	if bulk {
+		return r.area() * r.sides()
+	}
 	return r.area() * r.perimeter()
 }
 
@@ -122,6 +118,56 @@ func (r region) perimeter() int {
 	return slices.Sum(perimeters)
 }
 
+type fence struct {
+	c   coord
+	dir coordinate.Direction
+}
+
+func (f fence) neighbors() []fence {
+	if f.dir == coordinate.Up() || f.dir == coordinate.Down() {
+		return []fence{
+			{f.c.Go(coordinate.Left()), f.dir},
+			{f.c.Go(coordinate.Right()), f.dir},
+		}
+	}
+	return []fence{
+		{f.c.Go(coordinate.Up()), f.dir},
+		{f.c.Go(coordinate.Down()), f.dir},
+	}
+}
+
+// String returns the string representation of the fence
+func (f fence) String() string {
+	return fmt.Sprintf("%v %v", f.c, f.dir)
+}
+
+func (r region) sides() int {
+	fences := make(map[fence]struct{})
+	for c := range r {
+		for i, n := range neighbors(c) {
+			if !maps.Contains(r, n) {
+				fences[fence{c, dirs[i]}] = struct{}{}
+			}
+		}
+	}
+	count := 0
+	for f := range fences {
+		delete(fences, f)
+		neighborFences := f.neighbors()
+		for i := 0; i < len(neighborFences); i++ {
+			nf := neighborFences[i]
+			_, ok := fences[nf]
+			if !ok {
+				continue
+			}
+			delete(fences, nf)
+			neighborFences = append(neighborFences, nf.neighbors()...)
+		}
+		count++
+	}
+	return count
+}
+
 type coord = coordinate.Coordinate2D[int]
 
 var dirs = []coordinate.Direction{coordinate.Up(), coordinate.Right(), coordinate.Down(), coordinate.Left()}
@@ -133,11 +179,13 @@ func neighbors(c coord) []coord {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	g := s.parse(lines)
-	cost := g.cost()
+	cost := g.cost(false)
 	return fmt.Sprint(cost)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	g := s.parse(lines)
+	cost := g.cost(true)
+	return fmt.Sprint(cost)
 }
