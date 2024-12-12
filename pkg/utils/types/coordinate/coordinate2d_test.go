@@ -127,3 +127,25 @@ func TestInLimits(t *testing.T) {
 		})
 	}
 }
+
+func TestNeighbors(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName   string
+		c          Coordinate2D[T]
+		directions []Direction
+		expected   []Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Nil directions", Coordinate2D[int]{X: 1, Y: 2}, nil, []Coordinate2D[int]{}},
+		{"Empty directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{}, []Coordinate2D[int]{}},
+		{"Up", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up()}, []Coordinate2D[int]{{X: 1, Y: 1}}},
+		{"4 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), Right(), Down(), Left()}, []Coordinate2D[int]{{X: 1, Y: 1}, {X: 2, Y: 2}, {X: 1, Y: 3}, {X: 0, Y: 2}}},
+		{"8 directions", Coordinate2D[int]{X: 1, Y: 2}, []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}, []Coordinate2D[int]{{X: 1, Y: 1}, {X: 2, Y: 1}, {X: 2, Y: 2}, {X: 2, Y: 3}, {X: 1, Y: 3}, {X: 0, Y: 3}, {X: 0, Y: 2}, {X: 0, Y: 1}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Neighbors(tc.directions)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}

@@ -1,6 +1,9 @@
 package coordinate
 
-import "github.com/taskat/aoc/pkg/utils/types"
+import (
+	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/types"
+)
 
 // Coordinate2D represents a 2D coordinate
 type Coordinate2D[T types.Real] struct {
@@ -33,4 +36,9 @@ func (c Coordinate2D[T]) In2DSlice(width, height T) bool {
 // All limits are inclusive.
 func (c Coordinate2D[T]) InLimits(minX, minY, maxX, maxY T) bool {
 	return c.X >= minX && c.X <= maxX && c.Y >= minY && c.Y <= maxY
+}
+
+// Neighbors returns the neighbors of the coordinate in the given directions
+func (c Coordinate2D[T]) Neighbors(directions []Direction) []Coordinate2D[T] {
+	return slices.Map(directions, c.Go)
 }
