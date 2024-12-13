@@ -46,32 +46,43 @@ func parseMachine(lines []string) machine {
 	}
 }
 
+func (m *machine) addOffset(offset int) {
+	m.prize.X += offset
+	m.prize.Y += offset
+}
+
 func (m machine) cost(a, b int) int {
 	return 3*a + b
 }
 
-func (m machine) fewestTokens() result {
-	min := 400
-	for a := 0; a < 100; a++ {
-		for b := 0; b < 100; b++ {
-			if m.possible(a, b) {
-				cost := m.cost(a, b)
-				if cost < min {
-					min = cost
-				}
-			}
-		}
+func (m machine) tokens() int {
+	a, b := m.solve()
+	if a == 0 && b == 0 {
+		return 0
 	}
-	if min == 400 {
-		return newResult(0, false)
-	}
-	return newResult(min, true)
+	return m.cost(a, b)
 }
 
-func (m machine) possible(a, b int) bool {
-	xMacthes := m.buttonA.X*a+m.buttonB.X*b == m.prize.X
-	yMatches := m.buttonA.Y*a+m.buttonB.Y*b == m.prize.Y
-	return xMacthes && yMatches
+func (m machine) solve() (int, int) {
+	nomB := m.buttonA.X*m.prize.Y - m.buttonA.Y*m.prize.X
+	denomB := m.buttonA.X*m.buttonB.Y - m.buttonA.Y*m.buttonB.X
+	if nomB%denomB != 0 {
+		return 0, 0
+	}
+	b := nomB / denomB
+	if b < 0 {
+		return 0, 0
+	}
+	nomA := m.prize.X - m.buttonB.X*b
+	denomA := m.buttonA.X
+	if nomA%denomA != 0 {
+		return 0, 0
+	}
+	a := nomA / denomA
+	if a < 0 {
+		return 0, 0
+	}
+	return a, b
 }
 
 type coord = coordinate.Coordinate2D[int]
@@ -82,34 +93,24 @@ func parseCoord(line string, format string) coord {
 	return coordinate.NewCoordinate2D(x, y)
 }
 
-type result struct {
-	tokens   int
-	possible bool
-}
-
-func newResult(tokens int, possible bool) result {
-	return result{tokens, possible}
-}
-
-func (r result) isPossible() bool {
-	return r.possible
-}
-
-func (r result) minTokens() int {
-	return r.tokens
-}
-
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	machines := s.parse(lines)
-	results := slices.Map(machines, machine.fewestTokens)
-	results = slices.Filter(results, result.isPossible)
-	tokens := slices.Map(results, result.minTokens)
+	tokens := slices.Map(machines, machine.tokens)
 	sum := slices.Sum(tokens)
 	return fmt.Sprint(sum)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	machines := s.parse(lines)
+	offset := 10_000_000_000_000
+	addOffset := func(m machine) machine {
+		m.addOffset(offset)
+		return m
+	}
+	machines = slices.Map(machines, addOffset)
+	tokens := slices.Map(machines, machine.tokens)
+	sum := slices.Sum(tokens)
+	return fmt.Sprint(sum)
 }
