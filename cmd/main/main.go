@@ -34,6 +34,7 @@ func main() {
 	} else {
 		solve = day.SolvePart2
 	}
+	day.AddHyperParams(cfg.GetHyperParams()...)
 	solution := solve(input)
 	fmt.Printf("Solution for part %d: %s\n", cfg.GetPart(), solution)
 }
