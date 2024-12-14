@@ -172,7 +172,7 @@ func TestInsert(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			tc.ll.Insert(tc.value, tc.index)
+			tc.ll.Insert(tc.index, tc.value)
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
@@ -183,7 +183,7 @@ func TestInsert(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			assert.Panics(t, func() { tc.ll.Insert(tc.value, tc.index) })
+			assert.Panics(t, func() { tc.ll.Insert(tc.index, tc.value) })
 		})
 	}
 }
