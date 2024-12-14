@@ -32,12 +32,18 @@ func (s *Solver) parse(lines []string) []machine {
 	return machines
 }
 
+// machine a claw machine configuration
 type machine struct {
 	buttonA coord
 	buttonB coord
 	prize   coord
 }
 
+// parseMachine parses a machine from the input lines
+// The input lines are expected to be in the following format:
+// Button A: X+%d, Y+%d
+// Button B: X+%d, Y+%d
+// Prize: X=%d, Y=%d
 func parseMachine(lines []string) machine {
 	return machine{
 		buttonA: parseCoord(lines[0], "Button A: X+%d, Y+%d"),
@@ -46,47 +52,49 @@ func parseMachine(lines []string) machine {
 	}
 }
 
+// addOffset adds an offset to the prize coordinates
 func (m *machine) addOffset(offset int) {
 	m.prize.X += offset
 	m.prize.Y += offset
 }
 
-func (m machine) cost(a, b int) int {
-	return 3*a + b
-}
-
-func (m machine) tokens() int {
+// cost calculates the cost of the machine
+func (m machine) cost() int {
 	a, b := m.solve()
 	if a == 0 && b == 0 {
 		return 0
 	}
-	return m.cost(a, b)
+	return a*3 + b
 }
 
+// solve solves the equation system of the machine. If there is a solution,
+// which is a positive integer for both variables, it returns the values.
+// Otherwise, it returns 0, 0.
 func (m machine) solve() (int, int) {
 	nomB := m.buttonA.X*m.prize.Y - m.buttonA.Y*m.prize.X
 	denomB := m.buttonA.X*m.buttonB.Y - m.buttonA.Y*m.buttonB.X
-	if nomB%denomB != 0 {
+	if !isPositiveInteger(nomB, denomB) {
 		return 0, 0
 	}
 	b := nomB / denomB
-	if b < 0 {
-		return 0, 0
-	}
 	nomA := m.prize.X - m.buttonB.X*b
 	denomA := m.buttonA.X
-	if nomA%denomA != 0 {
+	if !isPositiveInteger(nomA, denomA) {
 		return 0, 0
 	}
 	a := nomA / denomA
-	if a < 0 {
-		return 0, 0
-	}
 	return a, b
 }
 
+// isPositiveInteger checks if the given fraction is a positive integer
+func isPositiveInteger(nom, denom int) bool {
+	return nom%denom == 0 && nom/denom >= 0
+}
+
+// coord is  shorthand for a 2D coordinate
 type coord = coordinate.Coordinate2D[int]
 
+// parseCoord parses a coordinate from a line
 func parseCoord(line string, format string) coord {
 	var x, y int
 	fmt.Sscanf(line, format, &x, &y)
@@ -96,7 +104,7 @@ func parseCoord(line string, format string) coord {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	machines := s.parse(lines)
-	tokens := slices.Map(machines, machine.tokens)
+	tokens := slices.Map(machines, machine.cost)
 	sum := slices.Sum(tokens)
 	return fmt.Sprint(sum)
 }
@@ -110,7 +118,7 @@ func (s *Solver) SolvePart2(lines []string) string {
 		return m
 	}
 	machines = slices.Map(machines, addOffset)
-	tokens := slices.Map(machines, machine.tokens)
+	tokens := slices.Map(machines, machine.cost)
 	sum := slices.Sum(tokens)
 	return fmt.Sprint(sum)
 }
