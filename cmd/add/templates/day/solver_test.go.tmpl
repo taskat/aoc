@@ -11,7 +11,7 @@ import (
 var (
 	// result stores the result of the solver
 	// this is used to prevent the compiler from optimizing the code
-	result any
+	_result any
 )
 {{ $day := .Day }}{{range $part := .Parts}}
 // Test_Day_{{printf "%02d" $day}}_Part{{$part}} tests the day {{printf "%02d" $day}} solver for part {{$part}}
@@ -44,7 +44,7 @@ func Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}}(b *testing.B) {
 	input := cfg.ReadInputFile()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		result = solver.SolvePart{{$part}}(input)
+		_result = solver.SolvePart{{$part}}(input)
 	}
 }
 {{end}}

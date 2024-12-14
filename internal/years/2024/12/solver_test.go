@@ -12,7 +12,7 @@ import (
 var (
 	// result stores the result of the solver
 	// this is used to prevent the compiler from optimizing the code
-	result any
+	_result any
 )
 
 // Test_Day_12_Part1 tests the day 12 solver for part 1
@@ -47,7 +47,7 @@ func Benchmark_Day_12_Part1(b *testing.B) {
 	input := cfg.ReadInputFile()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		result = solver.SolvePart1(input)
+		_result = solver.SolvePart1(input)
 	}
 }
 
@@ -85,6 +85,6 @@ func Benchmark_Day_12_Part2(b *testing.B) {
 	input := cfg.ReadInputFile()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		result = solver.SolvePart2(input)
+		_result = solver.SolvePart2(input)
 	}
 }
