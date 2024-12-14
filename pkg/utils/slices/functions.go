@@ -173,6 +173,15 @@ func Min[S Slice[T], T cmp.Ordered](slice S) T {
 	return min
 }
 
+// Product returns the product of all the elements in the slice
+func Product[S Slice[T], T types.Number](slice S) T {
+	var product T = 1
+	for _, v := range slice {
+		product *= v
+	}
+	return product
+}
+
 // Reduce applies the function f to the elements of the slice and returns a
 // single value. The function f receives the accumulated value and the current
 // element as arguments

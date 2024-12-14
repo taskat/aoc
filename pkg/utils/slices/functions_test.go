@@ -422,6 +422,30 @@ func TestMin(t *testing.T) {
 	Map([]numbers{}, Min)
 }
 
+func TestProduct(t *testing.T) {
+	type testCase[T types.Number] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, 1},
+		{"Empty slice", []int{}, 1},
+		{"Product of positive numbers", []int{1, 2, 3}, 6},
+		{"Product of negative numbers", []int{-1, -2, -3}, -6},
+		{"Product of mixed numbers", []int{1, -2, 3}, -6},
+		{"Product of zeros", []int{1, 0, 3}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Product(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	// Test that it works with a custom type
+	Map([]numbers{}, Product)
+}
+
 func TestReduce(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
