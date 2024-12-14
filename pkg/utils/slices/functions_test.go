@@ -198,6 +198,26 @@ func TestFirst(t *testing.T) {
 	Map([]numbers{}, First)
 }
 
+func TestFor(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		f             func(int) T
+		i             int
+		expectedSlice []T
+	}
+	testCases := []testCase[int]{
+		{"No repeat", func(i int) int { return i }, 0, []int{}},
+		{"Repeat 3 times", func(i int) int { return i }, 3, []int{0, 1, 2}},
+		{"Repeat 5 times", func(i int) int { return i * 2 }, 5, []int{0, 2, 4, 6, 8}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			actual := For(tc.i, tc.f)
+			assert.Equal(t, tc.expectedSlice, actual)
+		})
+	}
+}
+
 func TestForEach(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -213,6 +233,26 @@ func TestForEach(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			ForEach(tc.slice, tc.f)
+			assert.Equal(t, tc.expectedSlice, tc.slice)
+		})
+	}
+}
+
+func TestForEach_m(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		f             func(*T)
+		expectedSlice []T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i *int) {}, nil},
+		{"Empty slice", []int{}, func(i *int) {}, []int{}},
+		{"For each element", []int{1, 2, 3}, func(i *int) { *i += 1 }, []int{2, 3, 4}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			ForEach_m(tc.slice, tc.f)
 			assert.Equal(t, tc.expectedSlice, tc.slice)
 		})
 	}
@@ -361,6 +401,37 @@ func TestMax(t *testing.T) {
 	Map([]numbers{}, Max)
 }
 
+func TestMax_i(t *testing.T) {
+	type testCase[T cmp.Ordered] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+		expectedIndex int
+	}
+	testCases := []testCase[int]{
+		{"Max of positive numbers", []int{1, 2, 3}, 3, 2},
+		{"Max of negative numbers", []int{-1, -2, -3}, -1, 0},
+		{"Max of mixed numbers", []int{1, -2, 3}, 3, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result, index := Max_i(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+			assert.Equal(t, tc.expectedIndex, index)
+		})
+	}
+	// Test for panics
+	testCases = []testCase[int]{
+		{"Nil slice", nil, 0, 0},
+		{"Empty slice", []int{}, 0, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() { Max_i(tc.slice) })
+		})
+	}
+}
+
 func TestMiddle(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
@@ -420,6 +491,37 @@ func TestMin(t *testing.T) {
 	}
 	// Test that it works with a custom type
 	Map([]numbers{}, Min)
+}
+
+func TestMin_i(t *testing.T) {
+	type testCase[T cmp.Ordered] struct {
+		testName      string
+		slice         []T
+		expectedValue T
+		expectedIndex int
+	}
+	testCases := []testCase[int]{
+		{"Min of positive numbers", []int{1, 2, 3}, 1, 0},
+		{"Min of negative numbers", []int{-1, -2, -3}, -3, 2},
+		{"Min of mixed numbers", []int{1, -2, 3}, -2, 1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result, index := Min_i(tc.slice)
+			assert.Equal(t, tc.expectedValue, result)
+			assert.Equal(t, tc.expectedIndex, index)
+		})
+	}
+	// Test for panics
+	testCases = []testCase[int]{
+		{"Nil slice", nil, 0, 0},
+		{"Empty slice", []int{}, 0, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			assert.Panics(t, func() { Min_i(tc.slice) })
+		})
+	}
 }
 
 func TestProduct(t *testing.T) {

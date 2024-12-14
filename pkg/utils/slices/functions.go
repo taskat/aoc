@@ -88,10 +88,27 @@ func First[S Slice[T], T any](slice S) T {
 	return slice[0]
 }
 
+// For applies the function f i times, and returns a slice with the results
+func For[T any](i int, f func(int) T) []T {
+	result := make([]T, i)
+	for j := 0; j < i; j++ {
+		result[j] = f(j)
+	}
+	return result
+}
+
 // ForEach applies the function f to each element of the slice
 func ForEach[T any](slice []T, f func(T)) {
 	for _, v := range slice {
 		f(v)
+	}
+}
+
+// ForEach_m applies the function f to each element of the slice. The function f
+// receives a pointer to the element as an argument
+func ForEach_m[T any](slice []T, f func(*T)) {
+	for i := range slice {
+		f(&slice[i])
 	}
 }
 
@@ -137,16 +154,24 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 
 // Max returns the maximum element in the slice. If the slice is empty, it panics
 func Max[S Slice[T], T cmp.Ordered](slice S) T {
+	max, _ := Max_i(slice)
+	return max
+}
+
+// Max_i returns the maximum element in the slice. If the slice is empty, it panics
+func Max_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
 	max := slice[0]
-	for _, v := range slice {
+	index := 0
+	for i, v := range slice {
 		if v > max {
 			max = v
+			index = i
 		}
 	}
-	return max
+	return max, index
 }
 
 // Middle returns the middle element of the slice. If the slice has an even
@@ -161,16 +186,24 @@ func Middle[S Slice[T], T any](slice S) T {
 
 // Min returns the minimum element in the slice. If the slice is empty, it panics
 func Min[S Slice[T], T cmp.Ordered](slice S) T {
+	min, _ := Min_i(slice)
+	return min
+}
+
+// Min_i returns the minimum element in the slice. If the slice is empty, it panics
+func Min_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
 	min := slice[0]
-	for _, v := range slice {
+	index := 0
+	for i, v := range slice {
 		if v < min {
 			min = v
+			index = i
 		}
 	}
-	return min
+	return min, index
 }
 
 // Product returns the product of all the elements in the slice
