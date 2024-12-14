@@ -2,6 +2,7 @@ package day14
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/slices"
@@ -36,8 +37,13 @@ func (s *Solver) AddHyperParams(params ...any) {
 }
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) []robot {
-	return slices.Map(lines, parseRobot)
+func (s *Solver) parse(lines []string) lobby {
+	robots := slices.Map(lines, parseRobot)
+	return lobby{
+		width:  s.width,
+		height: s.height,
+		robots: robots,
+	}
 }
 
 type robot struct {
@@ -69,23 +75,29 @@ func (r *robot) move(seconds, width, height int) {
 
 type coord = coordinate.Coordinate2D[int]
 
-func (s Solver) elapseSeconds(n int, robots []robot) {
-	for j := range robots {
-		robots[j].move(n, s.width, s.height)
+type lobby struct {
+	width  int
+	height int
+	robots []robot
+}
+
+func (l *lobby) elapseSeconds(n int) {
+	for j := range l.robots {
+		l.robots[j].move(n, l.width, l.height)
 	}
 }
 
-func (s Solver) robotsInQuadrants(robots []robot) []int {
+func (l lobby) robotsInQuadrants() []int {
 	quadrants := make([]int, 4)
-	for _, robot := range robots {
+	for _, robot := range l.robots {
 		quadrantIndex := 0
-		if robot.pos.X == s.width/2 || robot.pos.Y == s.height/2 {
+		if robot.pos.X == l.width/2 || robot.pos.Y == l.height/2 {
 			continue
 		}
-		if robot.pos.Y > s.height/2 {
+		if robot.pos.Y > l.height/2 {
 			quadrantIndex += 2
 		}
-		if robot.pos.X > s.width/2 {
+		if robot.pos.X > l.width/2 {
 			quadrantIndex++
 		}
 		quadrants[quadrantIndex]++
@@ -93,17 +105,50 @@ func (s Solver) robotsInQuadrants(robots []robot) []int {
 	return quadrants
 }
 
+func (l lobby) safetyFactor() int {
+	quadrants := l.robotsInQuadrants()
+	return slices.Product(quadrants)
+}
+
+func (l lobby) String() string {
+	line := slices.Repeat('.', l.width)
+	grid := make([][]rune, l.height)
+	for i := range grid {
+		grid[i] = slices.Copy(line)
+	}
+	robots := make(map[coord]int)
+	for _, robot := range l.robots {
+		robots[robot.pos]++
+	}
+	for pos, count := range robots {
+		grid[pos.Y][pos.X] = rune('0' + count)
+	}
+	return strings.Join(slices.Map(grid, func(line []rune) string { return string(line) }), "\n")
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
-	robots := s.parse(lines)
-	s.elapseSeconds(100, robots)
-	quadrants := s.robotsInQuadrants(robots)
-	safetyfactor := slices.Product(quadrants)
-	fmt.Println(s.width, s.height)
-	return fmt.Sprint(safetyfactor)
+	lobby := s.parse(lines)
+	lobby.elapseSeconds(100)
+	safetyFactor := lobby.safetyFactor()
+	return fmt.Sprint(safetyFactor)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	lobby := s.parse(lines)
+	minSafetyFactors := lobby.safetyFactor()
+	minIndex := 0
+	for i := 1; i < s.height*s.width; i++ {
+		lobby.elapseSeconds(1)
+		newSafetyFactor := lobby.safetyFactor()
+		if newSafetyFactor < minSafetyFactors {
+			minSafetyFactors = newSafetyFactor
+			minIndex = i
+		}
+	}
+	lobby = s.parse(lines)
+	lobby.elapseSeconds(minIndex)
+	fmt.Println(lobby)
+	return fmt.Sprint(minIndex)
 }
