@@ -134,6 +134,40 @@ func TestGo(t *testing.T) {
 	}
 }
 
+func TestGoN(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName  string
+		c         Coordinate2D[T]
+		direction Direction
+		n         int
+		expected  Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Up", Coordinate2D[int]{X: 1, Y: 2}, Up(), 1, Coordinate2D[int]{X: 1, Y: 1}},
+		{"Up Right", Coordinate2D[int]{X: 1, Y: 2}, UpRight(), 1, Coordinate2D[int]{X: 2, Y: 1}},
+		{"Right", Coordinate2D[int]{X: 1, Y: 2}, Right(), 1, Coordinate2D[int]{X: 2, Y: 2}},
+		{"Down Right", Coordinate2D[int]{X: 1, Y: 2}, DownRight(), 1, Coordinate2D[int]{X: 2, Y: 3}},
+		{"Down", Coordinate2D[int]{X: 1, Y: 2}, Down(), 1, Coordinate2D[int]{X: 1, Y: 3}},
+		{"Down Left", Coordinate2D[int]{X: 1, Y: 2}, DownLeft(), 1, Coordinate2D[int]{X: 0, Y: 3}},
+		{"Left", Coordinate2D[int]{X: 1, Y: 2}, Left(), 1, Coordinate2D[int]{X: 0, Y: 2}},
+		{"Up Left", Coordinate2D[int]{X: 1, Y: 2}, UpLeft(), 1, Coordinate2D[int]{X: 0, Y: 1}},
+		{"Up 2", Coordinate2D[int]{X: 1, Y: 2}, Up(), 2, Coordinate2D[int]{X: 1, Y: 0}},
+		{"Up Right 2", Coordinate2D[int]{X: 1, Y: 2}, UpRight(), 2, Coordinate2D[int]{X: 3, Y: 0}},
+		{"Right 2", Coordinate2D[int]{X: 1, Y: 2}, Right(), 2, Coordinate2D[int]{X: 3, Y: 2}},
+		{"Down Right 2", Coordinate2D[int]{X: 1, Y: 2}, DownRight(), 2, Coordinate2D[int]{X: 3, Y: 4}},
+		{"Down 2", Coordinate2D[int]{X: 1, Y: 2}, Down(), 2, Coordinate2D[int]{X: 1, Y: 4}},
+		{"Down Left 2", Coordinate2D[int]{X: 1, Y: 2}, DownLeft(), 2, Coordinate2D[int]{X: -1, Y: 4}},
+		{"Left 2", Coordinate2D[int]{X: 1, Y: 2}, Left(), 2, Coordinate2D[int]{X: -1, Y: 2}},
+		{"Up Left 2", Coordinate2D[int]{X: 1, Y: 2}, UpLeft(), 2, Coordinate2D[int]{X: -1, Y: 0}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.GoN(tc.direction, tc.n)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestI(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string

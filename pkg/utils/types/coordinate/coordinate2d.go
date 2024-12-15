@@ -40,8 +40,13 @@ func (c Coordinate2D[T]) Equal(other Coordinate2D[T]) bool {
 
 // Go returns the coordinate after moving in the direction
 func (c Coordinate2D[T]) Go(direction Direction) Coordinate2D[T] {
+	return c.GoN(direction, 1)
+}
+
+// GoN returns the coordinate after moving n times in the direction
+func (c Coordinate2D[T]) GoN(direction Direction, n int) Coordinate2D[T] {
 	vec := direction.ToCoordinate2D()
-	return c.Add(NewCoordinate2D(T(vec.X), T(vec.Y)))
+	return c.Add(NewCoordinate2D(T(vec.X*n), T(vec.Y*n)))
 }
 
 // I returns the X coordinate. It is used for 2D slices
