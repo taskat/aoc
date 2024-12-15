@@ -25,6 +25,23 @@ func TestIsDigit(t *testing.T) {
 	}
 }
 
+func TestIsEmpty(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		input         string
+		expectedValue bool
+	}{
+		{"Empty string", "", true},
+		{"Non-empty string", "a", false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := IsEmpty(tc.input)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestIsInteger(t *testing.T) {
 	testCases := []struct {
 		testName      string
