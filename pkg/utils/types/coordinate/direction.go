@@ -140,6 +140,15 @@ func Verticals() []Direction {
 	return []Direction{Up(), Down()}
 }
 
+// MustParse parses a string to a direction based on Format. It panics if the string is not a valid direction
+func MustParse(s string) Direction {
+	d, err := Parse(s)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
 // Parse parses a string to a direction based on Format
 func Parse(s string) (Direction, error) {
 	for i, f := range Format {

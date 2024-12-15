@@ -54,6 +54,11 @@ func TestVerticals(t *testing.T) {
 	assert.Equal(t, []Direction{Up(), Down()}, Verticals())
 }
 
+func TestMustParse(t *testing.T) {
+	assert.Equal(t, Up(), MustParse("up"))
+	assert.Panics(t, func() { MustParse("invalid") })
+}
+
 func TestParse(t *testing.T) {
 	type testCase struct {
 		testName      string
