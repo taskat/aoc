@@ -21,6 +21,17 @@ func Contains[K comparable, V any](m map[K]V, k K) bool {
 	return ok
 }
 
+// Filter filters the values of a map.
+func Filter[K comparable, V any](m map[K]V, f func(K, V) bool) map[K]V {
+	result := make(map[K]V, len(m))
+	for k, v := range m {
+		if f(k, v) {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 // ForEach iterates over the elements of a map.
 func ForEach[K comparable, V any](m map[K]V, f func(K, V)) {
 	for k, v := range m {
@@ -76,6 +87,15 @@ func Sum[K comparable, V types.Summable](m map[K]V) V {
 		sum += v
 	}
 	return sum
+}
+
+// ToSlice converts a map to a slice of key-value pairs.
+func ToSlice[K comparable, V, T any](m map[K]V, f func(K, V) T) []T {
+	result := make([]T, 0, len(m))
+	for k, v := range m {
+		result = append(result, f(k, v))
+	}
+	return result
 }
 
 // Values returns the values of a map.

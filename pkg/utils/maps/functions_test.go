@@ -1,6 +1,7 @@
 package maps
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -63,6 +64,27 @@ func TestContains(t *testing.T) {
 			if res != tc.expectedRes {
 				t.Errorf("Expected %t, got %t", tc.expectedRes, res)
 			}
+		})
+	}
+}
+
+func TestFilter(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]string
+		expectedMap map[int]string
+	}{
+		{"Nil map", nil, map[int]string{}},
+		{"Empty map", map[int]string{}, map[int]string{}},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, map[int]string{1: "a"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			f := func(k int, v string) bool {
+				return k == 1
+			}
+			result := Filter(tc.m, f)
+			assert.Equal(t, tc.expectedMap, result)
 		})
 	}
 }
@@ -189,6 +211,27 @@ func TestSum(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			sum := Sum(tc.m)
 			assert.Equal(t, tc.expectedSum, sum)
+		})
+	}
+}
+
+func TestToSlice(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		m           map[int]string
+		expectedMap []string
+	}{
+		{"Nil map", nil, []string{}},
+		{"Empty map", map[int]string{}, []string{}},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, []string{"1: a", "2: b"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			f := func(k int, v string) string {
+				return strings.Join([]string{fmt.Sprint(k), v}, ": ")
+			}
+			result := ToSlice(tc.m, f)
+			assert.Equal(t, tc.expectedMap, result)
 		})
 	}
 }
