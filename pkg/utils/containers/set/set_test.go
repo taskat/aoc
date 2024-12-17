@@ -90,6 +90,24 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestLength(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName    string
+		s           Set[T]
+		expectedLen int
+	}
+	testCases := []testCase[int]{
+		{"Empty set", New[int](), 0},
+		{"Non-empty set", Set[int](map[int]struct{}{1: {}, 2: {}}), 2},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			l := tc.s.Length()
+			assert.Equal(t, tc.expectedLen, l)
+		})
+	}
+}
+
 func TestMap(t *testing.T) {
 	type testCase[T comparable] struct {
 		testName    string
@@ -103,7 +121,7 @@ func TestMap(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			tc.s = tc.s.Map(tc.f)
+			tc.s = Map(tc.s, tc.f)
 			assert.Equal(t, tc.expectedSet, tc.s)
 		})
 	}
@@ -126,6 +144,26 @@ func TestMerge(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			s := tc.s1.Merge(tc.s2)
 			assert.Equal(t, tc.expectedSet, s)
+		})
+	}
+}
+
+func TestReduce(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName      string
+		s             Set[T]
+		f             func(int, T) int
+		initialValue  int
+		expectedValue int
+	}
+	testCases := []testCase[int]{
+		{"Empty set", New[int](), func(acc int, e int) int { return acc + e }, 0, 0},
+		{"Non-empty set", Set[int](map[int]struct{}{1: {}, 2: {}}), func(acc int, e int) int { return acc + e }, 0, 3},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			value := Reduce(tc.s, tc.f, tc.initialValue)
+			assert.Equal(t, tc.expectedValue, value)
 		})
 	}
 }

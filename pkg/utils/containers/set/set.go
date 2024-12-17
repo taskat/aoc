@@ -35,9 +35,14 @@ func (s Set[T]) Delete(e T) {
 	delete(s, e)
 }
 
+// Length returns the number of elements in the set.
+func (s Set[T]) Length() int {
+	return len(s)
+}
+
 // Map applies a function to all elements of the set.
-func (s Set[T]) Map(f func(T) T) Set[T] {
-	fWrapper := func(e T, _ struct{}) (T, struct{}) {
+func Map[T, U comparable](s Set[T], f func(T) U) Set[U] {
+	fWrapper := func(e T, _ struct{}) (U, struct{}) {
 		return f(e), struct{}{}
 	}
 	return maps.Map(s, fWrapper)
@@ -51,6 +56,15 @@ func (s Set[T]) Merge(other Set[T]) Set[T] {
 	}
 	for k := range other {
 		result.Add(k)
+	}
+	return result
+}
+
+// Reduce reduces the set to a single value.
+func Reduce[T comparable, U any](s Set[T], f func(U, T) U, initialValue U) U {
+	result := initialValue
+	for value := range s {
+		result = f(result, value)
 	}
 	return result
 }
