@@ -185,7 +185,7 @@ func (wh *warehouse) upscale(n int) {
 	wh.limit = upscale(wh.limit, n)
 	wh.robot = upscale(wh.robot, n)
 	wh.walls = set.FromSlice(slices.Map(wh.walls.ToSlice(), func(c coord) coord { return upscale(c, n) }))
-	extraWalls := wh.walls.Map(func(c coord) coord { return coord{X: c.X + 1, Y: c.Y} })
+	extraWalls := set.Map(wh.walls, func(c coord) coord { return coord{X: c.X + 1, Y: c.Y} })
 	wh.walls = wh.walls.Merge(extraWalls)
 	wh.boxes = set.FromSlice(slices.Map(wh.boxes.ToSlice(), func(c coord) coord { return upscale(c, n) }))
 }

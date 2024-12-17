@@ -7,6 +7,7 @@ import (
 	"github.com/taskat/aoc/pkg/utils/containers/set"
 	"github.com/taskat/aoc/pkg/utils/graph"
 	"github.com/taskat/aoc/pkg/utils/maps"
+	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
@@ -101,11 +102,15 @@ func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coord) {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	graph, start, end := s.parse(lines)
-	_, cost := graph.Dijkstra(graph.GetNode(start), func(g gate) bool { return g.c.Equal(end) })
-	return fmt.Sprint(cost)
+	path := graph.Dijkstra(graph.GetNode(start), func(g gate) bool { return g.c.Equal(end) })
+	return fmt.Sprint(path.Cost())
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	g, start, end := s.parse(lines)
+	nodes := g.NodesOfBestPaths(g.GetNode(start), func(g gate) bool { return g.c.Equal(end) })
+	coords := slices.Map(nodes, func(n gate) coord { return n.c })
+	coords = set.FromSlice(coords).ToSlice()
+	return fmt.Sprint(len(coords))
 }
