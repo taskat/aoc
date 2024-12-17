@@ -51,3 +51,44 @@ func (g *Graph[ID]) String() string {
 	}
 	return strings.Join(nodes, "\n")
 }
+
+type Path[ID comparable] struct {
+	nodes []ID
+	cost  int
+}
+
+func NewPath[ID comparable](nodes []ID, cost int) Path[ID] {
+	return Path[ID]{nodes, cost}
+}
+
+func NoPath[ID comparable]() Path[ID] {
+	return Path[ID]{nil, -1}
+}
+
+func (p *Path[ID]) AddNode(node ID, cost int) {
+	p.nodes = append(p.nodes, node)
+	p.cost += cost
+}
+
+func (p *Path[ID]) AddFirstNode(node ID, cost int) {
+	p.nodes = append([]ID{node}, p.nodes...)
+	p.cost += cost
+}
+
+func (p Path[ID]) Copy() Path[ID] {
+	nodes := make([]ID, len(p.nodes))
+	copy(nodes, p.nodes)
+	return Path[ID]{nodes, p.cost}
+}
+
+func (p Path[ID]) Cost() int {
+	return p.cost
+}
+
+func (p Path[ID]) LastNode() ID {
+	return p.nodes[len(p.nodes)-1]
+}
+
+func (p Path[ID]) Nodes() []ID {
+	return p.nodes
+}
