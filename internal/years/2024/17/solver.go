@@ -76,6 +76,61 @@ func (m *machine) comboOperand() int {
 	}
 }
 
+type command func(a int) int
+
+func (m *machine) compile() (int, func(a int) int) {
+	variables := map[rune]command{}
+	variables['a'] = func(a int) int { return a }
+	variables['b'] = func(int) int { return m.regB }
+	variables['c'] = func(int) int { return m.regC }
+	var program command
+	var step int
+	for m.instructionPointer < len(m.instructions) && m.instructionPointer >= 0 {
+		instruction := m.instructions[m.instructionPointer]
+		if instruction.value() == (out{}).value() {
+			operand := m.compileComboOperand(variables)
+			program = func(a int) int { return operand(a) % 8 }
+		}
+		if instruction.value() == (adv{}).value() {
+			step = intutils.Power(2, m.comboOperand())
+		}
+		if program == nil {
+			r, f := instruction.toFunction(variables, m)
+			variables[r] = f
+		}
+		m.instructionPointer += 2
+
+	}
+	return step, program
+}
+
+func (m *machine) compileComboOperand(vars map[rune]command) command {
+	operand := m.instructions[m.instructionPointer+1].value()
+	switch operand {
+	case 0, 1, 2, 3:
+		return func(int) int {
+			return operand
+		}
+	case 4:
+		return vars['a']
+	case 5:
+		return vars['b']
+	case 6:
+		return vars['c']
+	case 7:
+		panic("Combo operand 7 is reserved")
+	default:
+		panic("Invalid combo operand")
+	}
+}
+
+func (m *machine) compileLiteralOperand() command {
+	value := m.instructions[m.instructionPointer+1].value()
+	return func(int) int {
+		return value
+	}
+}
+
 func (m *machine) execute() {
 	for m.instructionPointer >= 0 && m.instructionPointer < len(m.instructions) {
 		instruction := m.instructions[m.instructionPointer]
@@ -90,6 +145,7 @@ func (m *machine) literalOperand() int {
 
 type instruction interface {
 	execute(m *machine)
+	toFunction(variables map[rune]command, m *machine) (rune, command)
 	value() int
 	fmt.Stringer
 }
@@ -97,10 +153,19 @@ type instruction interface {
 type adv struct{}
 
 func (adv) execute(m *machine) {
-	// fmt.Printf("Adv: regA: %d, op: %d\n", m.regA, m.comboOperand())
 	num := m.regA
 	denom := intutils.Power(2, m.comboOperand())
 	m.regA = num / denom
+}
+
+func (adv) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	a := vars['a']
+	operand := m.compileComboOperand(vars)
+	return 'a', func(init int) int {
+		num := a(init)
+		denom := intutils.Power(2, operand(init))
+		return num / denom
+	}
 }
 
 func (a adv) value() int {
@@ -114,8 +179,15 @@ func (adv) String() string {
 type bxl struct{}
 
 func (bxl) execute(m *machine) {
-	// fmt.Printf("Bxl: regB: %d, op: %d\n", m.regB, m.literalOperand())
 	m.regB = m.regB ^ m.literalOperand()
+}
+
+func (bxl) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	b := vars['b']
+	operand := m.compileLiteralOperand()
+	return 'b', func(init int) int {
+		return b(init) ^ operand(init)
+	}
 }
 
 func (bxl) value() int {
@@ -129,8 +201,14 @@ func (bxl) String() string {
 type bst struct{}
 
 func (bst) execute(m *machine) {
-	// fmt.Printf("Bst: op: %d\n", m.comboOperand())
 	m.regB = m.comboOperand() % 8
+}
+
+func (bst) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	operand := m.compileComboOperand(vars)
+	return 'b', func(init int) int {
+		return operand(init) % 8
+	}
 }
 
 func (bst) value() int {
@@ -144,11 +222,14 @@ func (bst) String() string {
 type jnz struct{}
 
 func (jnz) execute(m *machine) {
-	// fmt.Printf("Jnz: regA: %d, op: %d\n", m.regA, m.literalOperand())
 	if m.regA == 0 {
 		return
 	}
 	m.instructionPointer = m.literalOperand() - 2
+}
+
+func (jnz) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	panic("jnz cannot be compiled")
 }
 
 func (jnz) value() int {
@@ -162,8 +243,15 @@ func (jnz) String() string {
 type bxc struct{}
 
 func (bxc) execute(m *machine) {
-	// fmt.Printf("Bxc: regB: %d, regC: %d\n", m.regB, m.regC)
 	m.regB = m.regB ^ m.regC
+}
+
+func (bxc) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	b := vars['b']
+	c := vars['c']
+	return 'b', func(init int) int {
+		return b(init) ^ c(init)
+	}
 }
 
 func (bxc) value() int {
@@ -177,8 +265,11 @@ func (bxc) String() string {
 type out struct{}
 
 func (out) execute(m *machine) {
-	// fmt.Printf("Out: op: %d\n", m.comboOperand())
 	m.output = append(m.output, m.comboOperand()%8)
+}
+
+func (out) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	panic("out cannot be compiled")
 }
 
 func (out) value() int {
@@ -192,10 +283,19 @@ func (out) String() string {
 type bdv struct{}
 
 func (bdv) execute(m *machine) {
-	// fmt.Printf("Bdv: regA: %d, op: %d\n", m.regA, m.comboOperand())
 	num := m.regA
 	denom := intutils.Power(2, m.comboOperand())
 	m.regB = num / denom
+}
+
+func (bdv) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	a := vars['a']
+	operand := m.compileComboOperand(vars)
+	return 'b', func(init int) int {
+		num := a(init)
+		denom := intutils.Power(2, operand(init))
+		return num / denom
+	}
 }
 
 func (bdv) value() int {
@@ -209,10 +309,19 @@ func (bdv) String() string {
 type cdv struct{}
 
 func (cdv) execute(m *machine) {
-	// fmt.Printf("Cdv: regA: %d, op: %d\n", m.regA, m.comboOperand())
 	num := m.regA
 	denom := intutils.Power(2, m.comboOperand())
 	m.regC = num / denom
+}
+
+func (cdv) toFunction(vars map[rune]command, m *machine) (rune, command) {
+	a := vars['a']
+	operand := m.compileComboOperand(vars)
+	return 'c', func(init int) int {
+		num := a(init)
+		denom := intutils.Power(2, operand(init))
+		return num / denom
+	}
 }
 
 func (cdv) value() int {
@@ -247,5 +356,45 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	m := s.parse(lines)
+	opCodes := slices.Map(m.instructions, instruction.value)
+	// program2 := func(a int) int {
+	// 	return (a % 8) ^ 1 ^ ((a / (intutils.Power(2, ((a % 8) ^ 2)))) % 8)
+	// }
+	step, program := m.compile()
+	possibleA := make([]int, step-1)
+	for i := 1; i < step; i++ {
+		possibleA[i-1] = i
+	}
+	for i := len(opCodes) - 1; i >= 0; i-- {
+		newPossibleA := []int{}
+		for j := 0; j < len(possibleA); j++ {
+			a := possibleA[j]
+			if program(a) == opCodes[i] {
+				base := a * step
+				possibles := make([]int, step)
+				for k := 0; k < step; k++ {
+					possibles[k] = base + k
+				}
+				newPossibleA = append(newPossibleA, possibles...)
+			}
+		}
+		if len(newPossibleA) == 0 {
+			possibleA = slices.Map(possibleA, func(a int) int { return a + 8 })
+			i++
+			continue
+		}
+		if i == 0 {
+			break
+		}
+		possibleA = newPossibleA
+	}
+	for i := 0; i < len(possibleA); i++ {
+		if program(possibleA[i]) != opCodes[0] {
+			possibleA = slices.RemoveNth(possibleA, i)
+			i--
+		}
+	}
+	minA := slices.Min(possibleA)
+	return fmt.Sprint(minA)
 }

@@ -47,6 +47,19 @@ func Count[T any](slice []T, predicate func(T) bool) int {
 	return count
 }
 
+// Equal returns true if the two slices are equal and false otherwise
+func Equal[T comparable](slice1 []T, slice2 []T) bool {
+	if len(slice1) != len(slice2) {
+		return false
+	}
+	for i, v := range slice1 {
+		if v != slice2[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // Filter returns a new slice with the elements that satisfy the predicate
 func Filter[T any](slice []T, predicate func(T) bool) []T {
 	result := make([]T, 0)

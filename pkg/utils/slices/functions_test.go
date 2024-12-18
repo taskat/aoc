@@ -98,6 +98,28 @@ func TestCount(t *testing.T) {
 	}
 }
 
+func TestEqual(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName      string
+		slice1        []T
+		slice2        []T
+		expectedValue bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slices", nil, nil, true},
+		{"Empty slices", []int{}, []int{}, true},
+		{"Equal slices", []int{1, 2, 3}, []int{1, 2, 3}, true},
+		{"Different slices", []int{1, 2, 3}, []int{1, 2, 4}, false},
+		{"Different lengths", []int{1, 2, 3}, []int{1, 2}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Equal(tc.slice1, tc.slice2)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestFilter(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
