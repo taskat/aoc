@@ -29,6 +29,24 @@ func TestAtoi(t *testing.T) {
 	})
 }
 
+func TestItoa(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		input         int
+		expectedValue string
+	}{
+		{"Zero", 0, "0"},
+		{"Positive", 1, "1"},
+		{"Negative", -1, "-1"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Itoa(tc.input)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestRuneToInt(t *testing.T) {
 	testCases := []struct {
 		testName      string

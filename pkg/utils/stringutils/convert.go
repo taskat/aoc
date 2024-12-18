@@ -12,6 +12,11 @@ func Atoi(s string) int {
 	return result
 }
 
+// Itoa converts an integer to a string
+func Itoa(i int) string {
+	return strconv.Itoa(i)
+}
+
 // RuneToInt converts a rune to an integer
 // If the rune is not a digit, it panics
 func RuneToInt(r rune) int {
