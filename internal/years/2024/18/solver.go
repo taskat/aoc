@@ -109,14 +109,36 @@ func (s *Solver) SolvePart2(lines []string) string {
 	g := s.generateGraph(coords[:s.byteLimit])
 	startNode := g.GetNode(newCoord(0, 0))
 	goalCoord := newCoord(s.mapLimit, s.mapLimit)
-	var closingIndex int
-	for closingIndex = s.byteLimit; closingIndex < len(coords); closingIndex++ {
-		fmt.Println("Closing index", closingIndex)
-		g.RemoveNode(coords[closingIndex])
-		path := g.Dijkstra(startNode, goalCoord.Equal)
-		if !path.IsValid() {
+	from := s.byteLimit
+	to := len(coords)
+	prev := s.byteLimit
+	for from != to {
+		index := (from + to) / 2
+		if index == from {
 			break
 		}
+		if prev < index {
+			for i := prev; i < index; i++ {
+				g.RemoveNode(coords[i])
+			}
+		} else {
+			for i := prev; i >= index; i-- {
+				g.AddNode(graph.NewBaseNode(coords[i]))
+				for _, neighborCoord := range coords[i].Neighbors(coordinate.Straights()) {
+					neighbor := newCoord(neighborCoord.Y, neighborCoord.X)
+					if g.HasNode(neighbor) {
+						g.AddEdge(coords[i], neighbor, 1)
+					}
+				}
+			}
+		}
+		path := g.Dijkstra(startNode, goalCoord.Equal)
+		if path.IsValid() {
+			from = index
+		} else {
+			to = index
+		}
+		prev = index
 	}
-	return coords[closingIndex].String()
+	return coords[from].String()
 }
