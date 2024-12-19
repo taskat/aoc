@@ -28,13 +28,17 @@ type Solver struct {
 
 // AddHyperParams adds hyper parameters to the solver
 func (s *Solver) AddHyperParams(params ...any) {
-	if len(params) < 2 {
+	switch len(params) {
+	case 0:
 		s.mapLimit = 70
 		s.byteLimit = 1024
-		return
+	case 1:
+		s.mapLimit = stringutils.Atoi(params[0].(string))
+		s.byteLimit = 1024
+	default:
+		s.mapLimit = stringutils.Atoi(params[0].(string))
+		s.byteLimit = stringutils.Atoi(params[1].(string))
 	}
-	s.mapLimit = stringutils.Atoi(params[0].(string))
-	s.byteLimit = stringutils.Atoi(params[1].(string))
 }
 
 // parse handle the common parsing logic for both parts
@@ -43,12 +47,26 @@ func (s *Solver) parse(lines []string) []coord {
 
 }
 
-type coord = coordinate.Coordinate2D[int]
+type coord struct {
+	coordinate.Coordinate2D[int]
+}
+
+func newCoord(i, j int) coord {
+	return coord{coordinate.FromIndexes(i, j)}
+}
 
 func parseCoord(line string) coord {
 	var x, y int
 	_, _ = fmt.Sscanf(line, "%d,%d", &x, &y)
-	return coordinate.NewCoordinate2D(x, y)
+	return newCoord(y, x)
+}
+
+func (c coord) Equal(other coord) bool {
+	return c.Coordinate2D.Equal(other.Coordinate2D)
+}
+
+func (c coord) String() string {
+	return fmt.Sprintf("%d,%d", c.X, c.Y)
 }
 
 func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
@@ -56,7 +74,7 @@ func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
 	fallenBytes := set.FromSlice(coords)
 	for i := 0; i <= s.mapLimit; i++ {
 		for j := 0; j <= s.mapLimit; j++ {
-			c := coordinate.FromIndexes(i, j)
+			c := newCoord(i, j)
 			if fallenBytes.Contains(c) {
 				continue
 			}
@@ -64,7 +82,8 @@ func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
 		}
 	}
 	for _, node := range g.GetNodes() {
-		for _, neighbor := range node.Id().Neighbors(coordinate.Straights()) {
+		for _, neighborCoord := range node.Id().Neighbors(coordinate.Straights()) {
+			neighbor := newCoord(neighborCoord.Y, neighborCoord.X)
 			if g.HasNode(neighbor) {
 				g.AddEdge(node.Id(), neighbor, 1)
 			}
@@ -76,17 +95,28 @@ func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	coords := s.parse(lines)
-	if len(coords) > s.byteLimit {
-		coords = coords[:s.byteLimit]
-	}
+	coords = coords[:s.byteLimit]
 	graph := s.generateGraph(coords)
-	startNode := graph.GetNode(coordinate.NewCoordinate2D(0, 0))
-	goalCoord := coordinate.NewCoordinate2D(s.mapLimit, s.mapLimit)
+	startNode := graph.GetNode(newCoord(0, 0))
+	goalCoord := newCoord(s.mapLimit, s.mapLimit)
 	path := graph.Dijkstra(startNode, goalCoord.Equal)
 	return fmt.Sprint(path.Cost())
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	coords := s.parse(lines)
+	g := s.generateGraph(coords[:s.byteLimit])
+	startNode := g.GetNode(newCoord(0, 0))
+	goalCoord := newCoord(s.mapLimit, s.mapLimit)
+	var closingIndex int
+	for closingIndex = s.byteLimit; closingIndex < len(coords); closingIndex++ {
+		fmt.Println("Closing index", closingIndex)
+		g.RemoveNode(coords[closingIndex])
+		path := g.Dijkstra(startNode, goalCoord.Equal)
+		if !path.IsValid() {
+			break
+		}
+	}
+	return coords[closingIndex].String()
 }

@@ -11,6 +11,7 @@ type Node[T comparable] interface {
 	AddNeighbor(neighbor Node[T], weight int)
 	Id() T
 	GetNeighbors() map[T]int
+	RemoveNeighbor(id T)
 	fmt.Stringer
 }
 
@@ -44,6 +45,10 @@ func (n *BaseNode[T]) AddNeighbor(neighbor Node[T], weight int) {
 
 func (n *BaseNode[T]) GetNeighbors() map[T]int {
 	return n.neighbors
+}
+
+func (n *BaseNode[T]) RemoveNeighbor(id T) {
+	delete(n.neighbors, id)
 }
 
 // String returns a string representation of the node

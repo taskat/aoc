@@ -43,6 +43,13 @@ func (g *Graph[ID]) HasNode(id ID) bool {
 	return ok
 }
 
+func (g *Graph[ID]) RemoveNode(id ID) {
+	delete(g.nodes, id)
+	for _, node := range g.nodes {
+		node.RemoveNeighbor(id)
+	}
+}
+
 // String returns a string representation of the graph
 func (g *Graph[ID]) String() string {
 	nodes := make([]string, 0, len(g.nodes))
@@ -83,6 +90,10 @@ func (p Path[ID]) Copy() Path[ID] {
 
 func (p Path[ID]) Cost() int {
 	return p.cost
+}
+
+func (p Path[ID]) IsValid() bool {
+	return p.nodes != nil
 }
 
 func (p Path[ID]) LastNode() ID {
