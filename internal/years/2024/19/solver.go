@@ -61,6 +61,28 @@ func (p pattern) isPossible(available []pattern) bool {
 	return false
 }
 
+var numberCache = map[pattern]int{"": 1}
+
+func clearNumberCache() {
+	numberCache = map[pattern]int{"": 1}
+}
+
+func (p pattern) numberOfPossibleWays(available []pattern) int {
+	cacheResult, ok := numberCache[p]
+	if ok {
+		return cacheResult
+	}
+	count := 0
+	for _, a := range available {
+		if strings.HasPrefix(string(p), string(a)) {
+			remainingPossbile := newPattern(strings.TrimPrefix(string(p), string(a))).numberOfPossibleWays(available)
+			count += remainingPossbile
+		}
+	}
+	numberCache[p] = count
+	return count
+}
+
 func sortAvailable(available []pattern) {
 	slices2.SortFunc(available, func(a, b pattern) int {
 		switch {
@@ -79,10 +101,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 	available, desired := s.parse(lines)
 	sortAvailable(available)
 	clearCache()
-	i := 0
 	possible := slices.Filter(desired, func(p pattern) bool {
-		fmt.Println("Checking: ", i)
-		i++
 		return p.isPossible(available)
 	})
 	return fmt.Sprint(len(possible))
@@ -90,5 +109,11 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	available, desired := s.parse(lines)
+	sortAvailable(available)
+	clearNumberCache()
+	counts := slices.Map(desired, func(p pattern) int {
+		return p.numberOfPossibleWays(available)
+	})
+	return fmt.Sprint(slices.Sum(counts))
 }
