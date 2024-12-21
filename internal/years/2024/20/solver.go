@@ -105,5 +105,23 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	g, startNode, _ := s.parse(lines)
+	distances := g.Distances(startNode)
+	saves := map[int]int{}
+	nodes := maps.Keys(g.GetNodes())
+	for i := 0; i < len(nodes); i++ {
+		for j := i + 1; j < len(nodes); j++ {
+			coord1 := nodes[i]
+			coord2 := nodes[j]
+			manhattanDistance := coord1.ManhattanDistance(coord2)
+			if manhattanDistance > 20 {
+				continue
+			}
+			saved := intutils.Abs(distances[coord1]-distances[coord2]) - manhattanDistance
+			saves[saved]++
+		}
+	}
+	saves = maps.Filter(saves, func(saved, _ int) bool { return saved >= 100 })
+	savedRoutes := maps.Values(saves)
+	return fmt.Sprint(slices.Sum(savedRoutes))
 }

@@ -3,6 +3,7 @@ package coordinate
 import (
 	"fmt"
 
+	"github.com/taskat/aoc/pkg/utils/math"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/types"
 )
@@ -68,6 +69,11 @@ func (c Coordinate2D[T]) InLimits(minX, minY, maxX, maxY T) bool {
 // J returns the Y coordinate. It is used for 2D slices
 func (c Coordinate2D[T]) J() T {
 	return c.Y
+}
+
+// ManhattanDistance returns the Manhattan distance between the coordinates
+func (c Coordinate2D[T]) ManhattanDistance(other Coordinate2D[T]) T {
+	return math.Abs(c.X-other.X) + math.Abs(c.Y-other.Y)
 }
 
 // Neighbors returns the neighbors of the coordinate in the given directions
