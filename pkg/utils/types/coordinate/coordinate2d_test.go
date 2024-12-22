@@ -262,6 +262,27 @@ func TestJ(t *testing.T) {
 	}
 }
 
+func TestManhattanDistance(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		other    Coordinate2D[T]
+		expected T
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 3, Y: 4}, 4},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, Coordinate2D[int]{X: 1, Y: 2}, 4},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, Coordinate2D[int]{X: 1, Y: 2}, 6},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, Coordinate2D[int]{X: 0, Y: 0}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.ManhattanDistance(tc.other)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestNeighbors(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName   string
@@ -319,6 +340,27 @@ func TestCoordinateString(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			result := tc.c.String()
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestSub(t *testing.T) {
+	type testCase[T types.Real] struct {
+		testName string
+		c        Coordinate2D[T]
+		other    Coordinate2D[T]
+		expected Coordinate2D[T]
+	}
+	testCases := []testCase[int]{
+		{"Test 1", Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 3, Y: 4}, Coordinate2D[int]{X: -2, Y: -2}},
+		{"Test 2", Coordinate2D[int]{X: 3, Y: 4}, Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: 2, Y: 2}},
+		{"Test negative", Coordinate2D[int]{X: -1, Y: -2}, Coordinate2D[int]{X: 1, Y: 2}, Coordinate2D[int]{X: -2, Y: -4}},
+		{"Test zero", Coordinate2D[int]{X: 0, Y: 0}, Coordinate2D[int]{X: 0, Y: 0}, Coordinate2D[int]{X: 0, Y: 0}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.c.Sub(tc.other)
 			assert.Equal(t, tc.expected, result)
 		})
 	}

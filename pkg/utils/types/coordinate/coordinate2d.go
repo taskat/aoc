@@ -91,3 +91,8 @@ func (c Coordinate2D[T]) Row() T {
 func (c Coordinate2D[T]) String() string {
 	return fmt.Sprintf("(%v, %v)", c.X, c.Y)
 }
+
+// Sub subtracts the coordinates
+func (c Coordinate2D[T]) Sub(other Coordinate2D[T]) Coordinate2D[T] {
+	return NewCoordinate2D(c.X-other.X, c.Y-other.Y)
+}
