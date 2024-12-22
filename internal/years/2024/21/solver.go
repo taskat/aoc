@@ -37,19 +37,32 @@ func newCode(s string) code {
 	return code(s)
 }
 
-func (c code) buttons(pads []keypad) code {
-	currentCode := c
+func (c code) buttons(pads []keypad) map[string]int {
+	codeblocks := make(map[string]int)
+	codeblocks[c.String()] = 1
 	for i := 0; i < len(pads); i++ {
-		currentCode = pads[i].typeCode(currentCode)
+		nextCodeBlocks := make(map[string]int)
+		for codeBlock, count := range codeblocks {
+			newCodeBlocks := pads[i].typeCode(newCode(codeBlock))
+			for newCodeBlock, newCount := range newCodeBlocks {
+				nextCodeBlocks[newCodeBlock] += (newCount * count)
+			}
+		}
+		codeblocks = nextCodeBlocks
 	}
-	return currentCode
+	return codeblocks
 }
 
 func (c code) complexity(pads []keypad) int {
 	finalCode := c.buttons(pads)
 	numPart := strings.ReplaceAll(string(c), "A", "")
 	numValue := stringutils.Atoi(numPart)
-	return len(finalCode) * numValue
+	length := 0
+	for codeBlock, count := range finalCode {
+		fmt.Println(codeBlock, count)
+		length += len(codeBlock) * count
+	}
+	return length * numValue
 }
 
 func (c code) String() string {
@@ -88,11 +101,11 @@ func directionalPad() keypad {
 	}
 }
 
-func (k keypad) buttons(from, to rune) []rune {
+func (k keypad) buttons(from, to rune) code {
 	fromCoord := k[from]
 	toCoord := k[to]
 	dist := toCoord.Sub(fromCoord)
-	buttons := make([]rune, 0, intutils.Abs(dist.X)+intutils.Abs(dist.Y)+1)
+	buttons := make(code, 0, intutils.Abs(dist.X)+intutils.Abs(dist.Y)+1)
 	appendN := func(n int, r rune) {
 		for i := 0; i < n; i++ {
 			buttons = append(buttons, r)
@@ -100,18 +113,20 @@ func (k keypad) buttons(from, to rune) []rune {
 	}
 	if (to == '1' || to == '4' || to == '7') && (from == '0' || from == 'A') {
 		appendN(-dist.Y, '^')
-		if dist.X < 0 {
-			appendN(-dist.X, '<')
-		}
+		appendN(-dist.X, '<')
+	} else if (from == '^' || from == 'A') && to == '<' {
+		appendN(dist.Y, 'v')
+		appendN(-dist.X, '<')
 	} else {
 		if dist.X < 0 {
 			appendN(-dist.X, '<')
 		}
 		if (from == '1' || from == '4' || from == '7') && (to == '0' || to == 'A') {
-			if dist.X > 0 {
-				appendN(dist.X, '>')
-			}
+			appendN(dist.X, '>')
 			appendN(dist.Y, 'v')
+		} else if from == '<' && (to == '^' || to == 'A') {
+			appendN(dist.X, '>')
+			appendN(-dist.Y, '^')
 		} else {
 			if dist.Y > 0 {
 				appendN(dist.Y, 'v')
@@ -128,14 +143,15 @@ func (k keypad) buttons(from, to rune) []rune {
 	return buttons
 }
 
-func (k keypad) typeCode(code code) []rune {
-	buttons := make([]rune, 0, 1)
-	buttons = append(buttons, k.buttons('A', code[0])...)
+func (k keypad) typeCode(code code) map[string]int {
+	codeBlocks := make(map[string]int, 0)
+	firstBlock := k.buttons('A', code[0])
+	codeBlocks[firstBlock.String()] = 1
 	for i := 0; i < len(code)-1; i++ {
-		newButtons := k.buttons(code[i], code[i+1])
-		buttons = append(buttons, newButtons...)
+		newBlock := k.buttons(code[i], code[i+1])
+		codeBlocks[newBlock.String()]++
 	}
-	return buttons
+	return codeBlocks
 }
 
 // SolvePart1 solves part 1 of the puzzle
@@ -148,5 +164,12 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	codes := s.parse(lines)
+	pads := make([]keypad, 26)
+	pads[0] = numPad()
+	for i := 0; i < 25; i++ {
+		pads[i+1] = directionalPad()
+	}
+	complexities := slices.Map(codes, func(c code) int { return c.complexity(pads) })
+	return fmt.Sprint(slices.Sum(complexities))
 }
