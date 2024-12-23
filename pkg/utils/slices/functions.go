@@ -7,6 +7,18 @@ import (
 	"github.com/taskat/aoc/pkg/utils/types"
 )
 
+// All returns true if all elements in the slice satisfy the predicate and false
+// otherwise. It returns false at the first element that does not satisfy the
+// predicate, and does not check the rest of the elements
+func All[T any](slice []T, predicate func(T) bool) bool {
+	for _, v := range slice {
+		if !predicate(v) {
+			return false
+		}
+	}
+	return true
+}
+
 // Any returns true if at least one element in the slice satisfies the predicate
 // and false otherwise. It returns true at the first element that satisfies the
 // predicate, and does not check the rest of the elements

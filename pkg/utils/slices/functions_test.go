@@ -11,6 +11,28 @@ import (
 
 type numbers []int
 
+func TestAll(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, true},
+		{"Empty slice", []int{}, func(i int) bool { return true }, true},
+		{"All even numbers", []int{2, 4, 6}, func(i int) bool { return i%2 == 0 }, true},
+		{"All odd numbers", []int{1, 3, 5}, func(i int) bool { return i%2 == 1 }, true},
+		{"All no numbers", []int{1, 2, 3}, func(i int) bool { return false }, false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := All(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestAny(t *testing.T) {
 	type testCase[T any] struct {
 		testName      string
