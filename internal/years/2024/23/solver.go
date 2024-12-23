@@ -2,9 +2,11 @@ package day23
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/containers/set"
 	"github.com/taskat/aoc/pkg/utils/graph"
 	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
@@ -43,39 +45,92 @@ func (s *Solver) parse(lines []string) *graph.Graph[string] {
 
 type setOf3 [3]string
 
-func (s setOf3) hasT() bool {
-	return slices.Any(s[:], func(computer string) bool { return strings.HasPrefix(computer, "t") })
+func newSet(values ...string) setOf3 {
+	if len(values) != 3 {
+		panic("setOf3 must have 3 values")
+	}
+	sort.Strings(values)
+	return setOf3{values[0], values[1], values[2]}
 }
 
 func get3Sets(g *graph.Graph[string]) []setOf3 {
-	sets := make([]setOf3, 0)
+	sets := set.New[setOf3]()
 	nodes := maps.Values(g.GetNodes())
-	for i := 0; i < len(nodes); i++ {
-		iId := nodes[i].Id()
-		for j := i + 1; j < len(nodes); j++ {
-			jId := nodes[j].Id()
-			for k := j + 1; k < len(nodes); k++ {
-				kId := nodes[k].Id()
-				iNeighbors := nodes[i].GetNeighbors()
-				jNeighbors := nodes[j].GetNeighbors()
-				if maps.Contains(iNeighbors, jId) && maps.Contains(iNeighbors, kId) && maps.Contains(jNeighbors, kId) {
-					sets = append(sets, setOf3{iId, jId, kId})
+	ts := slices.Filter(nodes, func(n graph.Node[string]) bool { return strings.HasPrefix(n.Id(), "t") })
+	for _, t := range ts {
+		tId := t.Id()
+		tNeighbors := maps.Keys(t.GetNeighbors())
+		for i := 0; i < len(tNeighbors); i++ {
+			iId := tNeighbors[i]
+			iNeighbors := g.GetNode(iId).GetNeighbors()
+			for j := i + 1; j < len(tNeighbors); j++ {
+				jId := tNeighbors[j]
+				if maps.Contains(iNeighbors, jId) {
+					sets.Add(newSet(tId, iId, jId))
 				}
 			}
 		}
 	}
-	return sets
+	return sets.ToSlice()
+}
+
+func canAdd(g *graph.Graph[string], newNeighbor string, neighbors []string) bool {
+	for _, neighbor := range neighbors {
+		if !g.GetNode(neighbor).HasNeighbor(newNeighbor) {
+			return false
+		}
+	}
+	return true
+}
+
+func getBiggestSetIn(g *graph.Graph[string], currentNeighbors, possibleNeighbors []string, maxLength int) []string {
+	if len(currentNeighbors)+len(possibleNeighbors) < maxLength {
+		return nil
+	}
+	if len(possibleNeighbors) == 0 {
+		if len(currentNeighbors) <= maxLength {
+			return nil
+		}
+		return currentNeighbors
+	}
+	neighbor := possibleNeighbors[0]
+	possibleNeighbors = possibleNeighbors[1:]
+	var biggestSet []string
+	if canAdd(g, neighbor, currentNeighbors) {
+		withNeighbor := getBiggestSetIn(g, append(currentNeighbors, neighbor), possibleNeighbors, maxLength)
+		if len(withNeighbor) > maxLength {
+			maxLength = len(withNeighbor)
+		}
+		biggestSet = withNeighbor
+	}
+	withoutNeighbor := getBiggestSetIn(g, currentNeighbors, possibleNeighbors, maxLength)
+	if len(withoutNeighbor) > maxLength {
+		maxLength = len(withoutNeighbor)
+	}
+	if len(withoutNeighbor) > len(biggestSet) {
+		biggestSet = withoutNeighbor
+	}
+	return biggestSet
 }
 
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	g := s.parse(lines)
 	sets := get3Sets(g)
-	sets = slices.Filter(sets, setOf3.hasT)
 	return fmt.Sprint(len(sets))
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	g := s.parse(lines)
+	nodes := maps.Values(g.GetNodes())
+	sets := slices.Map(nodes, func(n graph.Node[string]) []string {
+		nieghbors := maps.Keys(n.GetNeighbors())
+		return getBiggestSetIn(g, []string{n.Id()}, nieghbors, 0)
+	})
+	lengths := slices.Map(sets, func(s []string) int { return len(s) })
+	_, i := slices.Max_i(lengths)
+	maxSet := sets[i]
+	sort.Strings(maxSet)
+	return strings.Join(maxSet, ",")
 }
