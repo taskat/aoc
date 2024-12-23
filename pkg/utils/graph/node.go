@@ -9,8 +9,9 @@ import (
 
 type Node[T comparable] interface {
 	AddNeighbor(neighbor Node[T], weight int)
-	Id() T
 	GetNeighbors() map[T]int
+	HasNeighbor(id T) bool
+	Id() T
 	RemoveNeighbor(id T)
 	fmt.Stringer
 }
@@ -45,6 +46,11 @@ func (n *BaseNode[T]) AddNeighbor(neighbor Node[T], weight int) {
 
 func (n *BaseNode[T]) GetNeighbors() map[T]int {
 	return n.neighbors
+}
+
+func (n *BaseNode[T]) HasNeighbor(id T) bool {
+	_, ok := n.neighbors[id]
+	return ok
 }
 
 func (n *BaseNode[T]) RemoveNeighbor(id T) {
