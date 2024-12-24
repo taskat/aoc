@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/containers/set"
 	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
@@ -221,44 +222,54 @@ func checkNthBit(gates []gate, n int, carry wire) (wire, []wire) {
 	yWire := wire(fmt.Sprintf("y%02d", n))
 	zWire := wire(fmt.Sprintf("z%02d", n))
 	bitResult := findWire[*xorGate](gates, xWire, yWire)
+	bitCarry := findWire[*andGate](gates, xWire, yWire)
 	resultWire := findWire[*xorGate](gates, bitResult, carry)
-	zGate, ok := finGateByOutput[*xorGate](gates, zWire)
-	if !ok {
-		wrongs = append(wrongs, zWire, resultWire)
-	} else {
-		switch resultWire {
-		case "":
+	if resultWire != zWire {
+		if resultWire == "" {
 			// carry or bitrsult is wrong
-			if zGate.getInput1() == carry {
-				wrongs = append(wrongs, zGate.getInput2(), bitResult)
-				bitResult = zGate.getInput2()
-			} else if zGate.getInput2() == carry {
-				wrongs = append(wrongs, zGate.getInput1(), bitResult)
-				bitResult = zGate.getInput1()
-			} else if zGate.getInput1() == bitResult {
-				wrongs = append(wrongs, zGate.getInput2(), carry)
-				carry = zGate.getInput2()
-			} else if zGate.getInput2() == bitResult {
-				wrongs = append(wrongs, zGate.getInput1(), carry)
-				carry = zGate.getInput1()
+			resultGate, ok := findGateByInput[*xorGate](gates, bitResult)
+			if !ok {
+				resultGate, ok = findGateByInput[*xorGate](gates, carry)
+				if !ok {
+					zGate, ok := finGateByOutput[*xorGate](gates, zWire)
+					if !ok {
+						panic("no result gate found")
+					}
+					wrongs = append(wrongs, zGate.getInput1(), zGate.getInput2(), bitResult, carry)
+					resultGate = zGate
+				} else {
+					if resultGate.getInput1() == carry {
+						wrongs = append(wrongs, resultGate.getInput2(), bitResult)
+						bitResult = resultGate.getInput2()
+					} else {
+						wrongs = append(wrongs, resultGate.getInput1(), bitResult)
+						bitResult = resultGate.getInput1()
+					}
+				}
 			} else {
-				// both wrong
-				wrongs = append(wrongs, zGate.getInput1(), zGate.getInput2(), carry, bitResult)
+				if resultGate.getInput1() == bitResult {
+					wrongs = append(wrongs, resultGate.getInput2(), carry)
+					carry = resultGate.getInput2()
+				} else {
+					wrongs = append(wrongs, resultGate.getInput1(), carry)
+					carry = resultGate.getInput1()
+				}
 			}
-		case zWire:
-			// carry and bitresult is ok
-		default:
+			if resultGate.getOutput() != zWire {
+				wrongs = append(wrongs, resultGate.getOutput(), zWire)
+			}
+		} else {
 			// output is wrong
 			wrongs = append(wrongs, resultWire, zWire)
+			resultWire = zWire
 		}
 	}
 	resultCarry := findWire[*andGate](gates, carry, bitResult)
-	bitCarry := findWire[*xorGate](gates, xWire, yWire)
 	newCarry := findWire[*orGate](gates, bitCarry, resultCarry)
 	if newCarry != "" {
 		return newCarry, wrongs
 	}
-	carryGate, ok := findGateByInput[*andGate](gates, bitCarry)
+	carryGate, ok := findGateByInput[*orGate](gates, bitCarry)
 	if ok {
 		if carryGate.getInput1() == bitCarry {
 			wrongs = append(wrongs, carryGate.getInput2(), resultCarry)
@@ -266,15 +277,18 @@ func checkNthBit(gates []gate, n int, carry wire) (wire, []wire) {
 			wrongs = append(wrongs, carryGate.getInput1(), resultCarry)
 		}
 		return carryGate.output, wrongs
-	}
-	carryGate, ok = findGateByInput[*andGate](gates, resultCarry)
-	if ok {
-		if carryGate.getInput1() == resultCarry {
-			wrongs = append(wrongs, carryGate.getInput2(), bitCarry)
+	} else {
+		carryGate, ok = findGateByInput[*orGate](gates, resultCarry)
+		if ok {
+			if carryGate.getInput1() == resultCarry {
+				wrongs = append(wrongs, carryGate.getInput2(), bitCarry)
+			} else {
+				wrongs = append(wrongs, carryGate.getInput1(), bitCarry)
+			}
+			return carryGate.output, wrongs
 		} else {
-			wrongs = append(wrongs, carryGate.getInput1(), bitCarry)
+			fmt.Println("fasdf")
 		}
-		return carryGate.output, wrongs
 	}
 	fmt.Println(n)
 	panic("unrecoverable")
@@ -304,6 +318,8 @@ func (s *Solver) SolvePart2(lines []string) string {
 	}
 	newWrongs := checkLastBit(maxBit, carry)
 	wrongs = append(wrongs, newWrongs...)
-	fmt.Println(wrongs)
-	return ""
+	wrongs = set.FromSlice(wrongs).ToSlice()
+	wireNames = slices.Map(wrongs, func(w wire) string { return string(w) })
+	sort.Strings(wireNames)
+	return strings.Join(wireNames, ",")
 }
