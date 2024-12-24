@@ -25,3 +25,13 @@ func RuneToInt(r rune) int {
 	}
 	return int(r - '0')
 }
+
+// StringToBool converts a string to a boolean
+// If the string cannot be converted, it panics
+func StringToBool(s string) bool {
+	result, err := strconv.ParseBool(s)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}

@@ -69,3 +69,29 @@ func TestRuneToInt(t *testing.T) {
 		})
 	})
 }
+
+func TestStringToBool(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		input         string
+		expectedValue bool
+	}{
+		{"True", "true", true},
+		{"False", "false", false},
+		{"0", "0", false},
+		{"1", "1", true},
+		{"t", "t", true},
+		{"f", "f", false},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := StringToBool(tc.input)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+	t.Run("Invalid input", func(t *testing.T) {
+		assert.Panics(t, func() {
+			StringToBool("a")
+		})
+	})
+}
