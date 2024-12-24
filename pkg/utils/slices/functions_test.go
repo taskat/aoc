@@ -690,6 +690,28 @@ func TestRepeat(t *testing.T) {
 	}
 }
 
+func TestSort(t *testing.T) {
+	type testCase[T cmp.Ordered] struct {
+		testName      string
+		slice         []T
+		expectedValue []T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, nil},
+		{"Empty slice", []int{}, []int{}},
+		{"Sort positive numbers", []int{3, 1, 2}, []int{1, 2, 3}},
+		{"Sort negative numbers", []int{-3, -1, -2}, []int{-3, -2, -1}},
+		{"Sort mixed numbers", []int{3, -1, 2}, []int{-1, 2, 3}},
+	}
+	less := func(a, b int) bool { return a < b }
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			Sort(tc.slice, less)
+			assert.Equal(t, tc.expectedValue, tc.slice)
+		})
+	}
+}
+
 func TestSum(t *testing.T) {
 	type testCase[T types.Summable] struct {
 		testName      string

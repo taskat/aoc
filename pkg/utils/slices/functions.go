@@ -3,6 +3,7 @@ package slices
 import (
 	"cmp"
 	"fmt"
+	"sort"
 
 	"github.com/taskat/aoc/pkg/utils/types"
 )
@@ -277,6 +278,11 @@ func Repeat[T any](element T, n int) []T {
 		result[i] = element
 	}
 	return result
+}
+
+// Sort sorts the slice in increasing order
+func Sort[S Slice[T], T cmp.Ordered](slice S, less func(T, T) bool) {
+	sort.Slice(slice, func(i, j int) bool { return less(slice[i], slice[j]) })
 }
 
 // Sum returns the sum of all the elements in the slice
