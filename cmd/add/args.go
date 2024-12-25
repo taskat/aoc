@@ -108,7 +108,9 @@ func parseArgs() arguments {
 		os.Exit(0)
 	}
 	if arguments.day == -1 {
-		arguments.day = getDefaultDay(arguments.year)
+		var err error
+		arguments.day, err = getDefaultDay(arguments.year)
+		common.QuitIfError(err, "Error getting default day:")
 	}
 	return arguments
 }
@@ -116,7 +118,7 @@ func parseArgs() arguments {
 // getDefaultDay returns the default day number for the given year
 // It returns 1 if there are no days in the year
 // It returns the next day number if there are days in the year
-func getDefaultDay(year int) int {
+func getDefaultDay(year int) (int, error) {
 	folders := common.ListFolders(fmt.Sprintf("internal/years/%d", year))
 	for i := 0; i < len(folders); i++ {
 		if !isInt(folders[i]) {
@@ -125,10 +127,13 @@ func getDefaultDay(year int) int {
 		}
 	}
 	if len(folders) == 0 {
-		return 1
+		return 1, nil
 	}
 	day, _ := strconv.Atoi(folders[0])
-	return day + 1
+	if day >= 25 {
+		return -1, fmt.Errorf("All days are already added for this year")
+	}
+	return day + 1, nil
 }
 
 // getDefaultYear returns the default year number
