@@ -294,6 +294,22 @@ func Sum[S Slice[T], T types.Summable](slice S) T {
 	return sum
 }
 
+// Split splits the slice into smaller slices, based on the given predicate
+func Split[T any](slice []T, predicate func(T) bool) [][]T {
+	result := make([][]T, 0)
+	start := 0
+	for i, v := range slice {
+		if predicate(v) {
+			result = append(result, slice[start:i])
+			start = i + 1
+		}
+	}
+	if start < len(slice) {
+		result = append(result, slice[start:])
+	}
+	return result
+}
+
 // Swap swaps the elements at the given indices in the slice. If the indices are
 // out of bounds, it panics
 func Swap[T any](slice []T, i, j int) {

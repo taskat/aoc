@@ -712,6 +712,27 @@ func TestSort(t *testing.T) {
 	}
 }
 
+func TestSplit(t *testing.T) {
+	type testCase[T any] struct {
+		testName      string
+		slice         []T
+		predicate     func(T) bool
+		expectedValue [][]T
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", nil, func(i int) bool { return true }, [][]int{}},
+		{"Empty slice", []int{}, func(i int) bool { return true }, [][]int{}},
+		{"Split even and odd numbers", []int{1, 2, 3, 4}, func(i int) bool { return i%2 == 0 }, [][]int{{1}, {3}}},
+		{"Split positive and negative numbers", []int{-1, 2, -3, 4}, func(i int) bool { return i > 0 }, [][]int{{-1}, {-3}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := Split(tc.slice, tc.predicate)
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
+
 func TestSum(t *testing.T) {
 	type testCase[T types.Summable] struct {
 		testName      string
