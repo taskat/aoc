@@ -6,11 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBestPaths(t *testing.T) {
+func TestNodesBestPaths(t *testing.T) {
 	type testCase struct {
 		testName      string
 		goal          func(int) bool
-		expectedPaths []Path[int]
+		expectedPaths []int
 	}
 	node1 := &BaseNode[int]{id: 1, neighbors: make(map[int]int)}
 	node2 := &BaseNode[int]{id: 2, neighbors: make(map[int]int)}
@@ -30,10 +30,10 @@ func TestBestPaths(t *testing.T) {
 	graph.AddNode(node4)
 	graph.AddNode(node5)
 	testCases := []testCase{
-		{"Single route", func(n int) bool { return n == 2 }, []Path[int]{{nodes: []int{1, 2}, cost: 1}}},
-		{"Multiple routes", func(n int) bool { return n == 4 }, []Path[int]{{nodes: []int{1, 2, 4}, cost: 6}, {nodes: []int{1, 2, 3, 4}, cost: 6}}},
-		{"No path", func(n int) bool { return n == 5 }, []Path[int]{NoPath[int]()}},
-		{"Same node", func(n int) bool { return n == 1 }, []Path[int]{{nodes: []int{1}, cost: 0}}},
+		{"Single route", func(n int) bool { return n == 2 }, []int{1, 2}},
+		{"Multiple routes", func(n int) bool { return n == 4 }, []int{1, 2, 3, 4}},
+		{"No path", func(n int) bool { return n == 5 }, []int{}},
+		{"Same node", func(n int) bool { return n == 1 }, []int{1}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {

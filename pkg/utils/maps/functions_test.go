@@ -217,9 +217,9 @@ func TestSum(t *testing.T) {
 
 func TestToSlice(t *testing.T) {
 	testCases := []struct {
-		testName    string
-		m           map[int]string
-		expectedMap []string
+		testName      string
+		m             map[int]string
+		expectedSlice []string
 	}{
 		{"Nil map", nil, []string{}},
 		{"Empty map", map[int]string{}, []string{}},
@@ -231,7 +231,7 @@ func TestToSlice(t *testing.T) {
 				return strings.Join([]string{fmt.Sprint(k), v}, ": ")
 			}
 			result := ToSlice(tc.m, f)
-			assert.Equal(t, tc.expectedMap, result)
+			assert.ElementsMatch(t, tc.expectedSlice, result)
 		})
 	}
 }

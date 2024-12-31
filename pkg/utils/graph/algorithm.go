@@ -56,6 +56,9 @@ func (g Graph[ID]) NodesOfBestPaths(start Node[ID], goal func(ID) bool) []ID {
 		}
 		delete(neighbors, minNodeId)
 	}
+	if !goalFound {
+		return []ID{}
+	}
 	nodes := set.New[ID]()
 	nodes.Add(goalId)
 	previousNodes := canReach[goalId]
