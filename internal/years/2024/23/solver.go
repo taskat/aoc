@@ -95,19 +95,17 @@ func getBiggestSetIn(g *graph.Graph[string], currentNeighbors, possibleNeighbors
 	}
 	neighbor := possibleNeighbors[0]
 	possibleNeighbors = possibleNeighbors[1:]
-	var biggestSet []string
+	biggestSet := slices.Copy(currentNeighbors)
 	if canAdd(g, neighbor, currentNeighbors) {
-		withNeighbor := getBiggestSetIn(g, append(currentNeighbors, neighbor), possibleNeighbors, maxLength)
+		withNeighbor := getBiggestSetIn(g, append(slices.Copy(currentNeighbors), neighbor), possibleNeighbors, maxLength)
 		if len(withNeighbor) > maxLength {
 			maxLength = len(withNeighbor)
+			biggestSet = withNeighbor
 		}
-		biggestSet = withNeighbor
 	}
 	withoutNeighbor := getBiggestSetIn(g, currentNeighbors, possibleNeighbors, maxLength)
 	if len(withoutNeighbor) > maxLength {
 		maxLength = len(withoutNeighbor)
-	}
-	if len(withoutNeighbor) > len(biggestSet) {
 		biggestSet = withoutNeighbor
 	}
 	return biggestSet
@@ -125,12 +123,13 @@ func (s *Solver) SolvePart2(lines []string) string {
 	g := s.parse(lines)
 	nodes := maps.Values(g.GetNodes())
 	sets := slices.Map(nodes, func(n graph.Node[string]) []string {
-		nieghbors := maps.Keys(n.GetNeighbors())
-		return getBiggestSetIn(g, []string{n.Id()}, nieghbors, 0)
+		neighbors := maps.Keys(n.GetNeighbors())
+		return getBiggestSetIn(g, []string{n.Id()}, neighbors, 0)
 	})
 	lengths := slices.Map(sets, func(s []string) int { return len(s) })
 	_, i := slices.Max_i(lengths)
 	maxSet := sets[i]
+	// maxSet = set.FromSlice(maxSet).ToSlice()
 	sort.Strings(maxSet)
 	return strings.Join(maxSet, ",")
 }
