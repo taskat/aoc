@@ -43,7 +43,7 @@ func Contains[T comparable](slice []T, item T) bool {
 }
 
 // Copy returns a new slice with the same elements as the original
-func Copy[S Slice[T], T any](slice S) S {
+func Copy[S types.Slice[T], T any](slice S) S {
 	result := make(S, len(slice))
 	copy(result, slice)
 	return result
@@ -107,7 +107,7 @@ func FindIndex[T any](slice []T, predicate func(T) bool) int {
 }
 
 // First returns the first element of the slice. If the slice is empty, it panics
-func First[S Slice[T], T any](slice S) T {
+func First[S types.Slice[T], T any](slice S) T {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
@@ -139,7 +139,7 @@ func ForEach_m[T any](slice []T, f func(*T)) {
 }
 
 // IsEmpty returns true if the slice is empty and false otherwise
-func IsEmpty[S Slice[T], T any](slice S) bool {
+func IsEmpty[S types.Slice[T], T any](slice S) bool {
 	return len(slice) == 0
 }
 
@@ -150,7 +150,7 @@ func IsInBounds[T any](slice []T, index int) bool {
 }
 
 // Last returns the last element of the slice. If the slice is empty, it panics
-func Last[S Slice[T], T any](slice S) T {
+func Last[S types.Slice[T], T any](slice S) T {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
@@ -179,13 +179,13 @@ func Map_i[T, U any](slice []T, f func(T, int) U) []U {
 }
 
 // Max returns the maximum element in the slice. If the slice is empty, it panics
-func Max[S Slice[T], T cmp.Ordered](slice S) T {
+func Max[S types.Slice[T], T cmp.Ordered](slice S) T {
 	max, _ := Max_i(slice)
 	return max
 }
 
 // Max_i returns the maximum element in the slice. If the slice is empty, it panics
-func Max_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
+func Max_i[S types.Slice[T], T cmp.Ordered](slice S) (T, int) {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
@@ -203,7 +203,7 @@ func Max_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
 // Middle returns the middle element of the slice. If the slice has an even
 // number of elements, it returns the first element of the second half. If the
 // slice is empty, it panics
-func Middle[S Slice[T], T any](slice S) T {
+func Middle[S types.Slice[T], T any](slice S) T {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
@@ -211,13 +211,13 @@ func Middle[S Slice[T], T any](slice S) T {
 }
 
 // Min returns the minimum element in the slice. If the slice is empty, it panics
-func Min[S Slice[T], T cmp.Ordered](slice S) T {
+func Min[S types.Slice[T], T cmp.Ordered](slice S) T {
 	min, _ := Min_i(slice)
 	return min
 }
 
 // Min_i returns the minimum element in the slice. If the slice is empty, it panics
-func Min_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
+func Min_i[S types.Slice[T], T cmp.Ordered](slice S) (T, int) {
 	if IsEmpty(slice) {
 		panic("empty slice")
 	}
@@ -233,7 +233,7 @@ func Min_i[S Slice[T], T cmp.Ordered](slice S) (T, int) {
 }
 
 // Product returns the product of all the elements in the slice
-func Product[S Slice[T], T types.Number](slice S) T {
+func Product[S types.Slice[T], T types.Number](slice S) T {
 	var product T = 1
 	for _, v := range slice {
 		product *= v
@@ -281,12 +281,12 @@ func Repeat[T any](element T, n int) []T {
 }
 
 // Sort sorts the slice in increasing order
-func Sort[S Slice[T], T cmp.Ordered](slice S, less func(T, T) bool) {
+func Sort[S types.Slice[T], T cmp.Ordered](slice S, less func(T, T) bool) {
 	sort.Slice(slice, func(i, j int) bool { return less(slice[i], slice[j]) })
 }
 
 // Sum returns the sum of all the elements in the slice
-func Sum[S Slice[T], T types.Summable](slice S) T {
+func Sum[S types.Slice[T], T types.Summable](slice S) T {
 	var sum T
 	for _, v := range slice {
 		sum += v
