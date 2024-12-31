@@ -23,7 +23,7 @@ func init() {
 type Solver struct{}
 
 // AddHyperParams adds hyper parameters to the solver
-func (s *Solver) AddHyperParams(params ...any) {}
+func (s *Solver) AddHyperParams(params ...string) {}
 
 // coord is an alias for coordinate.Coordinate2D[int]
 type coord = coordinate.Coordinate2D[int]

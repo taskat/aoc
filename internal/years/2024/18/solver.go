@@ -27,17 +27,17 @@ type Solver struct {
 }
 
 // AddHyperParams adds hyper parameters to the solver
-func (s *Solver) AddHyperParams(params ...any) {
+func (s *Solver) AddHyperParams(params ...string) {
 	switch len(params) {
 	case 0:
 		s.mapLimit = 70
 		s.byteLimit = 1024
 	case 1:
-		s.mapLimit = stringutils.Atoi(params[0].(string))
+		s.mapLimit = stringutils.Atoi(params[0])
 		s.byteLimit = 1024
 	default:
-		s.mapLimit = stringutils.Atoi(params[0].(string))
-		s.byteLimit = stringutils.Atoi(params[1].(string))
+		s.mapLimit = stringutils.Atoi(params[0])
+		s.byteLimit = stringutils.Atoi(params[1])
 	}
 }
 

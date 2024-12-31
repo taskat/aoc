@@ -20,7 +20,7 @@ func init() {
 type Solver struct{}
 
 // AddHyperParams adds hyper parameters to the solver
-func (s *Solver) AddHyperParams(params ...any) {}
+func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) system {

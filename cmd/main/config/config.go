@@ -14,11 +14,11 @@ type Config struct {
 	day         int
 	part        int
 	inputType   InputType
-	hyperParams []any
+	hyperParams []string
 }
 
 // NewConfig creates a new Config struct with the given parameters
-func NewConfig(year, day, part int, inputType InputType, hyperParams ...any) *Config {
+func NewConfig(year, day, part int, inputType InputType, hyperParams ...string) *Config {
 	return &Config{
 		year:        year,
 		day:         day,
@@ -39,7 +39,7 @@ func (c *Config) GetDay() int {
 }
 
 // GetHyperParams returns the hyper parameters of the Config
-func (c *Config) GetHyperParams() []any {
+func (c *Config) GetHyperParams() []string {
 	return c.hyperParams
 }
 

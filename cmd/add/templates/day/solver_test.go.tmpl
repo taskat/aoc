@@ -20,7 +20,7 @@ func Test_Day_{{printf "%02d" $day}}_Part{{$part}}(t *testing.T) {
 		name          string
 		input         config.InputType
 		expectedValue string
-		hyperParams   []any
+		hyperParams   []string
 	}{
 		{"Test 1", config.TestInput(1), "", nil},
 		{"Real", config.RealInput{}, "", nil},
@@ -38,7 +38,7 @@ func Test_Day_{{printf "%02d" $day}}_Part{{$part}}(t *testing.T) {
 
 // Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}} benchmarks the day {{printf "%02d" $day}} solver for part {{$part}}
 func Benchmark_Day_{{printf "%02d" $day}}_Part{{$part}}(b *testing.B) {
-	cfg := config.NewConfig(days.Year, day, {{$part}}, config.RealInput{}, nil)
+	cfg := config.NewConfig(days.Year, day, {{$part}}, config.RealInput{})
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	input := cfg.ReadInputFile()

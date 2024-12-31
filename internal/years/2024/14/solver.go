@@ -26,14 +26,14 @@ type Solver struct {
 }
 
 // AddHyperParams adds hyper parameters to the solver
-func (s *Solver) AddHyperParams(params ...any) {
+func (s *Solver) AddHyperParams(params ...string) {
 	if len(params) != 2 {
 		s.width = 101
 		s.height = 103
 		return
 	}
-	s.width = stringutils.Atoi(params[0].(string))
-	s.height = stringutils.Atoi(params[1].(string))
+	s.width = stringutils.Atoi(params[0])
+	s.height = stringutils.Atoi(params[1])
 }
 
 // parse handle the common parsing logic for both parts

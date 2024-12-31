@@ -21,7 +21,7 @@ func Test_Day_23_Part1(t *testing.T) {
 		name          string
 		input         config.InputType
 		expectedValue string
-		hyperParams   []any
+		hyperParams   []string
 	}{
 		{"Test 1", config.TestInput(1), "7", nil},
 		{"Real", config.RealInput{}, "1327", nil},
@@ -39,7 +39,7 @@ func Test_Day_23_Part1(t *testing.T) {
 
 // Benchmark_Day_23_Part1 benchmarks the day 23 solver for part 1
 func Benchmark_Day_23_Part1(b *testing.B) {
-	cfg := config.NewConfig(days.Year, day, 1, config.RealInput{}, nil)
+	cfg := config.NewConfig(days.Year, day, 1, config.RealInput{})
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	input := cfg.ReadInputFile()
@@ -55,7 +55,7 @@ func Test_Day_23_Part2(t *testing.T) {
 		name          string
 		input         config.InputType
 		expectedValue string
-		hyperParams   []any
+		hyperParams   []string
 	}{
 		{"Test 1", config.TestInput(1), "co,de,ka,ta", nil},
 		{"Real", config.RealInput{}, "df,kg,la,mp,pb,qh,sk,th,vn,ww,xp,yp,zk", nil},
@@ -73,7 +73,7 @@ func Test_Day_23_Part2(t *testing.T) {
 
 // Benchmark_Day_23_Part2 benchmarks the day 23 solver for part 2
 func Benchmark_Day_23_Part2(b *testing.B) {
-	cfg := config.NewConfig(days.Year, day, 2, config.RealInput{}, nil)
+	cfg := config.NewConfig(days.Year, day, 2, config.RealInput{})
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	input := cfg.ReadInputFile()

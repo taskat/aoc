@@ -36,14 +36,14 @@ func getMaxYear() int {
 
 // parseArguments parses the command line arguments and returns the year, day, part, input type
 // and the hyper parameters
-func parseArguments() (year, day, part int, inputType string, hyperParams []any) {
+func parseArguments() (year, day, part int, inputType string, hyperParams []string) {
 	common.AddFlag(flag.IntVar, &year, "year", getMaxYear(), "the year of the puzzle")
 	common.AddFlag(flag.IntVar, &day, "day", -1, "the day of the puzzle")
 	common.AddFlag(flag.IntVar, &part, "part", 1, "the part of the puzzle")
 	common.AddFlag(flag.StringVar, &inputType, "input", "real", "the input type to use")
 	flag.Parse()
 	args := flag.Args()
-	hyperParams = make([]any, len(args))
+	hyperParams = make([]string, len(args))
 	for i, arg := range args {
 		hyperParams[i] = arg
 	}
