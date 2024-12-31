@@ -12,7 +12,6 @@ const day = 6
 
 // init registers the solver for day 06
 func init() {
-	fmt.Println("Registering day", day)
 	days.AddDay(day, &Solver{})
 }
 

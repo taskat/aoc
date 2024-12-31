@@ -1,7 +1,6 @@
 package day02
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -16,7 +15,6 @@ const day = 2
 
 // init registers the solver for day 02
 func init() {
-	fmt.Println("Registering day", day)
 	days.AddDay(day, &Solver{})
 }
 

@@ -10,7 +10,6 @@ const day = {{printf "%d" .Day}}
 
 // init registers the solver for day {{printf "%02d" .Day}}
 func init() {
-	fmt.Println("Registering day", day)
 	days.AddDay(day, &Solver{})
 }
 
