@@ -228,7 +228,7 @@ func TestFirst(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
@@ -360,7 +360,7 @@ func TestLast(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
@@ -431,7 +431,7 @@ func TestMax(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
@@ -464,7 +464,7 @@ func TestMax_i(t *testing.T) {
 			assert.Equal(t, tc.expectedIndex, index)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0, 0},
 		{"Empty slice", []int{}, 0, 0},
@@ -492,7 +492,7 @@ func TestMiddle(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
@@ -523,7 +523,7 @@ func TestMin(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0},
 		{"Empty slice", []int{}, 0},
@@ -556,7 +556,7 @@ func TestMin_i(t *testing.T) {
 			assert.Equal(t, tc.expectedIndex, index)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0, 0},
 		{"Empty slice", []int{}, 0, 0},
@@ -656,7 +656,7 @@ func TestRemoveNth(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0, []int{}},
 		{"Empty slice", []int{}, 0, []int{}},
@@ -775,7 +775,7 @@ func TestSwap(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, tc.slice)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Nil slice", nil, 0, 0, []int{}},
 		{"Empty slice", []int{}, 0, 0, []int{}},
@@ -809,7 +809,7 @@ func TestToMap(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, result)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int, string]{
 		{"Different lengths", []int{1, 2, 3}, []string{"a", "b"}, map[int]string{}},
 	}

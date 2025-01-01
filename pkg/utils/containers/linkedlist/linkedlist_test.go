@@ -113,7 +113,7 @@ func TestGet(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, tc.ll.Get(tc.index))
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Empty list", New[int](), 0, 0},
 		{"Out of bounds", FromSlice([]int{1}), 1, 0},
@@ -143,7 +143,7 @@ func TestGetNode(t *testing.T) {
 			assert.Equal(t, tc.expectedValue, node.Value())
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Empty list", New[int](), 0, 0},
 		{"Out of bounds", FromSlice([]int{1}), 1, 0},
@@ -176,7 +176,7 @@ func TestInsert(t *testing.T) {
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Out of bounds", New[int](), 1, 1, FromSlice([]int{1})},
 		{"Negative index", New[int](), 1, -1, FromSlice([]int{1})},
@@ -263,7 +263,7 @@ func TestRemove(t *testing.T) {
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Empty list", New[int](), 0, New[int]()},
 		{"Out of bounds", FromSlice([]int{1}), 1, FromSlice([]int{1})},
@@ -330,7 +330,7 @@ func TestReplace(t *testing.T) {
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Empty list", New[int](), 1, 0, New[int]()},
 		{"Out of bounds", FromSlice([]int{1}), 2, 1, FromSlice([]int{1})},
@@ -361,7 +361,7 @@ func TestSet(t *testing.T) {
 			assert.Equal(t, tc.expected, tc.ll)
 		})
 	}
-	// Test for panics
+	// Test for panic
 	testCases = []testCase[int]{
 		{"Empty list", New[int](), 1, 0, New[int]()},
 		{"Out of bounds", FromSlice([]int{1}), 2, 1, FromSlice([]int{1})},
