@@ -48,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: readme-generator
-          path: ./cmd/readme-generator/readme-generator
+          path: ./cmd/readme-generator
 
       - name: Generate README
         shell: bash
