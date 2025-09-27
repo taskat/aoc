@@ -10,7 +10,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Install git-crypt
       shell: bash
@@ -28,7 +28,7 @@ runs:
         rm git-crypt-key
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '1.25'
 

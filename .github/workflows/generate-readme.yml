@@ -15,10 +15,10 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25'
 
@@ -26,21 +26,35 @@ jobs:
         shell: bash
         run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator/main.go
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator/readme-generator
+          retention-days: 1
+
   Generate-README:
     needs: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25'
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator/readme-generator
 
       - name: Generate README
         shell: bash
         run: |
           ./cmd/readme-generator/readme-generator
+          
       - name: Copy generated README
         run: cp ./cmd/readme-generator/generated/README.md ./README.md
 
