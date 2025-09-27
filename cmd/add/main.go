@@ -32,7 +32,7 @@ func newTemplateValues(year, day int) templateValues {
 // and instantiates the template files. It also adds the
 // import to the imports.go file
 func addDay(args arguments) {
-	fmt.Println(fmt.Sprintf("Adding day %d of year %d", args.day, args.year))
+	fmt.Printf("Adding day %d of year %d\n", args.day, args.year)
 	src := "cmd/add/templates/day"
 	dest := fmt.Sprintf("internal/years/%d/%02d", args.year, args.day)
 	instantiateFolder(src, dest, args.toTemplateValues())
