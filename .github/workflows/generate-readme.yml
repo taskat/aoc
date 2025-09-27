@@ -27,7 +27,7 @@ jobs:
         run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator/main.go
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v4
         with:
           name: readme-generator
           path: ./cmd/readme-generator/readme-generator
@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           ./cmd/readme-generator/readme-generator
-          
+
       - name: Copy generated README
         run: cp ./cmd/readme-generator/generated/README.md ./README.md
 
