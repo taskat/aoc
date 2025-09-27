@@ -31,3 +31,6 @@ go.work.sum
 # and files with extension
 !*.*
 !**/Dockerfile
+
+# Ignore generated files
+cmd/readme-generator/generated/**
