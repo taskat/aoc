@@ -53,6 +53,7 @@ jobs:
       - name: Generate README
         shell: bash
         run: |
+          chmod +x ./cmd/readme-generator/readme-generator
           ./cmd/readme-generator/readme-generator
 
       - name: Copy generated README
