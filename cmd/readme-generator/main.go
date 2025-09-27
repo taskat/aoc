@@ -26,9 +26,6 @@ func newTemplateValues() templateValues {
 // instantiateFile creates a file from a template file
 func instantiateFile(src, dest string, values templateValues) {
 	fmt.Println("Creating file", dest, "from", src)
-	dir := filepath.Dir(dest)
-	err := os.MkdirAll(dir, os.ModePerm)
-	common.QuitIfError(err, "Error creating directories:")
 	f, err := os.Create(dest)
 	common.QuitIfError(err, "Error creating file:")
 	defer f.Close()
@@ -47,9 +44,9 @@ func instantiateFile(src, dest string, values templateValues) {
 func main() {
 	fmt.Println("Generating README.md")
 	values := newTemplateValues()
-	root := "/workspaces/aoc/cmd/readme-generator"
-	templatePath := filepath.Join(root, "templates/readme.md.tmpl")
-	destinationPath := filepath.Join(root, "generated/README.md")
+	root := "/workspaces/aoc"
+	templatePath := filepath.Join(root, "cmd/readme-generator/templates/readme.md.tmpl")
+	destinationPath := filepath.Join(root, "README.md")
 	instantiateFile(templatePath, destinationPath, values)
 	fmt.Println("Done")
 }
