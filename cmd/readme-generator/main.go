@@ -44,7 +44,7 @@ func instantiateFile(src, dest string, values templateValues) {
 func main() {
 	fmt.Println("Generating README.md")
 	values := newTemplateValues()
-	root := "/workspaces/aoc"
+	root := os.Getenv("AOC_HOME")
 	templatePath := filepath.Join(root, "cmd/readme-generator/templates/readme.md.tmpl")
 	destinationPath := filepath.Join(root, "README.md")
 	instantiateFile(templatePath, destinationPath, values)
