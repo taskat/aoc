@@ -9,12 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	// result stores the result of the solver
-	// this is used to prevent the compiler from optimizing the code
-	_result any
-)
-
 // Test_Day_05_Part1 tests the day 05 solver for part 1
 func Test_Day_05_Part1(t *testing.T) {
 	testCases := []struct {
@@ -43,9 +37,8 @@ func Benchmark_Day_05_Part1(b *testing.B) {
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	input := cfg.ReadInputFile()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_result = solver.SolvePart1(input)
+	for b.Loop() {
+		solver.SolvePart1(input)
 	}
 }
 
@@ -77,8 +70,7 @@ func Benchmark_Day_05_Part2(b *testing.B) {
 	solver := &Solver{}
 	solver.AddHyperParams(cfg.GetHyperParams()...)
 	input := cfg.ReadInputFile()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_result = solver.SolvePart2(input)
+	for b.Loop() {
+		solver.SolvePart2(input)
 	}
 }
