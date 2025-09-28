@@ -47,7 +47,9 @@ jobs:
         # Add extra logic to prevent all the benchmarks from running on every push
 
       - name: Benchmark
-        run: go test -bench Benchmark_Day_01_Part -v -skip Test -count 3 -cpu 1 ./internal/years/2024/01/ > /tmp/aoc/benchmark-results.txt
+        run: |
+          mkdir -p /tmp/aoc
+          go test -bench Benchmark_Day_01_Part -v -skip Test -count 3 -cpu 1 ./internal/years/2024/01/ > /tmp/aoc/benchmark-results.txt
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
