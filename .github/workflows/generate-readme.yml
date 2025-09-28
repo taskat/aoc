@@ -49,6 +49,11 @@ jobs:
       - name: Benchmark
         run: go test -bench Benchmark_Day_01_Part -v -skip Test -count 3 -cpu 1 ./internal/years/2024/01/ > /tmp/aoc/benchmark-results.txt
 
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: /tmp/aoc/benchmark-results.txt
 
   Generate-README:
     needs: [Build-generator, Test-and-benchmark]
@@ -68,6 +73,12 @@ jobs:
         with:
           name: readme-generator
           path: ./cmd/readme-generator
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v5
+        with:
+          name: benchmark-results
+          path: /tmp/aoc
 
       - name: Generate README
         shell: bash

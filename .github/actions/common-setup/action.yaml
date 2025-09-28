@@ -34,4 +34,4 @@ runs:
 
     - name: Build
       shell: bash
-      run: go build -v ./...
+      run: go build ./cmd/main/main.go
