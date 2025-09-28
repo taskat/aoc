@@ -3,8 +3,6 @@ name: Generate README
 on:
   push:
     branches: [ "master", "add-dynamic-readme" ]
-    paths-ignore:
-      - 'README.md'
   workflow_dispatch:
 
 env:
@@ -12,7 +10,7 @@ env:
 
 jobs:
 
-  Build:
+  Build-generator:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -33,8 +31,27 @@ jobs:
           path: ./cmd/readme-generator/readme-generator
           retention-days: 1
 
+  Test and benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run Common Setup
+        uses: ./.github/actions/common-setup
+        with:
+          git_crypt_key: ${{ secrets.GIT_CRYPT_KEY }}
+
+      - name: Test
+        run: go test -v ./...
+
+        # Add extra logic to prevent all the benchmarks from running on every push
+
+      - name: Benchmark
+        run: go test -bench Benchmark_Day_01_Part -v -skip Test -count 3 -cpu 1 ./internal/years/2024/01/ > /tmp/aoc/benchmark-results.txt
+
+
   Generate-README:
-    needs: Build
+    needs: Build-generator
     runs-on: ubuntu-latest
     permissions:
       contents: write
