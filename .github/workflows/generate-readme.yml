@@ -31,7 +31,7 @@ jobs:
           path: ./cmd/readme-generator/readme-generator
           retention-days: 1
 
-  Test and benchmark:
+  Test-and-benchmark:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
