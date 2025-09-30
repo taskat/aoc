@@ -56,6 +56,7 @@ jobs:
         with:
           name: benchmark-results
           path: /tmp/aoc/benchmark-results.txt
+          retention-days: 1
 
   Generate-README:
     needs: [Build-generator, Test-and-benchmark]
@@ -93,9 +94,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
+          git add benchmark.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update README.md with automated script [skip ci]"
+            git commit -m "Update README.md and benchmark.json with automated script [skip ci]"
             git push
           fi
