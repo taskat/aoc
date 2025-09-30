@@ -44,10 +44,10 @@ func (f FullResult) MarshalJSON() ([]byte, error) {
 	type Alias FullResult
 	return json.Marshal(&struct {
 		Comment string `json:"_comment"`
-		*Alias
+		Result  *Alias
 	}{
 		Comment: "This file is generated. Do not edit manually.",
-		Alias:   (*Alias)(&f),
+		Result:  (*Alias)(&f),
 	})
 }
 
@@ -56,6 +56,21 @@ func (f FullResult) merge(other FullResult) {
 	for year, yr := range other {
 		f.getYear(year).merge(yr)
 	}
+}
+
+// UnmarshalJSON unmarshals a JSON object into a fullResult
+// It ignores the comment at the top
+func (f *FullResult) UnmarshalJSON(data []byte) error {
+	type Alias FullResult
+	aux := &struct {
+		Result Alias
+	}{}
+	err := json.Unmarshal(data, &aux)
+	if err != nil {
+		return err
+	}
+	*f = FullResult(aux.Result)
+	return nil
 }
 
 // updateResults updates the results from the content of the given file.
