@@ -100,6 +100,15 @@ func (y YearResult) getDay(day int) DayResult {
 	return y[day]
 }
 
+// getStars returns the number of stars collected in this year
+func (y YearResult) getStars() int {
+	count := 0
+	for _, dr := range y {
+		count += dr.getStars()
+	}
+	return count
+}
+
 // merge merges another yearResult into this one
 func (y YearResult) merge(other YearResult) {
 	for day, dr := range other {
@@ -119,6 +128,18 @@ func (d DayResult) addBenchmarkResult(part int, t int) {
 		d[part] = make(Times, 0, 3)
 	}
 	d[part] = append(d[part], t)
+}
+
+// getStars returns the number of stars collected for this day
+func (d DayResult) getStars() int {
+	count := 0
+	if _, ok := d[1]; ok {
+		count++
+	}
+	if _, ok := d[2]; ok {
+		count++
+	}
+	return count
 }
 
 // merge overrides the times for each part with the times from the other dayResult
@@ -145,13 +166,21 @@ func (t Times) MarshalJSON() ([]byte, error) {
 	return fmt.Appendf(nil, "%d", t.average()), nil
 }
 
+// String returns a string representation of the times
+func (t Times) String() string {
+	if len(t) == 0 {
+		return "-"
+	}
+	return fmt.Sprintf("%d ms", t.average()/1000)
+}
+
 // UnmarshalJSON unmarshals a JSON number into a times slice with a single element
-func (t Times) UnmarshalJSON(data []byte) error {
+func (t *Times) UnmarshalJSON(data []byte) error {
 	var avg int
 	if err := json.Unmarshal(data, &avg); err != nil {
 		return err
 	}
-	t = append(t, avg)
+	*t = append(*t, avg)
 	return nil
 }
 

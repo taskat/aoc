@@ -38,7 +38,7 @@ func instantiateFile(src, dest string, values templateValues) {
 	common.QuitIfError(err, "Error renaming file:")
 	templateText, err := os.ReadFile(src)
 	common.QuitIfError(err, "Error reading template file:")
-	t := template.Must(template.New("file").Parse(string(templateText)))
+	t := template.Must(template.New("file").Funcs(customFuncMap()).Parse(string(templateText)))
 	err = t.Execute(f, values)
 	common.QuitIfError(err, "Error executing template:")
 }

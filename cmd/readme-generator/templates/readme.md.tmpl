@@ -2,4 +2,19 @@
 
 The goal of this repository to have all the Advent of Code challanges solved in Golang. The solutions should not be brute-force solutions, instead they should be algorithms and heuristics to solve the challange in less time.
 
-The benchmarks were last updated on {{ .Date }}.
+Total stars: {{collectedStars .Results}}/{{totalStars}} {{ starString }}
+## Years
+
+
+{{ range $year, $results := .Results }}
+<details><summary>{{$year}} - {{ yearlyStars $results}}/{{ yearlyMaxStars $year }} {{ starString }}</summary>
+
+|Day|Stars|Part 1|Part 2|
+|---|---|---|---|
+{{range $day, $res := $results -}}
+| {{$day}} | {{dailyStars $res}} | {{partTime $res 1}} | {{partTime $res 2}} |
+{{end}}
+</details>
+{{ end }}
+
+The benchmarks were last updated on {{.Date}}.
