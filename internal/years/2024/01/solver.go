@@ -8,6 +8,7 @@ import (
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
 
 // day is the day of the solver
@@ -29,8 +30,8 @@ func (s *Solver) parse(lines []string) ([]int, []int) {
 	left, right := make([]int, len(lines)), make([]int, len(lines))
 	for i, line := range lines {
 		parts := strings.Split(line, "   ")
-		left[i], _ = strconv.Atoi(parts[0])
-		right[i], _ = strconv.Atoi(parts[1])
+		left[i] = stringutils.Atoi(parts[0])
+		right[i] = stringutils.Atoi(parts[1])
 	}
 	sort.Ints(left)
 	sort.Ints(right)
