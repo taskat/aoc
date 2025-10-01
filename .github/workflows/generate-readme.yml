@@ -54,7 +54,7 @@ jobs:
           PACKAGES_TO_TEST=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             if [[ $file == internal/years/*/*.go ]]; then
-              PACKAGES_TO_TEST+=" $(dirname $file)"
+              PACKAGES_TO_TEST+=" ./$(dirname $file)/"
             fi
           done
           echo "Packages to test: $PACKAGES_TO_TEST"
