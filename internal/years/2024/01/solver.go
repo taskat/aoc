@@ -2,7 +2,6 @@ package day01
 
 import (
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
@@ -44,7 +43,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 	distances := slices.ZipWith(left, right, intutils.Diff)
 	distances = slices.Map(distances, intutils.Abs)
 	sum := slices.Sum(distances)
-	return strconv.Itoa(sum)
+	return stringutils.Itoa(sum)
 }
 
 // SolvePart2 solves part 2 of the puzzle
@@ -57,5 +56,5 @@ func (s *Solver) SolvePart2(lines []string) string {
 	})
 	scores := slices.ZipWith(left, appearances, intutils.Product)
 	sum := slices.Sum(scores)
-	return strconv.Itoa(sum)
+	return stringutils.Itoa(sum)
 }

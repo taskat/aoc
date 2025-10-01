@@ -53,8 +53,7 @@ jobs:
         run: |
           PACKAGES_TO_TEST=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            # Only consider Go files in /internal/ directory
-            if [[ $file == internal/*/*.go ]]; then
+            if [[ $file == internal/years/*/*.go ]]; then
               PACKAGES_TO_TEST+=" $(dirname $file)"
             fi
           done
