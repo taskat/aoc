@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 	"text/template"
 	"time"
 )
 
 const (
-	starTemplate = `<span style="font-size:30px;color:#ffff66;vertical-align:middle;">%s </span>`
+	star = "⭐"
 )
 
 // collectedStars returns the total number of stars collected across all years
@@ -35,7 +34,7 @@ func customFuncMap() template.FuncMap {
 
 // dailyStars returns a string of star emojis representing the number of stars collected for a day
 func dailyStars(day DayResult) string {
-	return fmt.Sprintf(starTemplate, strings.Repeat("*", day.getStars()))
+	return strings.Repeat(star, day.getStars())
 }
 
 // partTime returns the time taken for a specific part of a day
@@ -49,7 +48,7 @@ func partTime(day DayResult, part int) string {
 
 // starString returns a string of the star emoji
 func starString() string {
-	return fmt.Sprintf(starTemplate, "*")
+	return star
 }
 
 // totalStars returns the total number of stars available up to the current day in December of the current year
