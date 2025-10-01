@@ -66,6 +66,12 @@ jobs:
           PACKAGES_TO_TEST: ${{ steps.list_changed_files.outputs.packages_to_test }}
         run: |
           mkdir -p /tmp/aoc
+          if [ -z "$PACKAGES_TO_TEST" ]; then
+            echo "No packages to benchmark"
+            touch /tmp/aoc/benchmark-results.txt
+            exit 0
+          fi
+          echo "Running benchmarks for packages: $PACKAGES_TO_TEST"
           go test -bench . -v -skip Test -count 3 -cpu 1 $PACKAGES_TO_TEST > /tmp/aoc/benchmark-results.txt
 
       - name: Upload benchmark results
