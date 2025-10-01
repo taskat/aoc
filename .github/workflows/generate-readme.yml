@@ -58,7 +58,7 @@ jobs:
             fi
           done
           echo "Packages to test: $PACKAGES_TO_TEST"
-          echo "packages_to_test=$PACKAGES_TO_TEST" >> $GITHUB_ENV
+          echo "packages_to_test=$PACKAGES_TO_TEST" >> $GITHUB_OUTPUT
 
       - name: Benchmark
         env:
