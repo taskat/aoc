@@ -1,7 +1,6 @@
 package day02
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
@@ -87,14 +86,14 @@ func (r report) isSafe() bool {
 func (s *Solver) SolvePart1(lines []string) string {
 	reports := s.parse(lines)
 	safeCount := slices.Count(reports, report.isSafe)
-	return strconv.Itoa(safeCount)
+	return stringutils.Itoa(safeCount)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	reports := s.parse(lines)
 	tolerableCount := slices.Count(reports, report.tolerable)
-	return strconv.Itoa(tolerableCount)
+	return stringutils.Itoa(tolerableCount)
 }
 
 // tolerable checks if the report is tolerable with the Problem Dampener.
