@@ -54,7 +54,7 @@ func starString() string {
 // totalStars returns the total number of stars available up to the current day in December of the current year
 func totalStars() int {
 	thisYear := time.Now().Year()
-	return (thisYear-2015+1)*50 + yearlyMaxStars(thisYear)
+	return (thisYear-2015)*50 + yearlyMaxStars(thisYear)
 }
 
 // yearlyMaxStars returns the maximum number of stars available in a given year
