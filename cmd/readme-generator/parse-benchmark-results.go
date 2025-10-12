@@ -171,7 +171,11 @@ func (t Times) String() string {
 	if len(t) == 0 {
 		return "-"
 	}
-	return fmt.Sprintf("%d ms", t.average()/1000)
+	avg := t.average()
+	if avg < 1_000_000 {
+		return fmt.Sprintf("%d 	μs", avg/1_000)
+	}
+	return fmt.Sprintf("%d ms", avg/1_000_000)
 }
 
 // UnmarshalJSON unmarshals a JSON number into a times slice with a single element
