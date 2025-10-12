@@ -2,7 +2,7 @@
 
 The goal of this repository to have all the Advent of Code challanges solved in Golang. The solutions should not be brute-force solutions, instead they should be algorithms and heuristics to solve the challange in less time.
 
-Total stars: 52/550 ⭐
+Total stars: 52/500 ⭐
 ## Years
 
 
@@ -11,7 +11,7 @@ Total stars: 52/550 ⭐
 
 |Day|Stars|Part 1|Part 2|
 |---|---|---|---|
-| 1 | ⭐⭐ | 3652 ms | 5673 ms |
+| 1 | ⭐⭐ | 3 ms | 4 ms |
 
 </details>
 
@@ -19,33 +19,33 @@ Total stars: 52/550 ⭐
 
 |Day|Stars|Part 1|Part 2|
 |---|---|---|---|
-| 1 | ⭐⭐ | 109 ms | 741 ms |
-| 2 | ⭐⭐ | 194 ms | 398 ms |
-| 3 | ⭐⭐ | 797 ms | 1085 ms |
-| 4 | ⭐⭐ | 196282 ms | 82946 ms |
-| 5 | ⭐⭐ | 2118 ms | 27504 ms |
-| 6 | ⭐⭐ | 105 ms | 901020 ms |
-| 7 | ⭐⭐ | 17025 ms | 1840253 ms |
-| 8 | ⭐⭐ | 70 ms | 232 ms |
-| 9 | ⭐⭐ | 884129 ms | 206363 ms |
-| 10 | ⭐⭐ | 2020 ms | 1827 ms |
-| 11 | ⭐⭐ | 466 ms | 22621 ms |
-| 12 | ⭐⭐ | 88572 ms | 105316 ms |
-| 13 | ⭐⭐ | 1056 ms | 1085 ms |
-| 14 | ⭐⭐ | 627 ms | 67481 ms |
-| 15 | ⭐⭐ | 3014 ms | 38118 ms |
-| 16 | ⭐⭐ | 124134 ms | 151409 ms |
-| 17 | ⭐⭐ | 5 ms | 44 ms |
-| 18 | ⭐⭐ | 30194 ms | 254620 ms |
-| 19 | ⭐⭐ | 13382 ms | 41252 ms |
-| 20 | ⭐⭐ | 32128 ms | 210657 ms |
-| 21 | ⭐⭐ | 48 ms | 875 ms |
-| 22 | ⭐⭐ | 13279 ms | 656864 ms |
-| 23 | ⭐⭐ | 1492 ms | 24378 ms |
-| 24 | ⭐⭐ | 993 ms | 486 ms |
-| 25 | ⭐⭐ | 377 ms | 0 ms |
+| 1 | ⭐⭐ | 132 	μs | 716 	μs |
+| 2 | ⭐⭐ | 184 	μs | 387 	μs |
+| 3 | ⭐⭐ | 731 	μs | 989 	μs |
+| 4 | ⭐⭐ | 183 ms | 94 ms |
+| 5 | ⭐⭐ | 5 ms | 28 ms |
+| 6 | ⭐⭐ | 102 	μs | 830 ms |
+| 7 | ⭐⭐ | 20 ms | 1802 ms |
+| 8 | ⭐⭐ | 67 	μs | 214 	μs |
+| 9 | ⭐⭐ | 1111 ms | 255 ms |
+| 10 | ⭐⭐ | 2 ms | 1 ms |
+| 11 | ⭐⭐ | 410 	μs | 19 ms |
+| 12 | ⭐⭐ | 89 ms | 105 ms |
+| 13 | ⭐⭐ | 1 ms | 1 ms |
+| 14 | ⭐⭐ | 611 	μs | 77 ms |
+| 15 | ⭐⭐ | 2 ms | 40 ms |
+| 16 | ⭐⭐ | 119 ms | 143 ms |
+| 17 | ⭐⭐ | 5 	μs | 41 	μs |
+| 18 | ⭐⭐ | 28 ms | 204 ms |
+| 19 | ⭐⭐ | 11 ms | 36 ms |
+| 20 | ⭐⭐ | 31 ms | 191 ms |
+| 21 | ⭐⭐ | 49 	μs | 882 	μs |
+| 22 | ⭐⭐ | 14 ms | 655 ms |
+| 23 | ⭐⭐ | 1 ms | 23 ms |
+| 24 | ⭐⭐ | 898 	μs | 437 	μs |
+| 25 | ⭐⭐ | 480 	μs | 0 	μs |
 
 </details>
 
 
-The benchmarks were last updated on 2025-10-12 21:12:42.
+The benchmarks were last updated on 2025-10-12 21:25:39.
