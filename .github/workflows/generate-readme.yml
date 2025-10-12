@@ -38,6 +38,8 @@ jobs:
 
   Test-and-benchmark:
     runs-on: ubuntu-latest
+    outputs:
+      generate_readme: ${{ steps.benchmark.outputs.generate_readme }}
     steps:
       - uses: actions/checkout@v5
 
@@ -71,6 +73,7 @@ jobs:
           echo "packages_to_test=$PACKAGES_TO_TEST" >> $GITHUB_OUTPUT
 
       - name: Benchmark
+        id: benchmark
         env:
           PACKAGES_TO_TEST: ${{ steps.list_changed_files.outputs.packages_to_test }}
         run: |
@@ -78,10 +81,12 @@ jobs:
           if [ -z "$PACKAGES_TO_TEST" ]; then
             echo "No packages to benchmark"
             touch /tmp/aoc/benchmark-results.txt
+            echo "generate_readme=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           echo "Running benchmarks for packages: $PACKAGES_TO_TEST"
           go test -bench . -v -skip Test -count 3 -cpu 1 $PACKAGES_TO_TEST > /tmp/aoc/benchmark-results.txt
+          echo "generate_readme=true" >> $GITHUB_OUTPUT
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
@@ -92,6 +97,7 @@ jobs:
 
   Generate-README:
     needs: [Build-generator, Test-and-benchmark]
+    if: needs.Test-and-benchmark.outputs.generate_readme == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
