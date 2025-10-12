@@ -172,8 +172,8 @@ func (t Times) String() string {
 		return "-"
 	}
 	avg := t.average()
-	if avg < 1_000_000 {
-		return fmt.Sprintf("%d 	μs", avg/1_000)
+	if avg < 10_000_000 {
+		return fmt.Sprintf("%d μs", avg/1_000)
 	}
 	return fmt.Sprintf("%d ms", avg/1_000_000)
 }
