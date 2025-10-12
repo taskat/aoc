@@ -4,11 +4,12 @@ description: "Validate that the protected files were not changed manually"
 runs:
   using: "composite"
   steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Check benchmark file changes
+        shell: bash
         run: |
           # Get list of changed benchmark files
           CHANGED_BENCHMARK_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "^benchmark.json$" || true)
@@ -35,6 +36,7 @@ runs:
           fi
 
       - name: Validate README changes
+        shell: bash
         run: |
           # Check if README was modified manually (not by CI)
           README_COMMITS=$(git log --oneline origin/${{ github.base_ref }}...HEAD --pretty=format:"%H %s %an" -- README.md || true)
