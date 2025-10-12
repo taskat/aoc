@@ -1,0 +1,53 @@
+name: "Validate file changes"
+description: "Validate that the protected files were not changed manually"
+
+runs:
+  using: "composite"
+  steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check benchmark file changes
+        run: |
+          # Get list of changed benchmark files
+          CHANGED_BENCHMARK_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "^benchmark.json$" || true)
+          
+          if [ -n "$CHANGED_BENCHMARK_FILES" ]; then
+            echo "Benchmark files changed: $CHANGED_BENCHMARK_FILES"
+            
+            # Check if changes came from CI
+            COMMITS_WITH_BENCHMARK_CHANGES=$(git log origin/${{ github.base_ref }}...HEAD --pretty=format:"%H %s %an" -- benchmark.json)
+            
+            echo "$COMMITS_WITH_BENCHMARK_CHANGES" | while read commit_hash commit_msg commit_author; do
+              # Validate commit came from CI
+              if [[ "$commit_author" != "github-actions[bot]"]]; then
+                echo "Benchmark files modified by non-CI commit: $commit_hash"
+                echo "Author: $commit_author"
+                echo "Message: $commit_msg"
+                exit 1
+              fi
+            done
+            
+            echo "All benchmark changes came from CI"
+          else
+            echo "No benchmark files changed"
+          fi
+
+      - name: Validate README changes
+        run: |
+          # Check if README was modified manually (not by CI)
+          README_COMMITS=$(git log --oneline origin/${{ github.base_ref }}...HEAD --pretty=format:"%H %s %an" -- README.md || true)
+          
+          if [ -n "$README_COMMITS" ]; then
+            echo "$README_COMMITS" | while read commit_hash commit_msg commit_author; do
+              if [[ "$commit_author" != "github-actions[bot]" ]]; then
+                echo "README.md modified by non-CI commit: $commit_hash"
+                echo "Author: $commit_author"
+                echo "Message: $commit_msg"
+                exit 1
+              fi
+            done
+
+            echo "README changes validated"
+          fi

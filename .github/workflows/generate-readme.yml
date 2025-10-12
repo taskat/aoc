@@ -2,7 +2,6 @@ name: Generate README
 
 on:
   push:
-    branches: [ "master", "add-dynamic-readme" ]
   workflow_dispatch:
     inputs:
       bench_all: 
