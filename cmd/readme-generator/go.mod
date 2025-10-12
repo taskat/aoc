@@ -1,8 +1,6 @@
-module taskat/aoc/cmd/add
+module taskat/aoc/cmd/readme-generator
 
-go 1.25
-
-toolchain go1.23.11
+go 1.25.0
 
 require github.com/taskat/aoc v0.0.0
 

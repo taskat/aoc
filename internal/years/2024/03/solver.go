@@ -122,7 +122,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	operators := []string{mul.regexp(mul{}), do{}.regexp(), dont{}.regexp()}
+	operators := []string{mul{}.regexp(), do{}.regexp(), dont{}.regexp()}
 	operations := s.parse(lines, operators)
 	enable := true
 	eval := func(op operation) int {

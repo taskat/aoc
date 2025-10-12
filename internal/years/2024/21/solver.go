@@ -58,7 +58,6 @@ func (c code) complexity(pads []keypad) int {
 	numValue := stringutils.Atoi(numPart)
 	length := 0
 	for codeBlock, count := range finalCode {
-		fmt.Println(codeBlock, count)
 		length += len(codeBlock) * count
 	}
 	return length * numValue

@@ -1,0 +1,141 @@
+name: Generate README
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      bench_all: 
+        description: 'Benchmark all packages'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  AOC_HOME: ${{ github.workspace }}
+
+jobs:
+
+  Build-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: Build
+        shell: bash
+        run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator/readme-generator
+          retention-days: 1
+
+  Test-and-benchmark:
+    runs-on: ubuntu-latest
+    outputs:
+      generate_readme: ${{ steps.benchmark.outputs.generate_readme }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run Common Setup
+        uses: ./.github/actions/common-setup
+        with:
+          git_crypt_key: ${{ secrets.GIT_CRYPT_KEY }}
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        
+      - name: List changed files
+        id: list_changed_files
+        run: |
+          if [ "${{ github.event.inputs.bench_all }}" = "true" ]; then
+            echo "Benchmarking all packages"
+            echo "packages_to_test=./..." >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          PACKAGES_TO_TEST=""
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ $file == internal/years/*/*.go ]]; then
+              PACKAGES_TO_TEST+=" ./$(dirname $file)/"
+            fi
+          done
+          echo "Packages to test: $PACKAGES_TO_TEST"
+          echo "packages_to_test=$PACKAGES_TO_TEST" >> $GITHUB_OUTPUT
+
+      - name: Benchmark
+        id: benchmark
+        env:
+          PACKAGES_TO_TEST: ${{ steps.list_changed_files.outputs.packages_to_test }}
+        run: |
+          mkdir -p /tmp/aoc
+          if [ -z "$PACKAGES_TO_TEST" ]; then
+            echo "No packages to benchmark"
+            touch /tmp/aoc/benchmark-results.txt
+            echo "generate_readme=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Running benchmarks for packages: $PACKAGES_TO_TEST"
+          go test -bench . -v -skip Test -count 3 -cpu 1 $PACKAGES_TO_TEST > /tmp/aoc/benchmark-results.txt
+          echo "generate_readme=true" >> $GITHUB_OUTPUT
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: /tmp/aoc/benchmark-results.txt
+          retention-days: 1
+
+  Generate-README:
+    needs: [Build-generator, Test-and-benchmark]
+    if: needs.Test-and-benchmark.outputs.generate_readme == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator
+
+      - name: Download benchmark results
+        uses: actions/download-artifact@v5
+        with:
+          name: benchmark-results
+          path: /tmp/aoc
+
+      - name: Generate README
+        shell: bash
+        run: |
+          chmod +x ./cmd/readme-generator/readme-generator
+          ./cmd/readme-generator/readme-generator
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git add benchmark.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update README.md and benchmark.json with automated script [skip ci]"
+            git push
+          fi

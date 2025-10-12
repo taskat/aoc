@@ -37,14 +37,14 @@ func (args arguments) toTemplateValues() templateValues {
 	return newTemplateValues(args.year, args.day)
 }
 
-func parseDayArgs(arguments *arguments, fs *flag.FlagSet) int {
+func parseDayArgs(arguments *arguments) (*flag.FlagSet, int) {
 	arguments.mode = day
 	flagStartOffset := 0
 	if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
 		day, err := strconv.Atoi(os.Args[2])
 		if err != nil {
 			fmt.Println("Error parsing day:", err)
-			printYearUsage()
+			printDayUsage()
 			os.Exit(1)
 		}
 		arguments.day = day
@@ -52,14 +52,14 @@ func parseDayArgs(arguments *arguments, fs *flag.FlagSet) int {
 	} else {
 		arguments.day = -1
 	}
-	fs = flag.NewFlagSet("day", flag.ExitOnError)
+	fs := flag.NewFlagSet("day", flag.ExitOnError)
 	common.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
 	common.AddFlag(fs.IntVar, &arguments.year, "year", getDefaultYearForDay(), "Year number")
 	fs.Usage = printDayUsage
-	return flagStartOffset
+	return fs, flagStartOffset
 }
 
-func parseYearArgs(arguments *arguments, fs *flag.FlagSet) int {
+func parseYearArgs(arguments *arguments) (*flag.FlagSet, int) {
 	arguments.mode = year
 	flagStartOffset := 0
 	if len(os.Args) > 2 && !strings.HasPrefix(os.Args[2], "-") {
@@ -74,10 +74,10 @@ func parseYearArgs(arguments *arguments, fs *flag.FlagSet) int {
 	} else {
 		arguments.year = getDefaultYear()
 	}
-	fs = flag.NewFlagSet("year", flag.ExitOnError)
+	fs := flag.NewFlagSet("year", flag.ExitOnError)
 	common.AddFlag(fs.BoolVar, &arguments.help, "help", false, "Print this help message")
 	fs.Usage = printYearUsage
-	return flagStartOffset
+	return fs, flagStartOffset
 }
 
 // parseArgs parses the command line arguments
@@ -88,12 +88,14 @@ func parseArgs() arguments {
 	}
 	arguments := arguments{}
 	fs := &flag.FlagSet{}
-	flagStart := 2
+	flagStart, flagStartOffset := 2, 0
 	switch os.Args[1] {
 	case "day":
-		flagStart += parseDayArgs(&arguments, fs)
+		fs, flagStartOffset = parseDayArgs(&arguments)
+		flagStart += flagStartOffset
 	case "year":
-		flagStart += parseYearArgs(&arguments, fs)
+		fs, flagStartOffset = parseYearArgs(&arguments)
+		flagStart += flagStartOffset
 	case "help":
 		printGlobalUsage()
 		os.Exit(0)
@@ -104,6 +106,7 @@ func parseArgs() arguments {
 	}
 	fs.Parse(os.Args[flagStart:])
 	if arguments.help {
+		fmt.Println("Help requested")
 		fs.Usage()
 		os.Exit(0)
 	}
@@ -200,7 +203,7 @@ func printGlobalUsage() {
 	fmt.Println("  Commands:")
 	fmt.Println("    help\tPrint this help message")
 	fmt.Println("    year\tGenerate a year")
-	fmt.Println("    day\t\tenerate a day")
+	fmt.Println("    day\t\tGenerate a day")
 	fmt.Println("Use 'add <command> --help' for more information about a command")
 }
 

@@ -1,5 +1,5 @@
 # This is the Dockerfile for the devcontainer
-FROM mcr.microsoft.com/devcontainers/go:1-1.23-bookworm
+FROM mcr.microsoft.com/devcontainers/go:1.25-bookworm
 
 # Set working directory
 WORKDIR /workspaces/aoc

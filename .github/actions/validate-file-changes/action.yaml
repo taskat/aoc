@@ -1,0 +1,65 @@
+name: "Validate file changes"
+description: "Validate that the protected files were not changed manually"
+
+runs:
+  using: "composite"
+  steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check benchmark file changes
+        shell: bash
+        run: |
+          # Determine base branch
+          if [ -n "${{ github.base_ref }}" ]; then
+            BASE_BRANCH="origin/${{ github.base_ref }}"
+          else
+            BASE_BRANCH="origin/${{ github.event.repository.default_branch }}"
+          fi
+          
+          # Get list of changed benchmark files
+          CHANGED_BENCHMARK_FILES=$(git diff --name-only ${BASE_BRANCH}...HEAD | grep "^benchmark.json$" || true)
+          
+          if [ -n "$CHANGED_BENCHMARK_FILES" ]; then
+            echo "Benchmark files changed: $CHANGED_BENCHMARK_FILES"
+            
+            # Check if changes came from CI
+            COMMITS_WITH_BENCHMARK_CHANGES=$(git log ${BASE_BRANCH}...HEAD --pretty=format:"%H|%an" -- benchmark.json)
+            
+            echo "$COMMITS_WITH_BENCHMARK_CHANGES" | while IFS='|' read -r commit_hash commit_author; do
+              # Validate commit came from CI
+              if [[ "$commit_author" != "github-actions[bot]" ]]; then
+                echo "Benchmark files modified by non-CI commit: $commit_hash"
+                echo "Author: $commit_author"
+                exit 1
+              fi
+            done
+            
+            echo "All benchmark changes came from CI"
+          else
+            echo "No benchmark files changed"
+          fi
+
+      - name: Validate README changes
+        shell: bash
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            BASE_BRANCH="origin/${{ github.base_ref }}"
+          else
+            BASE_BRANCH="origin/${{ github.event.repository.default_branch }}"
+          fi
+          
+          README_COMMITS=$(git log ${BASE_BRANCH}...HEAD --pretty=format:"%H|%an" -- README.md || true)
+          
+          if [ -n "$README_COMMITS" ]; then
+            echo "$README_COMMITS" | while IFS='|' read -r commit_hash commit_author; do
+              if [[ "$commit_author" != "github-actions[bot]" ]]; then
+                echo "README.md modified by non-CI commit: $commit_hash"
+                echo "Author: $commit_author"
+                exit 1
+              fi
+            done
+
+            echo "README changes validated"
+          fi

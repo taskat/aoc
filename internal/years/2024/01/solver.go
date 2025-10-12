@@ -2,12 +2,12 @@ package day01
 
 import (
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
 
 // day is the day of the solver
@@ -29,8 +29,8 @@ func (s *Solver) parse(lines []string) ([]int, []int) {
 	left, right := make([]int, len(lines)), make([]int, len(lines))
 	for i, line := range lines {
 		parts := strings.Split(line, "   ")
-		left[i], _ = strconv.Atoi(parts[0])
-		right[i], _ = strconv.Atoi(parts[1])
+		left[i] = stringutils.Atoi(parts[0])
+		right[i] = stringutils.Atoi(parts[1])
 	}
 	sort.Ints(left)
 	sort.Ints(right)
@@ -43,7 +43,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 	distances := slices.ZipWith(left, right, intutils.Diff)
 	distances = slices.Map(distances, intutils.Abs)
 	sum := slices.Sum(distances)
-	return strconv.Itoa(sum)
+	return stringutils.Itoa(sum)
 }
 
 // SolvePart2 solves part 2 of the puzzle
@@ -56,5 +56,5 @@ func (s *Solver) SolvePart2(lines []string) string {
 	})
 	scores := slices.ZipWith(left, appearances, intutils.Product)
 	sum := slices.Sum(scores)
-	return strconv.Itoa(sum)
+	return stringutils.Itoa(sum)
 }
