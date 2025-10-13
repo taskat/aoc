@@ -482,6 +482,60 @@ func TestForEach2(t *testing.T) {
 	})
 }
 
+func TestIsDecreasing(t *testing.T) {
+	type testCase[T any] struct {
+		name     string
+		iter     iter.Seq[T]
+		expected bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", NewFromSlice[int](nil), true},
+		{"Empty slice", NewFromSlice([]int{}), true},
+		{"Decreasing slice", NewFromSlice([]int{3, 2, 1}), true},
+		{"Not decreasing slice", NewFromSlice([]int{1, 2, 3}), false},
+		{"Equal elements slice", NewFromSlice([]int{1, 1, 1}), false},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := IsDecreasing(testCase.iter)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+	// Test for panic
+	t.Run("Nil iter", func(t *testing.T) {
+		assert.PanicsWithValue(t, nilIterPanicMsg, func() {
+			IsDecreasing[int](nil)
+		})
+	})
+}
+
+func TestIsDecreasing2(t *testing.T) {
+	type testCase[K comparable, V any] struct {
+		name     string
+		iter     iter.Seq2[K, V]
+		expected bool
+	}
+	testCases := []testCase[int, string]{
+		{"Nil slice", NewFromSlice2[string](nil), true},
+		{"Empty slice", NewFromSlice2([]string{}), true},
+		{"Decreasing slice", NewFromSlice2([]string{"ccc", "bb", "a"}), true},
+		{"Not decreasing slice", NewFromSlice2([]string{"a", "bb", "ccc"}), false},
+		{"Equal elements slice", NewFromSlice2([]string{"a", "a", "a"}), false},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := IsDecreasing2(testCase.iter)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+	// Test for panic
+	t.Run("Nil iter", func(t *testing.T) {
+		assert.PanicsWithValue(t, nilIterPanicMsg, func() {
+			IsDecreasing2[int, string](nil)
+		})
+	})
+}
+
 func TestIsEmpty(t *testing.T) {
 	type testCase[T any] struct {
 		name     string
@@ -534,6 +588,60 @@ func TestIsEmpty2(t *testing.T) {
 	t.Run("Nil iter", func(t *testing.T) {
 		assert.PanicsWithValue(t, nilIterPanicMsg, func() {
 			IsEmpty2[int, string](nil)
+		})
+	})
+}
+
+func TestIsIncreasing(t *testing.T) {
+	type testCase[T any] struct {
+		name     string
+		iter     iter.Seq[T]
+		expected bool
+	}
+	testCases := []testCase[int]{
+		{"Nil slice", NewFromSlice[int](nil), true},
+		{"Empty slice", NewFromSlice([]int{}), true},
+		{"Increasing slice", NewFromSlice([]int{1, 2, 3}), true},
+		{"Not increasing slice", NewFromSlice([]int{3, 2, 1}), false},
+		{"Equal elements slice", NewFromSlice([]int{1, 1, 1}), false},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := IsIncreasing(testCase.iter)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+	// Test for panic
+	t.Run("Nil iter", func(t *testing.T) {
+		assert.PanicsWithValue(t, nilIterPanicMsg, func() {
+			IsIncreasing[int](nil)
+		})
+	})
+}
+
+func TestIsIncreasing2(t *testing.T) {
+	type testCase[K comparable, V any] struct {
+		name     string
+		iter     iter.Seq2[K, V]
+		expected bool
+	}
+	testCases := []testCase[int, string]{
+		{"Nil slice", NewFromSlice2[string](nil), true},
+		{"Empty slice", NewFromSlice2([]string{}), true},
+		{"Increasing slice", NewFromSlice2([]string{"a", "bb", "ccc"}), true},
+		{"Not increasing slice", NewFromSlice2([]string{"ccc", "bb", "a"}), false},
+		{"Equal elements slice", NewFromSlice2([]string{"a", "a", "a"}), false},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actual := IsIncreasing2(testCase.iter)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+	// Test for panic
+	t.Run("Nil iter", func(t *testing.T) {
+		assert.PanicsWithValue(t, nilIterPanicMsg, func() {
+			IsIncreasing2[int, string](nil)
 		})
 	})
 }

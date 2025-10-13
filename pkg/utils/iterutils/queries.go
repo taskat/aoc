@@ -217,6 +217,40 @@ func ForEach2[K comparable, V any](iter iter.Seq2[K, V], f func(K, V)) {
 	}
 }
 
+// IsDecreasing returns true if the iter is strictly decreasing and false otherwise.
+// If the iter is empty or has one element, it returns true. If the iter is nil, it panics.
+func IsDecreasing[T cmp.Ordered](iter iter.Seq[T]) bool {
+	panicIfNil[any, T](iter)
+	if IsEmpty(iter) {
+		return true
+	}
+	prev := First(iter)
+	for v := range Skip(iter, 1) {
+		if v >= prev {
+			return false
+		}
+		prev = v
+	}
+	return true
+}
+
+// IsDecreasing2 returns true if the values in the iter are strictly decreasing and false otherwise.
+// If the iter is empty or has one element, it returns true. If the iter is nil, it panics.
+func IsDecreasing2[K comparable, V cmp.Ordered](iter iter.Seq2[K, V]) bool {
+	panicIfNil[K, V](iter)
+	if IsEmpty2(iter) {
+		return true
+	}
+	_, prev := First2(iter)
+	for _, v := range Skip2(iter, 1) {
+		if v >= prev {
+			return false
+		}
+		prev = v
+	}
+	return true
+}
+
 // IsEmpty returns true if the iter is empty and false otherwise. If the iter is nil, it panics.
 func IsEmpty[T any](iter iter.Seq[T]) bool {
 	panicIfNil[any, T](iter)
@@ -227,6 +261,40 @@ func IsEmpty[T any](iter iter.Seq[T]) bool {
 func IsEmpty2[K comparable, V any](iter iter.Seq2[K, V]) bool {
 	panicIfNil[K, V](iter)
 	return Len2(iter) == 0
+}
+
+// IsIncreasing returns true if the iter is strictly increasing and false otherwise.
+// If the iter is empty or has one element, it returns true. If the iter is nil, it panics.
+func IsIncreasing[T cmp.Ordered](iter iter.Seq[T]) bool {
+	panicIfNil[any, T](iter)
+	if IsEmpty(iter) {
+		return true
+	}
+	prev := First(iter)
+	for v := range Skip(iter, 1) {
+		if v <= prev {
+			return false
+		}
+		prev = v
+	}
+	return true
+}
+
+// IsIncreasing2 returns true if the values in the iter are strictly increasing and false otherwise.
+// If the iter is empty or has one element, it returns true. If the iter is nil, it panics.
+func IsIncreasing2[K comparable, V cmp.Ordered](iter iter.Seq2[K, V]) bool {
+	panicIfNil[K, V](iter)
+	if IsEmpty2(iter) {
+		return true
+	}
+	_, prev := First2(iter)
+	for _, v := range Skip2(iter, 1) {
+		if v <= prev {
+			return false
+		}
+		prev = v
+	}
+	return true
 }
 
 // IsValidKey returns true if the key is in the iter and false otherwise. If the iter is nil, it panics.
