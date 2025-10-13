@@ -24,8 +24,9 @@ type Solver struct{}
 func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines, operations []string) []operation {
-	r := strings.Join(operations, "|")
+func (s *Solver) parse(lines []string, operations []operation) []operation {
+	operationRegexps := slices.Map(operations, operation.regexp)
+	r := strings.Join(operationRegexps, "|")
 	mulRegexp := regexp.MustCompile(r)
 	muls := make([]operation, 0)
 	for _, line := range lines {
@@ -108,27 +109,27 @@ func (mul) regexp() string {
 	return `mul\(\d{1,3},\d{1,3}\)`
 }
 
-// SolvePart1 solves part 1 of the puzzle
-func (s *Solver) SolvePart1(lines []string) string {
-	operations := s.parse(lines, []string{mul.regexp(mul{})})
+// simulate runs the operations and returns the sum of results
+func (s *Solver) simulate(operations []operation) int {
 	enable := true
 	eval := func(op operation) int {
 		return op.eval(&enable)
 	}
 	results := slices.Map(operations, eval)
-	sum := slices.Sum(results)
+	return slices.Sum(results)
+}
+
+// SolvePart1 solves part 1 of the puzzle
+func (s *Solver) SolvePart1(lines []string) string {
+	operations := s.parse(lines, []operation{mul{}})
+	sum := s.simulate(operations)
 	return fmt.Sprint(sum)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	operators := []string{mul{}.regexp(), do{}.regexp(), dont{}.regexp()}
+	operators := []operation{mul{}, do{}, dont{}}
 	operations := s.parse(lines, operators)
-	enable := true
-	eval := func(op operation) int {
-		return op.eval(&enable)
-	}
-	results := slices.Map(operations, eval)
-	sum := slices.Sum(results)
+	sum := s.simulate(operations)
 	return fmt.Sprint(sum)
 }
