@@ -5,6 +5,7 @@ import (
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
+	"github.com/taskat/aoc/pkg/utils/iterutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
@@ -25,11 +26,7 @@ func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) []report {
-	reports := make([]report, len(lines))
-	for i, line := range lines {
-		reports[i] = parseReport(line)
-	}
-	return reports
+	return slices.Map(lines, parseReport)
 }
 
 // report is one line of report values
@@ -46,12 +43,7 @@ func parseReport(line string) report {
 
 // isDecreasing checks if the report is strictly decreasing
 func (r report) isDecreasing() bool {
-	for i := 1; i < len(r); i++ {
-		if r[i] >= r[i-1] {
-			return false
-		}
-	}
-	return true
+	return iterutils.IsDecreasing(iterutils.NewFromSlice(r))
 }
 
 // isDifferenceSafe checks if the report has no difference greater than 3
@@ -67,12 +59,7 @@ func (r report) isDifferenceSafe() bool {
 
 // isIncreasing checks if the report is strictly increasing
 func (r report) isIncreasing() bool {
-	for i := 1; i < len(r); i++ {
-		if r[i] <= r[i-1] {
-			return false
-		}
-	}
-	return true
+	return iterutils.IsIncreasing(iterutils.NewFromSlice(r))
 }
 
 // isSafe checks if the report is safe
