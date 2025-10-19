@@ -4,7 +4,9 @@ import (
 	"fmt"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/iterutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
 // day is the day of the solver
@@ -22,66 +24,14 @@ type Solver struct{}
 func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) map[rune][]coordinate {
-	coordinates := make(map[rune][]coordinate)
+func (s *Solver) parse(lines []string) map[rune][]coordinate.Coordinate2D[int] {
+	coordinates := make(map[rune][]coordinate.Coordinate2D[int])
 	for i, line := range lines {
 		for j, c := range line {
-			coordinates[c] = append(coordinates[c], coordinate{x: j, y: i})
+			coordinates[c] = append(coordinates[c], coordinate.FromIndexes(i, j))
 		}
 	}
 	return coordinates
-}
-
-type coordinate struct {
-	x int
-	y int
-}
-
-func (c coordinate) move_new(d Direction) coordinate {
-	c1 := c
-	c1.move(d)
-	return c1
-}
-
-func (c *coordinate) move(d Direction) {
-	unit := d.unit()
-	c.x += unit.x
-	c.y += unit.y
-}
-
-type Direction int
-
-const (
-	Up Direction = iota
-	UpRight
-	Right
-	DownRight
-	Down
-	DownLeft
-	Left
-	UpLeft
-)
-
-func (d Direction) unit() coordinate {
-	switch d {
-	case Up:
-		return coordinate{0, -1}
-	case UpRight:
-		return coordinate{1, -1}
-	case Right:
-		return coordinate{1, 0}
-	case DownRight:
-		return coordinate{1, 1}
-	case Down:
-		return coordinate{0, 1}
-	case DownLeft:
-		return coordinate{-1, 1}
-	case Left:
-		return coordinate{-1, 0}
-	case UpLeft:
-		return coordinate{-1, -1}
-	}
-	panic("invalid direction")
 }
 
 // SolvePart1 solves part 1 of the puzzle
@@ -94,24 +44,23 @@ func (s *Solver) SolvePart1(lines []string) string {
 	return fmt.Sprint(count)
 }
 
-func countwords(coordinates map[rune][]coordinate, start coordinate, word string) int {
-	directions := []Direction{Up, UpRight, Right, DownRight, Down, DownLeft, Left, UpLeft}
-	count := 0
-	for _, d := range directions {
-		if containsWordInDirection(coordinates, start, word, d) {
-			count++
-		}
+// countwords counts how many times the word can be found starting from the given coordinate
+func countwords(coordinates map[rune][]coordinate.Coordinate2D[int], start coordinate.Coordinate2D[int], word string) int {
+	directions := coordinate.Directions()
+	counter := func(d coordinate.Direction) bool {
+		return containsWordInDirection(coordinates, start, word, d)
 	}
-	return count
+	return iterutils.Count(iterutils.NewFromSlice(directions), counter)
 }
 
-func containsWordInDirection(coordinates map[rune][]coordinate, start coordinate, word string, d Direction) bool {
+// containsWordInDirection checks if the word can be found starting from the given coordinate in the given direction
+func containsWordInDirection(coordinates map[rune][]coordinate.Coordinate2D[int], start coordinate.Coordinate2D[int], word string, d coordinate.Direction) bool {
 	c := start
 	for _, letter := range word {
 		if !slices.Contains(coordinates[letter], c) {
 			return false
 		}
-		c.move(d)
+		c.Move(d)
 	}
 	return true
 }
@@ -119,30 +68,33 @@ func containsWordInDirection(coordinates map[rune][]coordinate, start coordinate
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	coordinates := s.parse(lines)
-	count := 0
-	for _, c := range coordinates['A'] {
-		newcount := countXs(coordinates, c)
-		count += newcount
+	isX := func(c coordinate.Coordinate2D[int]) bool {
+		return isX(coordinates, c)
 	}
+	count := iterutils.Count(iterutils.NewFromSlice(coordinates['A']), isX)
 	return fmt.Sprint(count)
 }
 
-func countXs(coordinates map[rune][]coordinate, start coordinate) int {
-	line1 := []coordinate{start.move_new(UpLeft), start.move_new(DownRight)}
-	line2 := []coordinate{start.move_new(UpRight), start.move_new(DownLeft)}
-	lines := [][]coordinate{line1, line2}
+// isX checks if the coordinate is the center of an X shape
+func isX(coordinates map[rune][]coordinate.Coordinate2D[int], start coordinate.Coordinate2D[int]) bool {
+	line1 := []coordinate.Coordinate2D[int]{start.Go(coordinate.UpLeft()), start.Go(coordinate.DownRight())}
+	line2 := []coordinate.Coordinate2D[int]{start.Go(coordinate.UpRight()), start.Go(coordinate.DownLeft())}
+	lines := [][]coordinate.Coordinate2D[int]{line1, line2}
 	for _, line := range lines {
 		if !(isPartOfX(coordinates, line[0]) && isPartOfX(coordinates, line[1]) && !isSame(coordinates, line[0], line[1])) {
-			return 0
+			return false
 		}
 	}
-	return 1
+	return true
 }
 
-func isPartOfX(coordinates map[rune][]coordinate, c coordinate) bool {
+// isPartOfX checks if the coordinate is part of the X shape (either M or S)
+func isPartOfX(coordinates map[rune][]coordinate.Coordinate2D[int], c coordinate.Coordinate2D[int]) bool {
 	return slices.Contains(coordinates['M'], c) || slices.Contains(coordinates['S'], c)
 }
 
-func isSame(coordinates map[rune][]coordinate, c1, c2 coordinate) bool {
-	return (slices.Contains(coordinates['M'], c1) && slices.Contains(coordinates['M'], c2)) || (slices.Contains(coordinates['S'], c1) && slices.Contains(coordinates['S'], c2))
+// isSame checks if both coordinates are of the same type (both M or both S)
+func isSame(coordinates map[rune][]coordinate.Coordinate2D[int], c1, c2 coordinate.Coordinate2D[int]) bool {
+	return (slices.Contains(coordinates['M'], c1) && slices.Contains(coordinates['M'], c2)) ||
+		(slices.Contains(coordinates['S'], c1) && slices.Contains(coordinates['S'], c2))
 }
