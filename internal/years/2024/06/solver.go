@@ -5,6 +5,8 @@ import (
 
 	"github.com/taskat/aoc/internal/years/2024/days"
 	"github.com/taskat/aoc/pkg/utils/slices"
+	"github.com/taskat/aoc/pkg/utils/types/coordinate"
+	coord "github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
 // day is the day of the solver
@@ -27,25 +29,12 @@ func (s *Solver) parse(lines []string) (lab, guard) {
 	for _, line := range lines {
 		lab = append(lab, slices.Map([]rune(line), parseField))
 	}
-	startPos := coordinate{x: -1, y: -1}
-	for i, row := range lab {
-		for j, field := range row {
-			if field == guardStart {
-				startPos = coordinate{x: j, y: i}
-				break
-			}
-		}
-		if startPos.x != -1 {
-			break
-		}
-	}
-	guard := guard{
-		position: startPos,
-		facing:   up,
-	}
-	return lab, guard
+	startPos := coord.Find2DSliceIndex(lab, guardStart.predicatorFactory())
+	guard := coord.NewActor(startPos, coord.Up())
+	return lab, *guard
 }
 
+// field represents a cell in the lab
 type field rune
 
 const (
@@ -55,6 +44,17 @@ const (
 	guardStart  field = '^'
 )
 
+// predicatorFactory creates a predicate function that returns true if the cell
+// is the requested field
+func (f field) predicatorFactory() func(field) bool {
+	return func(cell field) bool {
+		return cell == f
+	}
+}
+
+// parseField converts a rune to a field
+// The '.', '#', 'X', and '^' runes are valid fields
+// Any other rune will cause a panic
 func parseField(r rune) field {
 	switch r {
 	case '.':
@@ -69,41 +69,49 @@ func parseField(r rune) field {
 	panic("invalid field")
 }
 
+// lab represents the lab layout, it is a 2D slice of fields
 type lab [][]field
 
-func (l lab) copy() lab {
-	result := make(lab, len(l))
-	for i, row := range l {
-		result[i] = make([]field, len(row))
-		copy(result[i], row)
-	}
-	return result
+// isEmpty checks if the cell at the given coordinate is empty
+func (l lab) isEmpty(c coord.Coordinate2D[int]) bool {
+	return l[c.I()][c.J()] != obstruction
 }
 
-func (l lab) isEmpty(c coordinate) bool {
-	return l[c.y][c.x] != obstruction
+// isOutOfBounds checks if the coordinate is out of bounds of the lab
+func (l lab) isOutOfBounds(c coord.Coordinate2D[int]) bool {
+	return !c.In2DSlice(len(l[0]), len(l))
 }
 
-func (l lab) isOutOfBounds(c coordinate) bool {
-	return c.x < 0 || c.x >= len(l[0]) || c.y < 0 || c.y >= len(l)
-}
-
-func (l lab) leadsToCircle(c coordinate, d direction) bool {
-	visitedFields := make(map[coordinate][]direction)
-	fakeGuard := guard{
-		position: c.copy(),
-		facing:   d,
-	}
-	visitedFields[c] = []direction{d}
-	fakeLab := l.copy()
-	for fakeGuard.move(fakeLab) {
-		dir, ok := visitedFields[fakeGuard.position]
-		if ok && slices.Contains(dir, fakeGuard.facing) {
+// leadsToCircle checks if starting from the given coordinate and direction
+// will eventually lead to a circle (i.e., revisiting the same cell facing the same direction)
+func (l lab) leadsToCircle(g guard) bool {
+	visitedFields := make(map[coord.Coordinate2D[int]][]coord.Direction)
+	visitedFields[g.Position] = []coord.Direction{g.Direction}
+	for l.move(&g, false) {
+		dir, ok := visitedFields[g.Position]
+		if ok && slices.Contains(dir, g.Direction) {
 			return true
 		}
-		visitedFields[fakeGuard.position] = append(dir, fakeGuard.facing)
+		visitedFields[g.Position] = append(dir, g.Direction)
 	}
 	return false
+}
+
+// move moves the guard in the lab according to the rules
+func (l lab) move(g *guard, visit bool) bool {
+	if visit {
+		l.visit(g.Position)
+	}
+	next := g.Next()
+	if l.isOutOfBounds(next) {
+		return false
+	}
+	if l.isEmpty(next) {
+		g.Position = next
+	} else {
+		g.Direction = g.Direction.TurnRight()
+	}
+	return true
 }
 
 // String implements the fmt.Stringer interface
@@ -118,101 +126,42 @@ func (l lab) String() string {
 	return result
 }
 
-func (l lab) visit(c coordinate) {
-	l[c.y][c.x] = visited
+// visit marks the cell at the given coordinate as visited
+func (l lab) visit(c coord.Coordinate2D[int]) {
+	l[c.I()][c.J()] = visited
 }
 
-type guard struct {
-	position coordinate
-	facing   direction
-}
-
-func (g *guard) move(l lab) bool {
-	l.visit(g.position)
-	next := g.next()
-	if l.isOutOfBounds(next) {
-		return false
-	}
-	if l.isEmpty(next) {
-		g.position = next
-	} else {
-		g.facing = g.facing.turnRight()
-	}
-	return true
-}
-
-func (g guard) next() coordinate {
-	return g.position.move_new(g.facing)
-}
-
-type coordinate struct {
-	x, y int
-}
-
-func (c coordinate) copy() coordinate {
-	return c
-}
-
-func (c coordinate) move_new(d direction) coordinate {
-	switch d {
-	case up:
-		return coordinate{x: c.x, y: c.y - 1}
-	case right:
-		return coordinate{x: c.x + 1, y: c.y}
-	case down:
-		return coordinate{x: c.x, y: c.y + 1}
-	case left:
-		return coordinate{x: c.x - 1, y: c.y}
-	}
-	panic("invalid direction")
-}
-
-type direction int
-
-const (
-	up direction = iota
-	right
-	down
-	left
-)
-
-func (d direction) turnRight() direction {
-	return (d + 1) % 4
-}
+type guard = coord.Actor[int]
 
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	lab, guard := s.parse(lines)
-	for guard.move(lab) {
+	for lab.move(&guard, true) {
 	}
-	visitedCount := 0
-	for _, row := range lab {
-		visitedCount += slices.Count(row, func(f field) bool { return f == visited })
-	}
+	visitedCount := coordinate.CountIn2DSlice(lab, visited.predicatorFactory())
 	return fmt.Sprint(visitedCount)
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	lab, guard := s.parse(lines)
-	start := guard.position.copy()
 	count := 0
 	for {
-		next := guard.next()
+		next := guard.Next()
 		if lab.isOutOfBounds(next) {
 			break
 		}
-		if next == start || lab[next.y][next.x] == visited || lab[next.y][next.x] == obstruction {
-			guard.move(lab)
+		if lab[next.I()][next.J()] != empty {
+			lab.move(&guard, true)
 			continue
 		}
-		old := lab[next.y][next.x]
-		lab[next.y][next.x] = obstruction
-		if lab.leadsToCircle(guard.position, guard.facing) {
+		oldField := lab[next.I()][next.J()]
+		lab[next.I()][next.J()] = obstruction
+		if lab.leadsToCircle(guard) {
 			count++
 		}
-		lab[next.y][next.x] = old
-		if !guard.move(lab) {
+		lab[next.I()][next.J()] = oldField
+		if !lab.move(&guard, true) {
 			break
 		}
 	}
