@@ -43,7 +43,6 @@ func (s *Solver) AddHyperParams(params ...string) {
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) []coord {
 	return slices.Map(lines, parseCoord)
-
 }
 
 type coord struct {
@@ -65,7 +64,7 @@ func (c coord) Equal(other coord) bool {
 }
 
 func (c coord) String() string {
-	return fmt.Sprintf("%d,%d", c.X, c.Y)
+	return fmt.Sprintf("%d,%d", c.X, -c.Y)
 }
 
 func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
@@ -82,7 +81,7 @@ func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
 	}
 	for _, node := range g.GetNodes() {
 		for _, neighborCoord := range node.Id().Neighbors(coordinate.Straights()) {
-			neighbor := newCoord(neighborCoord.Y, neighborCoord.X)
+			neighbor := newCoord(-neighborCoord.Y, neighborCoord.X)
 			if g.HasNode(neighbor) {
 				g.AddEdge(node.Id(), neighbor, 1)
 			}
@@ -124,7 +123,7 @@ func (s *Solver) SolvePart2(lines []string) string {
 			for i := prev; i >= index; i-- {
 				g.AddNode(graph.NewBaseNode(coords[i]))
 				for _, neighborCoord := range coords[i].Neighbors(coordinate.Straights()) {
-					neighbor := newCoord(neighborCoord.Y, neighborCoord.X)
+					neighbor := newCoord(-neighborCoord.Y, neighborCoord.X)
 					if g.HasNode(neighbor) {
 						g.AddEdge(coords[i], neighbor, 1)
 					}

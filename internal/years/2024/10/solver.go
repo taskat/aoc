@@ -38,7 +38,7 @@ func parseMountains(lines []string) mountains {
 }
 
 func (m mountains) get(c coord) int {
-	return m[c.Y][c.X]
+	return m[c.I()][c.J()]
 }
 
 func (m mountains) getTrails(start coord) int {
@@ -102,10 +102,10 @@ func (m mountains) getNextFrom(from coord) []coord {
 
 func (m mountains) trailheads() []coord {
 	heads := make([]coord, 0)
-	for y, row := range m {
-		for x, cell := range row {
+	for i, row := range m {
+		for j, cell := range row {
 			if cell == 0 {
-				heads = append(heads, coordinate.NewCoordinate2D(x, y))
+				heads = append(heads, coordinate.FromIndexes(i, j))
 			}
 		}
 	}

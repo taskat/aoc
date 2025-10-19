@@ -44,14 +44,14 @@ const (
 
 // coordinates stores the coordinates for each direction
 var coordinates = []Coordinate2D[int]{
-	{X: 0, Y: -1},  // up
-	{X: 1, Y: -1},  // up-right
+	{X: 0, Y: 1},   // up
+	{X: 1, Y: 1},   // up-right
 	{X: 1, Y: 0},   // right
-	{X: 1, Y: 1},   // down-right
-	{X: 0, Y: 1},   // down
-	{X: -1, Y: 1},  // down-left
+	{X: 1, Y: -1},  // down-right
+	{X: 0, Y: -1},  // down
+	{X: -1, Y: -1}, // down-left
 	{X: -1, Y: 0},  // left
-	{X: -1, Y: -1}, // up-left
+	{X: -1, Y: 1},  // up-left
 }
 
 // Format stores the string representation of each direction. It is used for parsing and printing.
@@ -123,6 +123,11 @@ func UpLeft() Direction {
 // Diagonals returns the diagonal directions
 func Diagonals() []Direction {
 	return []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}
+}
+
+// Directions returns all directions
+func Directions() []Direction {
+	return []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}
 }
 
 // Horizontals returns the horizontal directions

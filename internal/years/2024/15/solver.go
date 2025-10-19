@@ -47,9 +47,9 @@ func parseWarehouse(lines []string) warehouse {
 		boxes: set.New[coord](),
 	}
 	idx := slices.FindIndex(lines, stringutils.IsEmpty)
-	for y, line := range lines[:idx] {
-		for x, c := range line {
-			coord := coord{X: x, Y: y}
+	for i, line := range lines[:idx] {
+		for j, c := range line {
+			coord := coord{X: j, Y: -i}
 			switch c {
 			case '#':
 				w.walls.Add(coord)
@@ -165,12 +165,12 @@ func (wh warehouse) String() string {
 	}
 	set := func(r rune) func(c coord) {
 		return func(c coord) {
-			grid[c.Y][c.X] = r
+			grid[c.I()][c.J()] = r
 		}
 	}
 	slices.ForEach(wh.walls.ToSlice(), set('#'))
 	slices.ForEach(wh.boxes.ToSlice(), set('O'))
-	grid[wh.robot.Y][wh.robot.X] = '@'
+	grid[wh.robot.I()][wh.robot.J()] = '@'
 	lines := make([]string, len(grid))
 	for i, row := range grid {
 		lines[i] = string(row)
@@ -194,7 +194,7 @@ type coord = coordinate.Coordinate2D[int]
 
 // gps calculates the GPS coordinate from the given coordinate.
 func gps(c coord) int {
-	return 100*c.Y + c.X
+	return 100*c.I() + c.J()
 }
 
 // upscale upscales the coordinate by the given factor in horizontal direction.

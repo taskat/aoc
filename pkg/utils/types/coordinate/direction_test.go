@@ -42,6 +42,10 @@ func TestDiagonals(t *testing.T) {
 	assert.Equal(t, []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}, Diagonals())
 }
 
+func TestDirections(t *testing.T) {
+	assert.Equal(t, []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}, Directions())
+}
+
 func TestHorizontals(t *testing.T) {
 	assert.Equal(t, []Direction{Right(), Left()}, Horizontals())
 }
@@ -264,14 +268,14 @@ func TestToCoordinate2D(t *testing.T) {
 		d        Direction
 		expected Coordinate2D[int]
 	}{
-		{"Up", Up(), Coordinate2D[int]{X: 0, Y: -1}},
-		{"UpRight", UpRight(), Coordinate2D[int]{X: 1, Y: -1}},
+		{"Up", Up(), Coordinate2D[int]{X: 0, Y: 1}},
+		{"UpRight", UpRight(), Coordinate2D[int]{X: 1, Y: 1}},
 		{"Right", Right(), Coordinate2D[int]{X: 1, Y: 0}},
-		{"DownRight", DownRight(), Coordinate2D[int]{X: 1, Y: 1}},
-		{"Down", Down(), Coordinate2D[int]{X: 0, Y: 1}},
-		{"DownLeft", DownLeft(), Coordinate2D[int]{X: -1, Y: 1}},
+		{"DownRight", DownRight(), Coordinate2D[int]{X: 1, Y: -1}},
+		{"Down", Down(), Coordinate2D[int]{X: 0, Y: -1}},
+		{"DownLeft", DownLeft(), Coordinate2D[int]{X: -1, Y: -1}},
 		{"Left", Left(), Coordinate2D[int]{X: -1, Y: 0}},
-		{"UpLeft", UpLeft(), Coordinate2D[int]{X: -1, Y: -1}},
+		{"UpLeft", UpLeft(), Coordinate2D[int]{X: -1, Y: 1}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
