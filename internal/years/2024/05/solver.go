@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
+	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
@@ -25,7 +26,7 @@ func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) ([]rule, []manual) {
-	index := slices.FindIndex(lines, func(s string) bool { return s == "" })
+	index := slices.FindIndex(lines, stringutils.IsEmpty)
 	rules := slices.Map(lines[:index], parseRule)
 	manuals := slices.Map(lines[index+1:], parseManual)
 	return rules, manuals
@@ -41,7 +42,7 @@ type rule struct {
 // parseRule parses a rule from a string with the format "before|after"
 func parseRule(s string) rule {
 	before, after := 0, 0
-	_, _ = fmt.Sscanf(s, "%d|%d", &before, &after)
+	fmt.Sscanf(s, "%d|%d", &before, &after)
 	return rule{before: before, after: after}
 }
 
@@ -63,10 +64,9 @@ func (m manual) findProblematicPages(rules []rule) (int, int) {
 			if r.after != page {
 				continue
 			}
-			for j := i + 1; j < len(m); j++ {
-				if m[j] == r.before {
-					return i, j
-				}
+			j := slices.FindIndex(m[i+1:], intutils.IsN(r.before))
+			if j != -1 {
+				return i, j + i + 1
 			}
 		}
 	}
@@ -83,7 +83,6 @@ func (m manual) fixOrder(rules []rule) {
 	before, after := m.findProblematicPages(rules)
 	slices.Swap(m, before, after)
 	m.fixOrder(rules)
-	return
 }
 
 // isCorrect returns true if the manual is in the correct order according to the

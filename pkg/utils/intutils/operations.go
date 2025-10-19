@@ -14,15 +14,15 @@ func Abs[INT types.SignedInteger](number INT) INT {
 	return number
 }
 
-// Equals returns true if the two numbers are equal and false otherwise
-func Equals[INT types.Integer](a, b INT) bool {
-	return a == b
-}
-
 // Diff returns the difference between the two numbers
 // as Diff(a, b) = a - b
 func Diff[INT types.SignedInteger](a, b INT) INT {
 	return a - b
+}
+
+// Equals returns true if the two numbers are equal and false otherwise
+func Equals[INT types.Integer](a, b INT) bool {
+	return a == b
 }
 
 // Length returns the number of digits in the number
