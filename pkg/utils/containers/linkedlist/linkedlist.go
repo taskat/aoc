@@ -2,6 +2,7 @@ package linkedlist
 
 import (
 	"fmt"
+	"iter"
 	"strings"
 )
 
@@ -133,6 +134,17 @@ func (l *LinkedList[T]) InsertFirst(value T) {
 // InsertLast inserts a value at the end of the list
 func (l *LinkedList[T]) InsertLast(value T) {
 	l.Insert(l.length, value)
+}
+
+// Iterator returns an iterator over the list
+func (l *LinkedList[T]) Iterator() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for current := l.first; current != nil; current = current.next {
+			if !yield(current.value) {
+				return
+			}
+		}
+	}
 }
 
 // Length returns the length of the list

@@ -226,6 +226,30 @@ func TestInsertLast(t *testing.T) {
 	}
 }
 
+func TestIterator(t *testing.T) {
+	type testCase[T any] struct {
+		testName string
+		ll       *LinkedList[T]
+		expected []T
+	}
+	testCases := []testCase[int]{
+		{"Empty list", New[int](), []int{}},
+		{"Single element", FromSlice([]int{1}), []int{1}},
+		{"Multiple elements", FromSlice([]int{1, 2, 3}), []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			values := []int{}
+			iter := tc.ll.Iterator()
+			iter(func(v int) bool {
+				values = append(values, v)
+				return true
+			})
+			assert.Equal(t, tc.expected, values)
+		})
+	}
+}
+
 func TestLength(t *testing.T) {
 	type testCase[T any] struct {
 		testName string
