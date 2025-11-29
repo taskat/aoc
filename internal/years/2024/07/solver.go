@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2024/days"
-	"github.com/taskat/aoc/pkg/utils/combinatorics"
 	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
@@ -49,35 +48,32 @@ func parseEquation(line string) equation {
 }
 
 // canProduce returns true if the equation can be evaluated to the result, using
-// the given operators. It uses the CartesianProduct of the operators to find
-// all possible orderings of the operators
-func (e equation) canProduce(possibleOpeartors []operator, cache map[int][][]operator) bool {
-	orderings := cartesianWithCache(possibleOpeartors, len(e.operands)-1, cache)
-	return slices.Any(orderings, e.isPossible)
-}
-
-func cartesianWithCache(possibleOpeartors []operator, length int, cache map[int][][]operator) [][]operator {
-	if v, ok := cache[length]; ok {
-		return v
+// the given operators. It uses recursion to check if the sub-equations can produce
+// the intermediate results.
+func (e equation) canProduce(possibleOpeartors []operator) bool {
+	if len(e.operands) == 1 {
+		return e.operands[0] == e.result
 	}
-	orderings := combinatorics.CartesianProduct(possibleOpeartors, length)
-	cache[length] = orderings
-	return orderings
-}
-
-// isPossible returns true if the equation can be evaluated to the result
-// using the given operators
-func (e equation) isPossible(operators []operator) bool {
-	f := func(left, right, index int) int {
-		return operators[index].eval(left, right)
+	for _, operator := range possibleOpeartors {
+		left, ok := operator.getLeft(e.operands[len(e.operands)-1], e.result)
+		if !ok {
+			continue
+		}
+		subEquation := equation{
+			result:   left,
+			operands: e.operands[:len(e.operands)-1],
+		}
+		if subEquation.canProduce(possibleOpeartors) {
+			return true
+		}
 	}
-	result := slices.Reduce_i(e.operands[1:], f, e.operands[0])
-	return result == e.result
+	return false
 }
 
 // operator is an interface that defines an operator that can be used in an equation
 type operator interface {
 	eval(left, right int) int
+	getLeft(right, result int) (int, bool)
 }
 
 // sum is an operator that adds two numbers
@@ -86,6 +82,12 @@ type sum struct{}
 // eval adds two numbers
 func (s sum) eval(left, right int) int {
 	return left + right
+}
+
+// getLeft returns the left operand given the right operand and the result, if possible
+func (s sum) getLeft(right, result int) (int, bool) {
+	subResult := result - right
+	return subResult, subResult >= 0
 }
 
 // String returns the string representation of the operator
@@ -99,6 +101,14 @@ type product struct{}
 // eval multiplies two numbers
 func (p product) eval(left, right int) int {
 	return left * right
+}
+
+// getLeft returns the left operand given the right operand and the result, if possible
+func (p product) getLeft(right, result int) (int, bool) {
+	if right == 0 || result%right != 0 {
+		return 0, false
+	}
+	return result / right, true
 }
 
 // String returns the string representation of the operator
@@ -115,6 +125,21 @@ func (c concat) eval(left, right int) int {
 	return left*offset + right
 }
 
+// getLeft returns the left operand given the right operand and the result, if possible
+func (c concat) getLeft(right, result int) (int, bool) {
+	rightStr := fmt.Sprint(right)
+	resultStr := fmt.Sprint(result)
+	if !strings.HasSuffix(resultStr, rightStr) {
+		return 0, false
+	}
+	leftStr := strings.TrimSuffix(resultStr, rightStr)
+	if leftStr == "" {
+		return 0, false
+	}
+	left := stringutils.Atoi(leftStr)
+	return left, true
+}
+
 // String returns the string representation of the operator
 func (c concat) String() string {
 	return "||"
@@ -124,8 +149,7 @@ func (c concat) String() string {
 func (s *Solver) SolvePart1(lines []string) string {
 	equations := s.parse(lines)
 	operators := []operator{sum{}, product{}}
-	cache := make(map[int][][]operator)
-	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators, cache) })
+	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators) })
 	sum := slices.Sum(slices.Map(possibleEquations, func(e equation) int { return e.result }))
 	return fmt.Sprint(sum)
 }
@@ -134,8 +158,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 func (s *Solver) SolvePart2(lines []string) string {
 	equations := s.parse(lines)
 	operators := []operator{sum{}, product{}, concat{}}
-	cache := make(map[int][][]operator)
-	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators, cache) })
+	possibleEquations := slices.Filter(equations, func(e equation) bool { return e.canProduce(operators) })
 	sum := slices.Sum(slices.Map(possibleEquations, func(e equation) int { return e.result }))
 	return fmt.Sprint(sum)
 }
