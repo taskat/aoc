@@ -24,11 +24,10 @@ type Solver struct{}
 // AddHyperParams adds hyper parameters to the solver
 func (s *Solver) AddHyperParams(params ...string) {}
 
-// coord is an alias for coordinate.Coordinate2D[int]
-type coord = coordinate.Coordinate2D[int]
-
+// mountains represents the mountain height map
 type mountains [][]int
 
+// parseMountains parses the input lines into a mountains structure
 func parseMountains(lines []string) mountains {
 	m := make(mountains, len(lines))
 	for i, line := range lines {
@@ -37,12 +36,14 @@ func parseMountains(lines []string) mountains {
 	return m
 }
 
-func (m mountains) get(c coord) int {
+// get returns the height at the given coordinate
+func (m mountains) get(c coordinate.Coordinate2D[int]) int {
 	return m[c.I()][c.J()]
 }
 
-func (m mountains) getTrails(start coord) int {
-	currents := map[coord]struct{}{
+// getTrails returns the number of 9 height points reachable from the start
+func (m mountains) getTrails(start coordinate.Coordinate2D[int]) int {
+	currents := map[coordinate.Coordinate2D[int]]struct{}{
 		start: {},
 	}
 	currentHeight := m.get(start)
@@ -57,8 +58,9 @@ func (m mountains) getTrails(start coord) int {
 	return len(currents)
 }
 
-func (m mountains) getDistinctTrails(start coord) int {
-	currents := []coord{start}
+// getDistinctTrails returns the number of distinct trails to height 9 from the start
+func (m mountains) getDistinctTrails(start coordinate.Coordinate2D[int]) int {
+	currents := []coordinate.Coordinate2D[int]{start}
 	currentHeight := m.get(start)
 	for currentHeight < 9 {
 		neighbors := m.getNextSteps(currents)
@@ -72,25 +74,27 @@ func (m mountains) getDistinctTrails(start coord) int {
 }
 
 // getNeighbors returns the neighbors of the coordinate in the 4 directions
-func (m mountains) getNeighbors(c coord) []coord {
+func (m mountains) getNeighbors(c coordinate.Coordinate2D[int]) []coordinate.Coordinate2D[int] {
 	directions := []coordinate.Direction{coordinate.Up(), coordinate.Right(),
 		coordinate.Down(), coordinate.Left()}
 	neighbors := slices.Map(directions, c.Go)
-	inBounds := func(c coord) bool { return coord.In2DSlice(c, len(m[0]), len(m)) }
+	inBounds := func(c coordinate.Coordinate2D[int]) bool { return c.In2DSlice(len(m[0]), len(m)) }
 	neighbors = slices.Filter(neighbors, inBounds)
 	return neighbors
 }
 
-func (m mountains) getNextSteps(currents []coord) []coord {
-	neighbors := make([]coord, 0)
+// getNextSteps returns the neighboring coordinates that are one height higher than any of the currents
+func (m mountains) getNextSteps(currents []coordinate.Coordinate2D[int]) []coordinate.Coordinate2D[int] {
+	neighbors := make([]coordinate.Coordinate2D[int], 0)
 	for _, c := range currents {
 		neighbors = append(neighbors, m.getNextFrom(c)...)
 	}
 	return neighbors
 }
 
-func (m mountains) getNextFrom(from coord) []coord {
-	neighbors := make([]coord, 0)
+// getNextFrom returns the neighboring coordinates that are one height higher than the current
+func (m mountains) getNextFrom(from coordinate.Coordinate2D[int]) []coordinate.Coordinate2D[int] {
+	neighbors := make([]coordinate.Coordinate2D[int], 0)
 	nextHeight := m.get(from) + 1
 	for _, n := range m.getNeighbors(from) {
 		if m.get(n) == nextHeight {
@@ -100,8 +104,9 @@ func (m mountains) getNextFrom(from coord) []coord {
 	return neighbors
 }
 
-func (m mountains) trailheads() []coord {
-	heads := make([]coord, 0)
+// trailheads returns the coordinates of all trailheads (height 0)
+func (m mountains) trailheads() []coordinate.Coordinate2D[int] {
+	heads := make([]coordinate.Coordinate2D[int], 0)
 	for i, row := range m {
 		for j, cell := range row {
 			if cell == 0 {
