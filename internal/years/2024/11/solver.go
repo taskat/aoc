@@ -55,7 +55,7 @@ func (s stones) count() int {
 
 // simulate runs the blink for n times
 func (s *stones) simulate(n int) {
-	for i := 0; i < n; i++ {
+	for range n {
 		s.blink()
 	}
 }
