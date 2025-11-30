@@ -94,7 +94,7 @@ func (l lobby) String() string {
 	for i := range grid {
 		grid[i] = slices.Copy(line)
 	}
-	robots := make(map[coord]int)
+	robots := make(map[coordinate.Coordinate2D[int]]int)
 	for _, robot := range l.robots {
 		robots[robot.pos]++
 	}
@@ -106,8 +106,8 @@ func (l lobby) String() string {
 
 // robot represents a robot in the lobby, with a position and a velocity
 type robot struct {
-	pos      coord
-	velocity coord
+	pos      coordinate.Coordinate2D[int]
+	velocity coordinate.Coordinate2D[int]
 }
 
 // parseRobot parses a robot from a string. The format is "p=x,y v=x,y"
@@ -115,8 +115,8 @@ func parseRobot(line string) robot {
 	posX, posY, velX, velY := 0, 0, 0, 0
 	fmt.Sscanf(line, "p=%d,%d v=%d,%d", &posX, &posY, &velX, &velY)
 	return robot{
-		pos:      coord{X: posX, Y: posY},
-		velocity: coord{X: velX, Y: velY},
+		pos:      coordinate.Coordinate2D[int]{X: posX, Y: posY},
+		velocity: coordinate.Coordinate2D[int]{X: velX, Y: velY},
 	}
 }
 
@@ -134,9 +134,6 @@ func (r *robot) move(seconds, width, height int) {
 	r.pos.Y = newPos(r.pos.Y, r.velocity.Y, height)
 }
 
-// coord is a wrapper around a 2D coordinate
-type coord = coordinate.Coordinate2D[int]
-
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	lobby := s.parse(lines)
@@ -153,10 +150,7 @@ func (s *Solver) SolvePart2(lines []string) string {
 		return lobby.safetyFactor()
 	})
 	_, minIndex := slices.Min_i(safetyFactors)
+	// plus one due to the starting position is missing from the array
 	minIndex++
-	// prints out the resulting image
-	// lobby = s.parse(lines)
-	// lobby.elapseSeconds(minIndex)
-	// fmt.Println(lobby)
 	return fmt.Sprint(minIndex)
 }
