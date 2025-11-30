@@ -33,9 +33,9 @@ func (s *Solver) parse(lines []string) []machine {
 
 // machine a claw machine configuration
 type machine struct {
-	buttonA coord
-	buttonB coord
-	prize   coord
+	buttonA coordinate.Coordinate2D[int]
+	buttonB coordinate.Coordinate2D[int]
+	prize   coordinate.Coordinate2D[int]
 }
 
 // parseMachine parses a machine from the input lines
@@ -60,9 +60,6 @@ func (m *machine) addOffset(offset int) {
 // cost calculates the cost of the machine
 func (m machine) cost() int {
 	a, b := m.solve()
-	if a == 0 && b == 0 {
-		return 0
-	}
 	return a*3 + b
 }
 
@@ -90,11 +87,8 @@ func isPositiveInteger(nom, denom int) bool {
 	return nom%denom == 0 && nom/denom >= 0
 }
 
-// coord is  shorthand for a 2D coordinate
-type coord = coordinate.Coordinate2D[int]
-
 // parseCoord parses a coordinate from a line
-func parseCoord(line string, format string) coord {
+func parseCoord(line string, format string) coordinate.Coordinate2D[int] {
 	var x, y int
 	fmt.Sscanf(line, format, &x, &y)
 	return coordinate.NewCoordinate2D(x, y)
