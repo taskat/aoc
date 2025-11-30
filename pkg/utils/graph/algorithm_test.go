@@ -17,23 +17,34 @@ func TestNodesBestPaths(t *testing.T) {
 	node3 := &BaseNode[int]{id: 3, neighbors: make(map[int]int)}
 	node4 := &BaseNode[int]{id: 4, neighbors: make(map[int]int)}
 	node5 := &BaseNode[int]{id: 5, neighbors: make(map[int]int)}
+	node6 := &BaseNode[int]{id: 6, neighbors: make(map[int]int)}
+	node7 := &BaseNode[int]{id: 7, neighbors: make(map[int]int)}
+	node8 := &BaseNode[int]{id: 8, neighbors: make(map[int]int)}
 	node1.neighbors[2] = 1
 	node1.neighbors[3] = 20
+	node1.neighbors[6] = 1
+	node1.neighbors[7] = 1
 	node1.neighbors[4] = 7
 	node2.neighbors[3] = 3
 	node2.neighbors[4] = 5
 	node3.neighbors[4] = 2
+	node6.neighbors[7] = 0
+	node7.neighbors[8] = 1
 	graph := New[int]()
 	graph.AddNode(node1)
 	graph.AddNode(node2)
 	graph.AddNode(node3)
 	graph.AddNode(node4)
 	graph.AddNode(node5)
+	graph.AddNode(node6)
+	graph.AddNode(node7)
+	graph.AddNode(node8)
 	testCases := []testCase{
 		{"Single route", func(n int) bool { return n == 2 }, []int{1, 2}},
 		{"Multiple routes", func(n int) bool { return n == 4 }, []int{1, 2, 3, 4}},
 		{"No path", func(n int) bool { return n == 5 }, []int{}},
 		{"Same node", func(n int) bool { return n == 1 }, []int{1}},
+		{"Multiple best paths", func(n int) bool { return n == 8 }, []int{1, 6, 7, 8}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
