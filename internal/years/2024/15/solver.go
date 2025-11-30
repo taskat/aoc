@@ -33,23 +33,23 @@ func (s *Solver) parse(lines []string) warehouse {
 // warehouse contains the state of the warehouse. It stores the walls, boxes,
 // robot, the size of the warehouse and the moves, that the robot should make.
 type warehouse struct {
-	walls set.Set[coord]
-	boxes set.Set[coord]
-	limit coord
-	robot coord
+	walls set.Set[coordinate.Coordinate2D[int]]
+	boxes set.Set[coordinate.Coordinate2D[int]]
+	limit coordinate.Coordinate2D[int]
+	robot coordinate.Coordinate2D[int]
 	moves []coordinate.Direction
 }
 
 // parseWarehouse parses the warehouse from the input lines. It returns the parsed warehouse.
 func parseWarehouse(lines []string) warehouse {
 	w := warehouse{
-		walls: set.New[coord](),
-		boxes: set.New[coord](),
+		walls: set.New[coordinate.Coordinate2D[int]](),
+		boxes: set.New[coordinate.Coordinate2D[int]](),
 	}
 	idx := slices.FindIndex(lines, stringutils.IsEmpty)
 	for i, line := range lines[:idx] {
 		for j, c := range line {
-			coord := coord{X: j, Y: -i}
+			coord := coordinate.FromIndexes(i, j)
 			switch c {
 			case '#':
 				w.walls.Add(coord)
@@ -62,7 +62,7 @@ func parseWarehouse(lines []string) warehouse {
 	}
 	limitX := len(lines[0])
 	limitY := idx
-	w.limit = coord{X: limitX, Y: limitY}
+	w.limit = coordinate.Coordinate2D[int]{X: limitX, Y: limitY}
 	coordinate.Format = coordinate.Characters
 	slices.ForEach(lines[idx+1:], func(line string) {
 		for _, c := range line {
@@ -101,7 +101,7 @@ func (w *warehouse) moveRobot(dir coordinate.Direction) {
 // if they are offset by one cell (the boxes are 2 cell wide in the bigger warehouse).
 func (w *warehouse) moveRobotInBiggerWarehouse(dir coordinate.Direction) {
 	robotNext := w.robot.Go(dir)
-	boxesToPush := make([]coord, 0, len(w.boxes))
+	boxesToPush := make([]coordinate.Coordinate2D[int], 0, len(w.boxes))
 	if dir.Horizontal() {
 		next := robotNext
 		stopLoop := false
@@ -120,9 +120,9 @@ func (w *warehouse) moveRobotInBiggerWarehouse(dir coordinate.Direction) {
 			}
 		}
 	} else {
-		nexts := []coord{robotNext}
+		nexts := []coordinate.Coordinate2D[int]{robotNext}
 		for len(nexts) > 0 {
-			newNexts := make([]coord, 0, len(nexts))
+			newNexts := make([]coordinate.Coordinate2D[int], 0, len(nexts))
 			for _, n := range nexts {
 				switch {
 				case w.walls.Contains(n):
@@ -163,8 +163,8 @@ func (wh warehouse) String() string {
 	for i := range grid {
 		grid[i] = slices.Repeat('.', wh.limit.X)
 	}
-	set := func(r rune) func(c coord) {
-		return func(c coord) {
+	set := func(r rune) func(c coordinate.Coordinate2D[int]) {
+		return func(c coordinate.Coordinate2D[int]) {
 			grid[c.I()][c.J()] = r
 		}
 	}
@@ -183,23 +183,22 @@ func (wh warehouse) String() string {
 func (wh *warehouse) upscale(n int) {
 	wh.limit = upscale(wh.limit, n)
 	wh.robot = upscale(wh.robot, n)
-	wh.walls = set.FromSlice(slices.Map(wh.walls.ToSlice(), func(c coord) coord { return upscale(c, n) }))
-	extraWalls := set.Map(wh.walls, func(c coord) coord { return coord{X: c.X + 1, Y: c.Y} })
+	wh.walls = set.FromSlice(slices.Map(wh.walls.ToSlice(), func(c coordinate.Coordinate2D[int]) coordinate.Coordinate2D[int] { return upscale(c, n) }))
+	extraWalls := set.Map(wh.walls, func(c coordinate.Coordinate2D[int]) coordinate.Coordinate2D[int] {
+		return coordinate.Coordinate2D[int]{X: c.X + 1, Y: c.Y}
+	})
 	wh.walls = wh.walls.Merge(extraWalls)
-	wh.boxes = set.FromSlice(slices.Map(wh.boxes.ToSlice(), func(c coord) coord { return upscale(c, n) }))
+	wh.boxes = set.FromSlice(slices.Map(wh.boxes.ToSlice(), func(c coordinate.Coordinate2D[int]) coordinate.Coordinate2D[int] { return upscale(c, n) }))
 }
 
-// coord is a wrapper around coordinate.Coordinate2D[int] to make it easier to use.
-type coord = coordinate.Coordinate2D[int]
-
 // gps calculates the GPS coordinate from the given coordinate.
-func gps(c coord) int {
+func gps(c coordinate.Coordinate2D[int]) int {
 	return 100*c.I() + c.J()
 }
 
 // upscale upscales the coordinate by the given factor in horizontal direction.
-func upscale(c coord, n int) coord {
-	return coord{X: c.X * n, Y: c.Y}
+func upscale(c coordinate.Coordinate2D[int], n int) coordinate.Coordinate2D[int] {
+	return coordinate.Coordinate2D[int]{X: c.X * n, Y: c.Y}
 }
 
 // SolvePart1 solves part 1 of the puzzle
