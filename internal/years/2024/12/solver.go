@@ -34,7 +34,7 @@ type garden map[rune][]region
 
 // parseGarden parses the garden from the lines
 func parseGarden(lines []string) garden {
-	plots := make(map[rune][]coord)
+	plots := make(map[rune][]coordinate.Coordinate2D[int])
 	for i, line := range lines {
 		for j, c := range line {
 			maps.Append(plots, c, coordinate.FromIndexes(i, j))
@@ -45,17 +45,17 @@ func parseGarden(lines []string) garden {
 
 // separateRegions separates the plots with the same plant into regions
 // based on neighbors
-func separateRegions(plots []coord) []region {
+func separateRegions(plots []coordinate.Coordinate2D[int]) []region {
 	regions := make([]region, 0)
 	for len(plots) > 0 {
 		current := plots[0]
 		plots = slices.RemoveNth(plots, 0)
 		currentRegion := newRegion()
 		currentRegion.Add(current)
-		filter := func(c coord) bool {
+		filter := func(c coordinate.Coordinate2D[int]) bool {
 			return slices.Contains(plots, c) && !currentRegion.Contains(c)
 		}
-		getNeighbors := func(c coord) []coord {
+		getNeighbors := func(c coordinate.Coordinate2D[int]) []coordinate.Coordinate2D[int] {
 			return slices.Filter(maps.Values(neighbors(c)), filter)
 		}
 		neighborsToVisit := getNeighbors(current)
@@ -84,12 +84,12 @@ func (g garden) cost(bulk bool) int {
 
 // region represents a region of the garden with the same plant
 type region struct {
-	set.Set[coord]
+	set.Set[coordinate.Coordinate2D[int]]
 }
 
 // newRegion creates a new region
 func newRegion() region {
-	return region{set.New[coord]()}
+	return region{set.New[coordinate.Coordinate2D[int]]()}
 }
 
 // area returns the area of the region
@@ -123,10 +123,10 @@ func (r region) fences() set.Set[fence] {
 
 // perimeter returns the perimeter of the region
 func (r region) perimeter() int {
-	isPerimeter := func(other coord) bool {
+	isPerimeter := func(other coordinate.Coordinate2D[int]) bool {
 		return !r.Contains(other)
 	}
-	perimeterLength := func(c coord) int {
+	perimeterLength := func(c coordinate.Coordinate2D[int]) int {
 		return slices.Count(maps.Values(neighbors(c)), isPerimeter)
 	}
 	perimeters := slices.Map(r.ToSlice(), perimeterLength)
@@ -155,12 +155,12 @@ func (r region) sides() int {
 
 // fence represents a fenc on the dir side of the c ccordinate
 type fence struct {
-	c   coord
+	c   coordinate.Coordinate2D[int]
 	dir coordinate.Direction
 }
 
 // newFence creates a new fence
-func newFence(c coord, dir coordinate.Direction) fence {
+func newFence(c coordinate.Coordinate2D[int], dir coordinate.Direction) fence {
 	return fence{c, dir}
 }
 
@@ -173,7 +173,7 @@ func (f fence) neighbors() []fence {
 		dirs = coordinate.Verticals()
 	}
 	coords := slices.Map(dirs, f.c.Go)
-	return slices.Map(coords, func(c coord) fence { return newFence(c, f.dir) })
+	return slices.Map(coords, func(c coordinate.Coordinate2D[int]) fence { return newFence(c, f.dir) })
 }
 
 // String returns the string representation of the fence
@@ -181,9 +181,9 @@ func (f fence) String() string {
 	return fmt.Sprintf("%v %v", f.c, f.dir)
 }
 
-type coord = coordinate.Coordinate2D[int]
-
-func neighbors(c coord) map[coordinate.Direction]coord {
+// neighbors returns the neighboring coordinates of the given coordinate. Only straight
+// neighbors are considered, diagonals are ignored
+func neighbors(c coordinate.Coordinate2D[int]) map[coordinate.Direction]coordinate.Coordinate2D[int] {
 	return c.Neighbors(coordinate.Straights())
 }
 
