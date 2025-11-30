@@ -19,18 +19,6 @@ func init() {
 	days.AddDay(day, &Solver{})
 }
 
-type coord = coordinate.Coordinate2D[int]
-
-type gate struct {
-	c coord
-	d coordinate.Direction
-}
-
-// String returns a string representation of the gate
-func (g gate) String() string {
-	return fmt.Sprintf("%v %v", g.c, g.d)
-}
-
 // Solver implements the puzzle solver for day 16
 type Solver struct{}
 
@@ -38,9 +26,9 @@ type Solver struct{}
 func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coord) {
-	nodes := set.New[coord]()
-	var start, end coord
+func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coordinate.Coordinate2D[int]) {
+	nodes := set.New[coordinate.Coordinate2D[int]]()
+	var start, end coordinate.Coordinate2D[int]
 	for i, line := range lines {
 		for j, cell := range line {
 			if cell == '#' {
@@ -61,7 +49,7 @@ func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coord) {
 	g.AddNode(graph.NewBaseNode(startGate))
 	for _, c := range nodes.ToSlice() {
 		possibleNeighbors := c.Neighbors(coordinate.Straights())
-		neighbors := maps.Filter(possibleNeighbors, func(dir coordinate.Direction, c coord) bool { return nodes.Contains(c) })
+		neighbors := maps.Filter(possibleNeighbors, func(dir coordinate.Direction, c coordinate.Coordinate2D[int]) bool { return nodes.Contains(c) })
 		for dir, neighbor := range neighbors {
 			selfGate := gate{c, dir}
 			otherGate := gate{neighbor, dir.Opposite()}
@@ -70,7 +58,7 @@ func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coord) {
 			g.AddEdge(selfGate, otherGate, 1)
 		}
 		directions := maps.Keys(neighbors)
-		for i := 0; i < len(directions); i++ {
+		for i := range directions {
 			for j := i + 1; j < len(directions); j++ {
 				selfGate1 := gate{c, directions[i]}
 				selfGate2 := gate{c, directions[j]}
@@ -98,6 +86,18 @@ func (s *Solver) parse(lines []string) (*graph.Graph[gate], gate, coord) {
 	return g, startGate, end
 }
 
+// gate represents a side of a cell in the grid.
+// It is a gate to enter/exit the cell in a specific direction.
+type gate struct {
+	c coordinate.Coordinate2D[int]
+	d coordinate.Direction
+}
+
+// String returns a string representation of the gate
+func (g gate) String() string {
+	return fmt.Sprintf("%v %v", g.c, g.d)
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	graph, start, end := s.parse(lines)
@@ -109,7 +109,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 func (s *Solver) SolvePart2(lines []string) string {
 	g, start, end := s.parse(lines)
 	nodes := g.NodesOfBestPaths(g.GetNode(start), func(g gate) bool { return g.c.Equal(end) })
-	coords := slices.Map(nodes, func(n gate) coord { return n.c })
+	coords := slices.Map(nodes, func(n gate) coordinate.Coordinate2D[int] { return n.c })
 	coords = set.FromSlice(coords).ToSlice()
 	return fmt.Sprint(len(coords))
 }
