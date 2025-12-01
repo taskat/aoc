@@ -71,8 +71,14 @@ func yearlyMaxStars(year int) int {
 			return 0
 		}
 		today := time.Now().Day()
-		if today >= 25 {
-			return 50
+		if year < 2025 {
+			if today >= 25 {
+				return 50
+			}
+		} else {
+			if today >= 12 {
+				return 24
+			}
 		}
 		return today * 2
 	}
