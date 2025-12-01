@@ -41,38 +41,24 @@ func (s *Solver) AddHyperParams(params ...string) {
 }
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) []coord {
+func (s *Solver) parse(lines []string) []coordinate.Coordinate2D[int] {
 	return slices.Map(lines, parseCoord)
 }
 
-type coord struct {
-	coordinate.Coordinate2D[int]
+// parseCoord parses a coordinate from a line
+func parseCoord(line string) coordinate.Coordinate2D[int] {
+	var i, j int
+	_, _ = fmt.Sscanf(line, "%d,%d", &i, &j)
+	return coordinate.FromIndexes(i, j)
 }
 
-func newCoord(i, j int) coord {
-	return coord{coordinate.FromIndexes(i, j)}
-}
-
-func parseCoord(line string) coord {
-	var x, y int
-	_, _ = fmt.Sscanf(line, "%d,%d", &x, &y)
-	return newCoord(y, x)
-}
-
-func (c coord) Equal(other coord) bool {
-	return c.Coordinate2D.Equal(other.Coordinate2D)
-}
-
-func (c coord) String() string {
-	return fmt.Sprintf("%d,%d", c.X, -c.Y)
-}
-
-func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
-	g := graph.New[coord]()
+// generateGraph generates the graph from the fallen byte coordinates
+func (s *Solver) generateGraph(coords []coordinate.Coordinate2D[int]) *graph.Graph[coordinate.Coordinate2D[int]] {
+	g := graph.New[coordinate.Coordinate2D[int]]()
 	fallenBytes := set.FromSlice(coords)
 	for i := 0; i <= s.mapLimit; i++ {
 		for j := 0; j <= s.mapLimit; j++ {
-			c := newCoord(i, j)
+			c := coordinate.FromIndexes(i, j)
 			if fallenBytes.Contains(c) {
 				continue
 			}
@@ -81,9 +67,8 @@ func (s *Solver) generateGraph(coords []coord) *graph.Graph[coord] {
 	}
 	for _, node := range g.GetNodes() {
 		for _, neighborCoord := range node.Id().Neighbors(coordinate.Straights()) {
-			neighbor := newCoord(-neighborCoord.Y, neighborCoord.X)
-			if g.HasNode(neighbor) {
-				g.AddEdge(node.Id(), neighbor, 1)
+			if g.HasNode(neighborCoord) {
+				g.AddEdge(node.Id(), neighborCoord, 1)
 			}
 		}
 	}
@@ -95,48 +80,58 @@ func (s *Solver) SolvePart1(lines []string) string {
 	coords := s.parse(lines)
 	coords = coords[:s.byteLimit]
 	graph := s.generateGraph(coords)
-	startNode := graph.GetNode(newCoord(0, 0))
-	goalCoord := newCoord(s.mapLimit, s.mapLimit)
+	startNode := graph.GetNode(coordinate.FromIndexes(0, 0))
+	goalCoord := coordinate.FromIndexes(s.mapLimit, s.mapLimit)
 	path := graph.Dijkstra(startNode, goalCoord.Equal)
 	return fmt.Sprint(path.Cost())
+}
+
+// removeNodes removes nodes from the graph between from (inclusive) and to (exclusive)
+func removeNodes(g *graph.Graph[coordinate.Coordinate2D[int]], coords []coordinate.Coordinate2D[int], from, to int) {
+	for i := from; i < to; i++ {
+		g.RemoveNode(coords[i])
+	}
+}
+
+// addNodes adds nodes to the graph between from (inclusive) and to (exclusive)
+func addNodes(g *graph.Graph[coordinate.Coordinate2D[int]], coords []coordinate.Coordinate2D[int], from, to int) {
+	for i := from; i < to; i++ {
+		g.AddNode(graph.NewBaseNode(coords[i]))
+		for _, neighborCoord := range coords[i].Neighbors(coordinate.Straights()) {
+			neighbor := coordinate.NewCoordinate2D(neighborCoord.X, neighborCoord.Y)
+			if g.HasNode(neighbor) {
+				g.AddEdge(coords[i], neighbor, 1)
+			}
+		}
+	}
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	coords := s.parse(lines)
 	g := s.generateGraph(coords[:s.byteLimit])
-	startNode := g.GetNode(newCoord(0, 0))
-	goalCoord := newCoord(s.mapLimit, s.mapLimit)
+	startNode := g.GetNode(coordinate.FromIndexes(0, 0))
+	goalCoord := coordinate.FromIndexes(s.mapLimit, s.mapLimit)
 	from := s.byteLimit
 	to := len(coords)
 	prev := s.byteLimit
 	for from != to {
-		index := (from + to) / 2
-		if index == from {
+		halfway := (from + to) / 2
+		if halfway == from {
 			break
 		}
-		if prev < index {
-			for i := prev; i < index; i++ {
-				g.RemoveNode(coords[i])
-			}
+		if prev < halfway {
+			removeNodes(g, coords, prev, halfway)
 		} else {
-			for i := prev; i >= index; i-- {
-				g.AddNode(graph.NewBaseNode(coords[i]))
-				for _, neighborCoord := range coords[i].Neighbors(coordinate.Straights()) {
-					neighbor := newCoord(-neighborCoord.Y, neighborCoord.X)
-					if g.HasNode(neighbor) {
-						g.AddEdge(coords[i], neighbor, 1)
-					}
-				}
-			}
+			addNodes(g, coords, halfway, prev)
 		}
 		path := g.Dijkstra(startNode, goalCoord.Equal)
 		if path.IsValid() {
-			from = index
+			from = halfway
 		} else {
-			to = index
+			to = halfway
 		}
-		prev = index
+		prev = halfway
 	}
-	return coords[from].String()
+	return fmt.Sprintf("%d,%d", coords[from].I(), coords[from].J())
 }
