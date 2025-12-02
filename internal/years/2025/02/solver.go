@@ -63,8 +63,8 @@ func (r Range) nextPossibleInvalidId(ID int) int {
 	return stringutils.Atoi(fmt.Sprintf("%d%d", halfInt, halfInt))
 }
 
-// getInvalidIdsFromHalf generates possible invalid IDs from half IDs within the range
-func (r Range) getInvalidIdsFromHalf() []int {
+// getDoubleRepetitionIds generates possible invalid IDs from half IDs within the range
+func (r Range) getDoubleRepetitionIds() []int {
 	invalidIds := []int{}
 	for possibleId := r.firstPossibleInvalidId(); possibleId <= r.last; possibleId = r.nextPossibleInvalidId(possibleId) {
 		if possibleId >= r.first {
@@ -74,22 +74,12 @@ func (r Range) getInvalidIdsFromHalf() []int {
 	return invalidIds
 }
 
-// invalidIds returns a slice of invalid IDs within the given range
-func (r Range) invalidIds() []int {
-	firstStr := fmt.Sprintf("%d", r.first)
-	invalidIds := []int{}
-	if len(firstStr)%2 == 0 {
-		invalidIds = append(invalidIds, r.getInvalidIdsFromHalf()...)
-	}
-	return invalidIds
-}
-
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	ranges := s.parse(lines)
 	invalidIds := []int{}
 	for _, r := range ranges {
-		invalidIds = append(invalidIds, r.invalidIds()...)
+		invalidIds = append(invalidIds, r.getDoubleRepetitionIds()...)
 	}
 	sum := slices.Sum(invalidIds)
 	return fmt.Sprintf("%d", sum)
