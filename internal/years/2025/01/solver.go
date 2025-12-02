@@ -2,6 +2,7 @@ package day01
 
 import (
 	"github.com/taskat/aoc/internal/years/2025/days"
+	"github.com/taskat/aoc/pkg/utils/intutils"
 	"github.com/taskat/aoc/pkg/utils/iterutils"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
@@ -47,6 +48,28 @@ func (d *dial) countValues(moves []move, value dial) int {
 	return count
 }
 
+// countClicksAtValue counts the number of clicks the dial makes at the given value,
+// given a series of moves
+func (d *dial) countClicksAtZero(moves []move) int {
+	count := 0
+	for _, m := range moves {
+		count += m.fullTurns()
+		current := d.toInt()
+		next := (m.toInt() % 100) + current
+		d.rotate(m)
+		if current == 0 {
+			continue
+		}
+		if next < 0 || next >= 100 {
+			count++
+		}
+		if d.toInt() == 0 && m.toInt() < 0 {
+			count++
+		}
+	}
+	return count
+}
+
 // rotate rotates the dial by the given move
 func (d *dial) rotate(m move) {
 	*d += dial(m)
@@ -54,6 +77,11 @@ func (d *dial) rotate(m move) {
 	if *d < 0 {
 		*d += 100
 	}
+}
+
+// toInt converts the dial to an integer
+func (d *dial) toInt() int {
+	return int(*d)
 }
 
 // move represents a move in the puzzle
@@ -86,6 +114,16 @@ func leftMove(amount int) move {
 	return move(-amount)
 }
 
+// fullTurns returns the number of full turns in the move
+func (m move) fullTurns() int {
+	return intutils.Abs(m.toInt()) / 100
+}
+
+// toInt converts the move to an integer
+func (m move) toInt() int {
+	return int(m)
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	dial := newDial()
@@ -96,5 +134,8 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	dial := newDial()
+	moves := s.parse(lines)
+	clickCount := dial.countClicksAtZero(moves)
+	return stringutils.Itoa(clickCount)
 }
