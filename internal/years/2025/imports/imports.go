@@ -4,4 +4,5 @@ package imports
 
 import (
 	_ "github.com/taskat/aoc/internal/years/2025/01"
+	_ "github.com/taskat/aoc/internal/years/2025/02"
 )
