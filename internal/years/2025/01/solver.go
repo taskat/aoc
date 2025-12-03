@@ -3,7 +3,7 @@ package day01
 import (
 	"github.com/taskat/aoc/internal/years/2025/days"
 	"github.com/taskat/aoc/pkg/utils/intutils"
-	"github.com/taskat/aoc/pkg/utils/iterutils"
+	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
 )
 
@@ -23,7 +23,7 @@ func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
 func (s *Solver) parse(lines []string) []move {
-	return iterutils.ToSlice(iterutils.Map(iterutils.NewFromSlice(lines), newMove))
+	return slices.Map(lines, newMove)
 }
 
 // dial represents a dial in the puzzle
