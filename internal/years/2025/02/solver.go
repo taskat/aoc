@@ -156,8 +156,6 @@ func (s *Solver) SolvePart2(lines []string) string {
 	for _, r := range ranges {
 		invalidIds = append(invalidIds, r.getRepetitionIds()...)
 	}
-	fmt.Println(invalidIds)
 	sum := slices.Sum(invalidIds)
-	_ = sum
 	return fmt.Sprintf("%d", sum)
 }
