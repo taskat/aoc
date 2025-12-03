@@ -123,7 +123,7 @@ func TestKeys(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
 			keys := Keys(tc.m)
-			assert.Equal(t, tc.expectedKeys, keys)
+			assert.ElementsMatch(t, tc.expectedKeys, keys)
 		})
 	}
 }
