@@ -54,9 +54,9 @@ Total stars: 60/508 ⭐
 | 1 | ⭐⭐ | 74 μs | 69 μs |
 | 2 | ⭐⭐ | 221 μs | 243 μs |
 | 3 | ⭐⭐ | 72 μs | 110 μs |
-| 4 | ⭐⭐ | 18 ms | 385 ms |
+| 4 | ⭐⭐ | 18 ms | 248 ms |
 
 </details>
 
 
-The benchmarks were last updated on 2025-12-04 16:37:51.
+The benchmarks were last updated on 2025-12-04 17:00:07.
