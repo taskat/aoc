@@ -31,64 +31,84 @@ func (s *Solver) parse(lines []string) ([]pattern, []pattern) {
 	return available, desired
 }
 
+// pattern represents a towel pattern design
 type pattern string
 
+// newPattern creates a new pattern from a string
 func newPattern(s string) pattern {
 	return pattern(s)
 }
 
+// String returns the string representation of the pattern
+func (p pattern) String() string {
+	return string(p)
+}
+
+// possibleCache contains the previously found possible patterns and subpatterns
 var possibleCache = map[pattern]bool{"": true}
 
+// clearCache clears the possible cache
 func clearCache() {
 	possibleCache = map[pattern]bool{"": true}
 }
 
-func (p pattern) isPossible(available []pattern) bool {
+// isPossible checks if the pattern can be created from the available patterns
+// It uses memoization to cache previously computed results
+func (p pattern) isPossible(availablePatterns []pattern) bool {
 	cacheResult, ok := possibleCache[p]
 	if ok {
 		return cacheResult
 	}
-	for _, a := range available {
-		if strings.HasPrefix(string(p), string(a)) {
-			remainingPossbile := newPattern(strings.TrimPrefix(string(p), string(a))).isPossible(available)
-			possibleCache[p] = remainingPossbile
-			if remainingPossbile {
-				return true
-			}
+	for _, available := range availablePatterns {
+		remaining, found := strings.CutPrefix(p.String(), available.String())
+		if !found {
+			continue
+		}
+		remainingPossible := newPattern(remaining).isPossible(availablePatterns)
+		possibleCache[p] = remainingPossible
+		if remainingPossible {
+			return true
 		}
 	}
 	return false
 }
 
+// numberCache contains the previously computed number of possible ways to create patterns
 var numberCache = map[pattern]int{"": 1}
 
+// clearNumberCache clears the number cache
 func clearNumberCache() {
 	numberCache = map[pattern]int{"": 1}
 }
 
-func (p pattern) numberOfPossibleWays(available []pattern) int {
+// numberOfPossibleWays computes the number of possible ways to create the pattern
+// from the available patterns. It uses memoization to cache previously computed results
+func (p pattern) numberOfPossibleWays(availablePatterns []pattern) int {
 	cacheResult, ok := numberCache[p]
 	if ok {
 		return cacheResult
 	}
 	count := 0
-	for _, a := range available {
-		if strings.HasPrefix(string(p), string(a)) {
-			remainingPossbile := newPattern(strings.TrimPrefix(string(p), string(a))).numberOfPossibleWays(available)
-			count += remainingPossbile
+	for _, available := range availablePatterns {
+		remaining, found := strings.CutPrefix(p.String(), available.String())
+		if !found {
+			continue
 		}
+		remainingPossbile := newPattern(remaining).numberOfPossibleWays(availablePatterns)
+		count += remainingPossbile
 	}
 	numberCache[p] = count
 	return count
 }
 
+// sortAvailable sorts the available patterns by length in ascending order
 func sortAvailable(available []pattern) {
 	slices2.SortFunc(available, func(a, b pattern) int {
 		switch {
 		case len(a) < len(b):
-			return 1
-		case len(a) > len(b):
 			return -1
+		case len(a) > len(b):
+			return 1
 		default:
 			return 0
 		}
