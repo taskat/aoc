@@ -26,15 +26,13 @@ type Solver struct{}
 // AddHyperParams adds hyper parameters to the solver
 func (s *Solver) AddHyperParams(params ...string) {}
 
-type coord = coordinate.Coordinate2D[int]
-
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) (*graph.Graph[coord], *graph.BaseNode[coord], coord) {
-	nodes := set.New[coord]()
-	var start, end coord
+func (s *Solver) parse(lines []string) (*graph.Graph[coordinate.Coordinate2D[int]], *graph.BaseNode[coordinate.Coordinate2D[int]], coordinate.Coordinate2D[int]) {
+	nodes := set.New[coordinate.Coordinate2D[int]]()
+	var start, end coordinate.Coordinate2D[int]
 	for i, line := range lines {
 		for j, cell := range line {
-			if cell == '#' {
+			if isWall(cell) {
 				continue
 			}
 			c := coordinate.FromIndexes(i, j)
@@ -48,32 +46,21 @@ func (s *Solver) parse(lines []string) (*graph.Graph[coord], *graph.BaseNode[coo
 		}
 	}
 	startNode := graph.NewBaseNode(start)
-	g := graph.New[coord]()
+	g := graph.FromSliceOfCoordinates(nodes.ToSlice(), coordinate.Straights())
 	g.AddNode(startNode)
-	for _, c := range nodes.ToSlice() {
-		possibleNeighbors := c.Neighbors(coordinate.Straights())
-		neighbors := maps.Filter(possibleNeighbors, func(dir coordinate.Direction, c coord) bool { return nodes.Contains(c) })
-		for _, neighbor := range neighbors {
-			g.AddNode(graph.NewBaseNode(c))
-			g.AddNode(graph.NewBaseNode(neighbor))
-			g.AddEdge(c, neighbor, 1)
-		}
-	}
 	return g, startNode, end
 }
 
-func hasOpposites(dirs []coordinate.Direction) bool {
-	if len(dirs) < 2 {
-		return false
-	}
-	for i := 0; i < len(dirs); i++ {
-		for j := i + 1; j < len(dirs); j++ {
-			if dirs[i].Opposite() == dirs[j] {
-				return true
-			}
-		}
-	}
-	return false
+// isWall checks if a cell is a wall, represented by '#'
+func isWall(cell rune) bool {
+	return cell == '#'
+}
+
+// getNeighbors gets the walkable neighbors of a coordinate in the graph
+func getNeighbors(g *graph.Graph[coordinate.Coordinate2D[int]], c coordinate.Coordinate2D[int]) []coordinate.Coordinate2D[int] {
+	neighbors := maps.Values(c.Neighbors(coordinate.Straights()))
+	neighbors = slices.Filter(neighbors, func(c coordinate.Coordinate2D[int]) bool { return g.HasNode(c) })
+	return neighbors
 }
 
 // SolvePart1 solves part 1 of the puzzle
@@ -81,25 +68,23 @@ func (s *Solver) SolvePart1(lines []string) string {
 	g, startNode, _ := s.parse(lines)
 	distances := g.Distances(startNode)
 	saves := map[int]int{}
-	for i := 0; i < len(lines); i++ {
-		for j := 0; j < len(lines[i]); j++ {
-			if lines[i][j] != '#' {
+	for i := range lines {
+		for j := range lines[i] {
+			if !isWall(rune(lines[i][j])) {
 				continue
 			}
 			c := coordinate.FromIndexes(i, j)
-			neighbors := maps.Values(c.Neighbors(coordinate.Straights()))
-			neighbors = slices.Filter(neighbors, func(c coord) bool { return g.HasNode(c) })
+			neighbors := getNeighbors(g, c)
 			if len(neighbors) != 2 {
 				continue
 			}
-			neighborDistances := slices.Map(neighbors, func(c coord) int { return distances[c] })
-			saved := intutils.Abs(neighborDistances[0]-neighborDistances[1]) - 2
-			saves[saved]++
+			neighborDistances := slices.Map(neighbors, func(c coordinate.Coordinate2D[int]) int { return distances[c] })
+			savedTime := intutils.Abs(neighborDistances[0]-neighborDistances[1]) - 2
+			saves[savedTime]++
 		}
 	}
 	saves = maps.Filter(saves, func(saved, _ int) bool { return saved >= 100 })
-	savedRoutes := maps.Values(saves)
-	return fmt.Sprint(slices.Sum(savedRoutes))
+	return fmt.Sprint(maps.Sum(saves))
 }
 
 // SolvePart2 solves part 2 of the puzzle
@@ -108,7 +93,7 @@ func (s *Solver) SolvePart2(lines []string) string {
 	distances := g.Distances(startNode)
 	saves := map[int]int{}
 	nodes := maps.Keys(g.GetNodes())
-	for i := 0; i < len(nodes); i++ {
+	for i := range nodes {
 		for j := i + 1; j < len(nodes); j++ {
 			coord1 := nodes[i]
 			coord2 := nodes[j]
@@ -116,11 +101,10 @@ func (s *Solver) SolvePart2(lines []string) string {
 			if manhattanDistance > 20 {
 				continue
 			}
-			saved := intutils.Abs(distances[coord1]-distances[coord2]) - manhattanDistance
-			saves[saved]++
+			savedTime := intutils.Abs(distances[coord1]-distances[coord2]) - manhattanDistance
+			saves[savedTime]++
 		}
 	}
 	saves = maps.Filter(saves, func(saved, _ int) bool { return saved >= 100 })
-	savedRoutes := maps.Values(saves)
-	return fmt.Sprint(slices.Sum(savedRoutes))
+	return fmt.Sprint(maps.Sum(saves))
 }
