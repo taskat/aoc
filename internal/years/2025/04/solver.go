@@ -6,7 +6,6 @@ import (
 	"github.com/taskat/aoc/internal/years/2025/days"
 	"github.com/taskat/aoc/pkg/utils/containers/set"
 	"github.com/taskat/aoc/pkg/utils/maps"
-	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
@@ -64,19 +63,14 @@ func (g *grid) accessible(c coordinate.Coordinate2D[int]) bool {
 
 // countAccessible counts the number of accessible coordinates in the grid
 func (g *grid) countAccessible() int {
-	coords := g.coordinates.ToSlice()
-	coords = slices.Filter(coords, g.accessible)
-	return len(coords)
+	accessibles := set.Filter(g.coordinates, g.accessible)
+	return len(accessibles)
 }
 
 // removeAccessible removes all accessible coordinates from the grid
 // and returns the number of removed coordinates
 func (g *grid) removeAccessible() int {
-	accessibleCoords := slices.Filter(g.coordinates.ToSlice(), g.accessible)
-	for _, c := range accessibleCoords {
-		g.coordinates.Delete(c)
-	}
-	return len(accessibleCoords)
+	return g.coordinates.DeleteIf(g.accessible)
 }
 
 // SolvePart1 solves part 1 of the puzzle
