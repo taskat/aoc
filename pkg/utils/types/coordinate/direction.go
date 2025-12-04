@@ -125,6 +125,11 @@ func Diagonals() []Direction {
 	return []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}
 }
 
+// Directions returns all directions
+func Directions() []Direction {
+	return []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}
+}
+
 // Horizontals returns the horizontal directions
 func Horizontals() []Direction {
 	return []Direction{Right(), Left()}

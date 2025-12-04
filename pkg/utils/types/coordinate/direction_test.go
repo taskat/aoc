@@ -42,6 +42,10 @@ func TestDiagonals(t *testing.T) {
 	assert.Equal(t, []Direction{UpRight(), DownRight(), DownLeft(), UpLeft()}, Diagonals())
 }
 
+func TestDirections(t *testing.T) {
+	assert.Equal(t, []Direction{Up(), UpRight(), Right(), DownRight(), Down(), DownLeft(), Left(), UpLeft()}, Directions())
+}
+
 func TestHorizontals(t *testing.T) {
 	assert.Equal(t, []Direction{Right(), Left()}, Horizontals())
 }
