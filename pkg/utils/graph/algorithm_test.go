@@ -106,3 +106,43 @@ func TestDijkstra(t *testing.T) {
 		})
 	}
 }
+
+func TestDistances(t *testing.T) {
+	type testCase struct {
+		testName          string
+		expectedDistances map[int]int
+	}
+	node1 := &BaseNode[int]{id: 1, neighbors: make(map[int]int)}
+	node2 := &BaseNode[int]{id: 2, neighbors: make(map[int]int)}
+	node3 := &BaseNode[int]{id: 3, neighbors: make(map[int]int)}
+	node4 := &BaseNode[int]{id: 4, neighbors: make(map[int]int)}
+	node5 := &BaseNode[int]{id: 5, neighbors: make(map[int]int)}
+	node1.neighbors[2] = 1
+	node1.neighbors[3] = 20
+	node2.neighbors[3] = 3
+	node2.neighbors[4] = 6
+	node3.neighbors[4] = 2
+	graph := New[int]()
+	graph.AddNode(node1)
+	graph.AddNode(node2)
+	graph.AddNode(node3)
+	graph.AddNode(node4)
+	graph.AddNode(node5)
+	testCases := []testCase{
+		{
+			testName: "Distances test",
+			expectedDistances: map[int]int{
+				1: 0,
+				2: 1,
+				3: 4,
+				4: 6,
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			distances := graph.Distances(node1)
+			assert.Equal(t, tc.expectedDistances, distances)
+		})
+	}
+}
