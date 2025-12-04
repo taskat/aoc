@@ -2,7 +2,7 @@
 
 The goal of this repository to have all the Advent of Code challanges solved in Golang. The solutions should not be brute-force solutions, instead they should be algorithms and heuristics to solve the challange in less time.
 
-Total stars: 58/506 ⭐
+Total stars: 60/508 ⭐
 ## Years
 
 
@@ -47,15 +47,16 @@ Total stars: 58/506 ⭐
 
 </details>
 
-<details><summary>2025 - 6/6 ⭐</summary>
+<details><summary>2025 - 8/8 ⭐</summary>
 
 |Day|Stars|Part 1|Part 2|
 |---|---|---|---|
 | 1 | ⭐⭐ | 74 μs | 69 μs |
 | 2 | ⭐⭐ | 221 μs | 243 μs |
 | 3 | ⭐⭐ | 72 μs | 110 μs |
+| 4 | ⭐⭐ | 18 ms | 385 ms |
 
 </details>
 
 
-The benchmarks were last updated on 2025-12-03 18:49:06.
+The benchmarks were last updated on 2025-12-04 16:37:51.
