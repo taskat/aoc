@@ -69,6 +69,16 @@ func (g *grid) countAccessible() int {
 	return len(coords)
 }
 
+// removeAccessible removes all accessible coordinates from the grid
+// and returns the number of removed coordinates
+func (g *grid) removeAccessible() int {
+	accessibleCoords := slices.Filter(g.coordinates.ToSlice(), g.accessible)
+	for _, c := range accessibleCoords {
+		g.coordinates.Delete(c)
+	}
+	return len(accessibleCoords)
+}
+
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	grid := s.parse(lines)
@@ -77,5 +87,14 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	grid := s.parse(lines)
+	count := 0
+	for {
+		removed := grid.removeAccessible()
+		if removed == 0 {
+			break
+		}
+		count += removed
+	}
+	return fmt.Sprintf("%d", count)
 }
