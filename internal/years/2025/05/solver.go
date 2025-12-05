@@ -57,5 +57,15 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	ranges, _ := s.parse(lines)
+	for i := range ranges {
+		for j := i + 1; j < len(ranges); j++ {
+			if ranges[i].Merge(ranges[j]) {
+				ranges = append(ranges[:j], ranges[j+1:]...)
+				j = i
+			}
+		}
+	}
+	numberOfFreshIds := slices.Map(ranges, rangetype.Range.Length)
+	return fmt.Sprintf("%d", slices.Sum(numberOfFreshIds))
 }
