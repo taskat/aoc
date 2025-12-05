@@ -129,6 +129,31 @@ func TestLength(t *testing.T) {
 	}
 }
 
+func TestMerge(t *testing.T) {
+	testCases := []struct {
+		testName      string
+		r1            Range
+		r2            Range
+		expectedValue bool
+		expectedRange Range
+	}{
+		{"Overlapping ranges", New(1, 5), New(4, 8), true, New(1, 8)},
+		{"Non-overlapping ranges", New(1, 3), New(4, 6), false, New(1, 3)},
+		{"Touching ranges", New(1, 5), New(5, 10), true, New(1, 10)},
+		{"Touching ranges reversed", New(5, 10), New(1, 5), true, New(1, 10)},
+		{"One range inside another", New(1, 10), New(3, 7), true, New(1, 10)},
+		{"Identical ranges", New(2, 6), New(2, 6), true, New(2, 6)},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			result := tc.r1
+			merged := result.Merge(tc.r2)
+			assert.Equal(t, tc.expectedValue, merged)
+			assert.Equal(t, tc.expectedRange, result)
+		})
+	}
+}
+
 func TestOverlaps(t *testing.T) {
 	testCases := []struct {
 		testName      string

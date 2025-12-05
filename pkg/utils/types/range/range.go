@@ -37,6 +37,21 @@ func (r Range) Length() int {
 	return r.End - r.Start
 }
 
+// Merge merges the other range into the current range if they overlap or are adjacent.
+// It returns true if the merge was successful, false otherwise.
+func (r *Range) Merge(other Range) bool {
+	if !r.Overlaps(other) && r.End != other.Start && other.End != r.Start {
+		return false
+	}
+	if other.Start < r.Start {
+		r.Start = other.Start
+	}
+	if other.End > r.End {
+		r.End = other.End
+	}
+	return true
+}
+
 // Overlaps checks if two ranges overlap.
 func (r Range) Overlaps(other Range) bool {
 	return r.Start < other.End && other.Start < r.End
