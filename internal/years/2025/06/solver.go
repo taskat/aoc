@@ -24,7 +24,18 @@ type Solver struct{}
 func (s *Solver) AddHyperParams(params ...string) {}
 
 // parse handle the common parsing logic for both parts
-func (s *Solver) parse(lines []string) []problem {
+func (s *Solver) parse(lines []string, part int) []problem {
+	if part == 1 {
+		return s.parseVerticalProblems(lines)
+	}
+	if part == 2 {
+		return s.parseCephalopodProblems(lines)
+	}
+	panic("unknown part")
+}
+
+// parseVerticalProblems parses the input lines, as if they were vertical problems
+func (s *Solver) parseVerticalProblems(lines []string) []problem {
 	problems := []problem{}
 	for i, line := range lines {
 		if i == len(lines)-1 {
@@ -38,19 +49,11 @@ func (s *Solver) parse(lines []string) []problem {
 			problems[j].numbers = append(problems[j].numbers, stringutils.Atoi(part))
 		}
 	}
-	operators := s.parseLine(lines[len(lines)-1])
-	for i, operator := range operators {
-		switch operator {
-		case "+":
-			problems[i].operator = slices.Sum
-		case "*":
-			problems[i].operator = slices.Product
-		}
-	}
+	s.parseAndAddoperators(lines[len(lines)-1], problems)
 	return problems
 }
 
-// parseLine parses a single line into ana array, without the unnecessary spaces
+// parseLine parses a single line into an array, without the unnecessary spaces
 func (s *Solver) parseLine(line string) []string {
 	parts := strings.Split(line, " ")
 	for i := 0; i < len(parts); i++ {
@@ -62,6 +65,44 @@ func (s *Solver) parseLine(line string) []string {
 		}
 	}
 	return parts
+}
+
+// parseAndAddoperators parses the operators from the line and adds them to the problems
+func (s *Solver) parseAndAddoperators(line string, problems []problem) {
+	operators := s.parseLine(line)
+	for i, operator := range operators {
+		switch operator {
+		case "+":
+			problems[i].operator = slices.Sum
+		case "*":
+			problems[i].operator = slices.Product
+		}
+	}
+}
+
+// parseCephalopodProblems parses the input lines, as if they were cephalopod problems
+func (s *Solver) parseCephalopodProblems(lines []string) []problem {
+	problems := []problem{}
+	newProblem := problem{}
+	for j := range lines[0] {
+		digits := []string{}
+		for i := 0; i < len(lines)-1; i++ {
+			if stringutils.IsDigit(rune(lines[i][j])) {
+				digits = append(digits, string(lines[i][j]))
+			}
+		}
+		if len(digits) > 0 {
+			newNumber := stringutils.Atoi(strings.Join(digits, ""))
+			newProblem.numbers = append(newProblem.numbers, newNumber)
+			digits = []string{}
+		} else {
+			problems = append(problems, newProblem)
+			newProblem = problem{}
+		}
+	}
+	problems = append(problems, newProblem)
+	s.parseAndAddoperators(lines[len(lines)-1], problems)
+	return problems
 }
 
 type problem struct {
@@ -76,7 +117,7 @@ func (p problem) solve() int {
 
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
-	problems := s.parse(lines)
+	problems := s.parse(lines, 1)
 	results := slices.Map(problems, problem.solve)
 	sum := slices.Sum(results)
 	return fmt.Sprint(sum)
@@ -84,5 +125,8 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	problems := s.parse(lines, 2)
+	results := slices.Map(problems, problem.solve)
+	sum := slices.Sum(results)
+	return fmt.Sprint(sum)
 }
