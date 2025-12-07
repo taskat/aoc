@@ -50,8 +50,8 @@ func Test_Day_07_Part2(t *testing.T) {
 		expectedValue string
 		hyperParams   []string
 	}{
-		{"Test 1", config.TestInput(1), "", nil},
-		{"Real", config.RealInput{}, "", nil},
+		{"Test 1", config.TestInput(1), "40", nil},
+		{"Real", config.RealInput{}, "7759107121385", nil},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

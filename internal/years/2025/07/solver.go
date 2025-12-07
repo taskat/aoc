@@ -6,6 +6,7 @@ import (
 
 	"github.com/taskat/aoc/internal/years/2025/days"
 	"github.com/taskat/aoc/pkg/utils/containers/set"
+	"github.com/taskat/aoc/pkg/utils/maps"
 	"github.com/taskat/aoc/pkg/utils/types/coordinate"
 )
 
@@ -55,7 +56,7 @@ type diagram struct {
 
 // countSplits counts the number of splits of the tachyon beam
 func (d *diagram) countSplits() int {
-	count := 0
+	splits := 0
 	beams := set.New[int]()
 	beams.Add(d.start.X)
 	for i := range d.height {
@@ -68,14 +69,37 @@ func (d *diagram) countSplits() int {
 			if slices.ContainsFunc(d.splitters[i], matchX) {
 				nextBeams.Add(beam - 1)
 				nextBeams.Add(beam + 1)
-				count++
+				splits++
 			} else {
 				nextBeams.Add(beam)
 			}
 		}
 		beams = nextBeams
 	}
-	return count
+	return splits
+}
+
+// countTimelines counts the different timelines of the tachyon particle
+func (d *diagram) countTimelines() int {
+	timelines := make(map[int]int)
+	timelines[d.start.X] = 1
+	for i := range d.height {
+		if len(d.splitters[i]) == 0 {
+			continue
+		}
+		nextTimelines := make(map[int]int)
+		for timeline, count := range timelines {
+			matchX := func(c coordinate.Coordinate2D[int]) bool { return timeline == c.X }
+			if slices.ContainsFunc(d.splitters[i], matchX) {
+				nextTimelines[timeline-1] += count
+				nextTimelines[timeline+1] += count
+			} else {
+				nextTimelines[timeline] += count
+			}
+		}
+		timelines = nextTimelines
+	}
+	return maps.Sum(timelines)
 }
 
 // SolvePart1 solves part 1 of the puzzle
@@ -87,5 +111,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	d := s.parse(lines)
+	timelines := d.countTimelines()
+	return fmt.Sprintf("%d", timelines)
 }
