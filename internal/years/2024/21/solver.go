@@ -30,16 +30,43 @@ func (s *Solver) parse(lines []string) []code {
 	return slices.Map(lines, newCode)
 }
 
+// code represents a sequence of buttons pressed
 type code []rune
 
+// newCode creates a new code from a string
 func newCode(s string) code {
 	return code(s)
 }
 
+// addHorizontal appends n horizontal moves to the code
+func (c *code) addHorizontal(n int) {
+	if n < 0 {
+		c.appendN(-n, '<')
+	} else {
+		c.appendN(n, '>')
+	}
+}
+
+// addVertical appends n vertical moves to the code
+func (c *code) addVertical(n int) {
+	if n < 0 {
+		c.appendN(-n, 'v')
+	} else {
+		c.appendN(n, '^')
+	}
+}
+
+// appendN appends n times the rune r to the code
+func (c *code) appendN(n int, r rune) {
+	*c = append(*c, slices.Repeat(r, n)...)
+}
+
+// buttons returns the mapping of button sequences for a given code
+// on the provided keypads. It contains which button sequences are used and how many times
 func (c code) buttons(pads []keypad) map[string]int {
 	codeblocks := make(map[string]int)
 	codeblocks[c.String()] = 1
-	for i := 0; i < len(pads); i++ {
+	for i := range pads {
 		nextCodeBlocks := make(map[string]int)
 		for codeBlock, count := range codeblocks {
 			newCodeBlocks := pads[i].typeCode(newCode(codeBlock))
@@ -52,6 +79,8 @@ func (c code) buttons(pads []keypad) map[string]int {
 	return codeblocks
 }
 
+// complexity calculates the complexity of the code given the keypads
+// It is the product of the length of the final code and the numeric value of the code
 func (c code) complexity(pads []keypad) int {
 	finalCode := c.buttons(pads)
 	numPart := strings.ReplaceAll(string(c), "A", "")
@@ -63,84 +92,101 @@ func (c code) complexity(pads []keypad) int {
 	return length * numValue
 }
 
+// String returns the string representation of the code
 func (c code) String() string {
 	return string(c)
 }
 
-type coord = coordinate.Coordinate2D[int]
+// keypad maps buttons to their coordinates
+type keypad struct {
+	keys    map[rune]coordinate.Coordinate2D[int]
+	numeric bool
+}
 
-type dir = coordinate.Direction
-
-type keypad map[rune]coord
-
+// numPad returns the numeric keypad layout
 func numPad() keypad {
-	return map[rune]coord{
-		'7': {X: 0, Y: 0},
-		'8': {X: 1, Y: 0},
-		'9': {X: 2, Y: 0},
-		'4': {X: 0, Y: 1},
-		'5': {X: 1, Y: 1},
-		'6': {X: 2, Y: 1},
-		'1': {X: 0, Y: 2},
-		'2': {X: 1, Y: 2},
-		'3': {X: 2, Y: 2},
-		'0': {X: 1, Y: 3},
-		'A': {X: 2, Y: 3},
+	return keypad{
+		keys: map[rune]coordinate.Coordinate2D[int]{
+			'7': {X: 0, Y: 0},
+			'8': {X: 1, Y: 0},
+			'9': {X: 2, Y: 0},
+			'4': {X: 0, Y: -1},
+			'5': {X: 1, Y: -1},
+			'6': {X: 2, Y: -1},
+			'1': {X: 0, Y: -2},
+			'2': {X: 1, Y: -2},
+			'3': {X: 2, Y: -2},
+			'0': {X: 1, Y: -3},
+			'A': {X: 2, Y: -3},
+		},
+		numeric: true,
 	}
 }
 
+// directionalPad returns the directional keypad layout
 func directionalPad() keypad {
-	return map[rune]coord{
-		'^': {X: 1, Y: 0},
-		'A': {X: 2, Y: 0},
-		'<': {X: 0, Y: 1},
-		'v': {X: 1, Y: 1},
-		'>': {X: 2, Y: 1},
+	return keypad{
+		keys: map[rune]coordinate.Coordinate2D[int]{
+			'^': {X: 1, Y: 0},
+			'A': {X: 2, Y: 0},
+			'<': {X: 0, Y: -1},
+			'v': {X: 1, Y: -1},
+			'>': {X: 2, Y: -1},
+		},
+		numeric: false,
 	}
 }
 
+// buttons returns the sequence of button presses necessary to guide the robot
+// from one button to another
 func (k keypad) buttons(from, to rune) code {
-	fromCoord := k[from]
-	toCoord := k[to]
+	fromCoord := k.keys[from]
+	toCoord := k.keys[to]
 	dist := toCoord.Sub(fromCoord)
 	buttons := make(code, 0, intutils.Abs(dist.X)+intutils.Abs(dist.Y)+1)
-	appendN := func(n int, r rune) {
-		for i := 0; i < n; i++ {
-			buttons = append(buttons, r)
-		}
-	}
-	if (to == '1' || to == '4' || to == '7') && (from == '0' || from == 'A') {
-		appendN(-dist.Y, '^')
-		appendN(-dist.X, '<')
-	} else if (from == '^' || from == 'A') && to == '<' {
-		appendN(dist.Y, 'v')
-		appendN(-dist.X, '<')
+	if k.isVerticalFirst(from, to) {
+		buttons.addVertical(dist.Y)
+		buttons.addHorizontal(dist.X)
+	} else if k.isHorizontalFirst(from, to) {
+		buttons.addHorizontal(dist.X)
+		buttons.addVertical(dist.Y)
+	} else if dist.X < 0 {
+		buttons.addHorizontal(dist.X)
+		buttons.addVertical(dist.Y)
 	} else {
-		if dist.X < 0 {
-			appendN(-dist.X, '<')
-		}
-		if (from == '1' || from == '4' || from == '7') && (to == '0' || to == 'A') {
-			appendN(dist.X, '>')
-			appendN(dist.Y, 'v')
-		} else if from == '<' && (to == '^' || to == 'A') {
-			appendN(dist.X, '>')
-			appendN(-dist.Y, '^')
-		} else {
-			if dist.Y > 0 {
-				appendN(dist.Y, 'v')
-			}
-			if dist.Y < 0 {
-				appendN(-dist.Y, '^')
-			}
-			if dist.X > 0 {
-				appendN(dist.X, '>')
-			}
-		}
+		buttons.addVertical(dist.Y)
+		buttons.addHorizontal(dist.X)
 	}
 	buttons = append(buttons, 'A')
 	return buttons
 }
 
+// isVerticalFirst determines if vertical moves should be made before horizontal ones
+// based on the keypad layout and the from/to buttons. This is used to minimize the number of moves.
+// If the keypad is numeric, vertical moves are prioritized when moving to the left column (1,4,7)
+// from the bottom row (0,A). If the keypad is directional, vertical moves are prioritized when to the
+// left column (<) from the top row (^,A).
+func (k keypad) isVerticalFirst(from, to rune) bool {
+	if k.numeric {
+		return (from == '0' || from == 'A') && (to == '1' || to == '4' || to == '7')
+	}
+	return (from == '^' || from == 'A') && (to == '<')
+}
+
+// isHorizontalFirst determines if horizontal moves should be made before vertical ones
+// based on the keypad layout and the from/to buttons. This is used to minimize the number of moves.
+// If the keypad is numeric, horizontal moves are prioritized when moving from the left column (1,4,7)
+// to the bottom row (0,A). If the keypad is directional, horizontal moves are prioritized when moving
+// from the left column (<) to the top row (^,A).
+func (k keypad) isHorizontalFirst(from, to rune) bool {
+	if k.numeric {
+		return (from == '1' || from == '4' || from == '7') && (to == '0' || to == 'A')
+	}
+	return (from == '<') && (to == '^' || to == 'A')
+}
+
+// typeCode returns the mapping of button sequences for a given code
+// on this keypad. It contains which button sequences are used and how many times
 func (k keypad) typeCode(code code) map[string]int {
 	codeBlocks := make(map[string]int, 0)
 	firstBlock := k.buttons('A', code[0])
