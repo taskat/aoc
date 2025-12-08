@@ -49,7 +49,7 @@ func TestNewCoordinate2D(t *testing.T) {
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestAdd2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
@@ -90,7 +90,7 @@ func TestColumn(t *testing.T) {
 	}
 }
 
-func TestEqual(t *testing.T) {
+func TestEqual2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
@@ -213,7 +213,7 @@ func TestIn2DSlice(t *testing.T) {
 	}
 }
 
-func TestInLimits(t *testing.T) {
+func TestInLimits2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
@@ -262,7 +262,7 @@ func TestJ(t *testing.T) {
 	}
 }
 
-func TestManhattanDistance(t *testing.T) {
+func TestManhattanDistance2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
@@ -325,7 +325,7 @@ func TestRow(t *testing.T) {
 	}
 }
 
-func TestCoordinateString(t *testing.T) {
+func TestCoordinateString2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
@@ -345,7 +345,7 @@ func TestCoordinateString(t *testing.T) {
 	}
 }
 
-func TestSub(t *testing.T) {
+func TestSub2D(t *testing.T) {
 	type testCase[T types.Real] struct {
 		testName string
 		c        Coordinate2D[T]
