@@ -175,3 +175,61 @@ func TestDijkstra(t *testing.T) {
 		})
 	}
 }
+
+func TestHasDirectedCycle(t *testing.T) {
+	node1 := &BaseNode[int]{id: 1, neighbors: make(map[int]int)}
+	node2 := &BaseNode[int]{id: 2, neighbors: make(map[int]int)}
+	node3 := &BaseNode[int]{id: 3, neighbors: make(map[int]int)}
+	node4 := &BaseNode[int]{id: 4, neighbors: make(map[int]int)}
+	node1.neighbors[2] = 1
+	node2.neighbors[3] = 1
+	node3.neighbors[4] = 1
+	graph := New[int]()
+	graph.AddNode(node1)
+	graph.AddNode(node2)
+	graph.AddNode(node3)
+	graph.AddNode(node4)
+	assert.False(t, graph.HasDirectedCycle(node1), "Graph A should not have a directed cycle")
+	node4.neighbors[2] = 1
+	assert.True(t, graph.HasDirectedCycle(node1), "Graph B should have a directed cycle")
+}
+
+func TestStartNodes(t *testing.T) {
+	node1 := &BaseNode[int]{id: 1, neighbors: make(map[int]int)}
+	node2 := &BaseNode[int]{id: 2, neighbors: make(map[int]int)}
+	node3 := &BaseNode[int]{id: 3, neighbors: make(map[int]int)}
+	node4 := &BaseNode[int]{id: 4, neighbors: make(map[int]int)}
+	node1.neighbors[2] = 1
+	node1.neighbors[3] = 1
+	node2.neighbors[3] = 1
+	node2.neighbors[4] = 1
+	node3.neighbors[4] = 1
+	graph := New[int]()
+	graph.AddNode(node1)
+	graph.AddNode(node2)
+	graph.AddNode(node3)
+	graph.AddNode(node4)
+	startNodes := graph.StartNodes()
+	expectedStartNodes := []int{1}
+	assert.ElementsMatch(t, startNodes, expectedStartNodes)
+}
+
+func TestTopologicalOrder(t *testing.T) {
+	node1 := &BaseNode[int]{id: 1, neighbors: make(map[int]int)}
+	node2 := &BaseNode[int]{id: 2, neighbors: make(map[int]int)}
+	node3 := &BaseNode[int]{id: 3, neighbors: make(map[int]int)}
+	node4 := &BaseNode[int]{id: 4, neighbors: make(map[int]int)}
+	node1.neighbors[2] = 1
+	node1.neighbors[3] = 1
+	node2.neighbors[3] = 1
+	node2.neighbors[4] = 1
+	node3.neighbors[4] = 1
+	graph := New[int]()
+	graph.AddNode(node1)
+	graph.AddNode(node2)
+	graph.AddNode(node3)
+	graph.AddNode(node4)
+	order := graph.TopologicalOrder()
+	expectedOrder := []int{1, 2, 3, 4}
+	assert.Equal(t, expectedOrder, order)
+}

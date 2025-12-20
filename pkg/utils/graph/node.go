@@ -9,6 +9,7 @@ import (
 
 type Node[T comparable] interface {
 	AddNeighbor(neighbor Node[T], weight int)
+	Copy() Node[T]
 	GetNeighbors() map[T]int
 	HasNeighbor(id T) bool
 	Id() T
@@ -23,13 +24,15 @@ type BaseNode[T comparable] struct {
 
 func NewBaseNode[T comparable](id T) *BaseNode[T] {
 	return &BaseNode[T]{
-		id: id,
+		id:        id,
+		neighbors: make(map[T]int),
 	}
 }
 
 func NewBaseNodeAutoId() *BaseNode[int] {
 	return &BaseNode[int]{
-		id: NextId(),
+		id:        NextId(),
+		neighbors: make(map[int]int),
 	}
 }
 
@@ -42,6 +45,12 @@ func (n *BaseNode[T]) AddNeighbor(neighbor Node[T], weight int) {
 		n.neighbors = make(map[T]int)
 	}
 	n.neighbors[neighbor.Id()] = weight
+}
+
+func (n *BaseNode[T]) Copy() Node[T] {
+	newNode := NewBaseNode(n.id)
+	maps.Copy(newNode.neighbors, n.neighbors)
+	return newNode
 }
 
 func (n *BaseNode[T]) GetNeighbors() map[T]int {

@@ -225,3 +225,63 @@ func (g Graph[ID]) Dijkstra(start Node[ID], goal func(ID) bool) Path[ID] {
 	}
 	return NoPath[ID]()
 }
+
+// HasDirectedCycle checks if the graph has a directed cycle
+func (g Graph[ID]) HasDirectedCycle(start Node[ID]) bool {
+	visited := set.New[ID]()
+	visited.Add(start.Id())
+	return g.hasDirectedCycle(start, visited)
+}
+
+func (g Graph[ID]) hasDirectedCycle(node Node[ID], visited set.Set[ID]) bool {
+	for neighbor := range node.GetNeighbors() {
+		if visited.Contains(neighbor) {
+			return true
+		}
+		visited.Add(neighbor)
+		hasCycle := g.hasDirectedCycle(g.GetNode(neighbor), visited)
+		if hasCycle {
+			return true
+		}
+		visited.Delete(neighbor)
+	}
+	return false
+}
+
+// StartNodes finds all nodes with no incoming edges
+func (g Graph[ID]) StartNodes() []ID {
+	possibles := set.New[ID]()
+	for id := range g.nodes {
+		possibles.Add(id)
+	}
+	for _, node := range g.nodes {
+		for neighbor := range node.GetNeighbors() {
+			possibles.Delete(neighbor)
+		}
+	}
+	return possibles.ToSlice()
+}
+
+// TopologicalOrder returns a topological ordering of the nodes, if exists
+func (g Graph[ID]) TopologicalOrder() []ID {
+	work := g.Copy()
+	order := make([]ID, 0, len(work.nodes))
+	startNodes := work.StartNodes()
+	for len(startNodes) != 0 {
+		nodeId := startNodes[0]
+		startNodes = startNodes[1:]
+		order = append(order, nodeId)
+		node := work.GetNode(nodeId)
+		for neighborId := range node.GetNeighbors() {
+			work.RemoveDirectedEdge(nodeId, neighborId)
+		}
+		work.RemoveNode(nodeId)
+		if len(startNodes) == 0 {
+			startNodes = work.StartNodes()
+		}
+	}
+	if len(work.GetNodes()) != 0 {
+		panic("Graph has cycles, no topological order exists")
+	}
+	return order
+}
