@@ -68,6 +68,26 @@ func TestContains(t *testing.T) {
 	}
 }
 
+func TestCopy(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		src         map[int]string
+		expectedMap map[int]string
+	}{
+		{"Empty map", map[int]string{}, map[int]string{}},
+		{"Map with elements", map[int]string{1: "a", 2: "b"}, map[int]string{1: "a", 2: "b"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			dst := make(map[int]string)
+			Copy(dst, tc.src)
+			assert.Equal(t, tc.expectedMap, dst)
+			tc.src[1] = "c"
+			assert.NotEqual(t, dst, tc.src)
+		})
+	}
+}
+
 func TestFilter(t *testing.T) {
 	testCases := []struct {
 		testName    string
