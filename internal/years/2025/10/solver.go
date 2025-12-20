@@ -5,8 +5,11 @@ import (
 	"strings"
 
 	"github.com/taskat/aoc/internal/years/2025/days"
+	"github.com/taskat/aoc/pkg/utils/math"
 	"github.com/taskat/aoc/pkg/utils/slices"
 	"github.com/taskat/aoc/pkg/utils/stringutils"
+
+	"github.com/draffensperger/golp"
 )
 
 // day is the day of the solver
@@ -33,39 +36,42 @@ func (s *Solver) parse(lines []string) []machine {
 type machine struct {
 	indicators lights
 	wirings    []lights
+	joltage    lights
 }
 
 // parseMachine parses the machine from input line
 func parseMachine(line string) machine {
-	line = line[1:]
+	line = line[1 : len(line)-1]
 	parts := strings.Split(line, "] (")
 	indicatorLights := parseIndicatorLights(parts[0])
 	parts = strings.Split(parts[1], ") {")
 	wiringLights := parseWiringLights(parts[0], len(indicatorLights))
+	joltageRequirement := parseJoltage(parts[1])
 	return machine{
 		indicators: indicatorLights,
 		wirings:    wiringLights,
+		joltage:    joltageRequirement,
 	}
 }
 
-// minimalButtonPresses calculates the minimal button presses needed to match the indicator lights
-func (m machine) minimalButtonPresses() int {
+// minimalButtonPressesToConfigureLights calculates the minimal button presses needed to match the indicator lights
+func (m machine) minimalButtonPressesToConfigureLights() int {
 	start := make(lights, len(m.indicators))
-	minPresses, _ := m.minimalButtonPressesRecursion(start, 0)
+	minPresses, _ := m.minimalButtonPressesToConfigureLights_recursion(start, 0)
 	return minPresses
 }
 
-// minimalButtonPressesRecursion calculates the minimal button presses needed to match the indicator lights
+// minimalButtonPressesToConfigureLights_recursion calculates the minimal button presses needed to match the indicator lights
 // starting from the current lights configuration and considering wirings from firstWiring index.
 // It returns the minimal number of presses and a boolean indicating if a solution was found.
-func (m machine) minimalButtonPressesRecursion(current lights, firstWiring int) (int, bool) {
+func (m machine) minimalButtonPressesToConfigureLights_recursion(current lights, firstWiring int) (int, bool) {
 	if current.matchToggle(m.indicators) {
 		return 0, true
 	}
 	minimalPresses := len(m.wirings) - firstWiring + 1
 	for i := firstWiring; i < len(m.wirings); i++ {
 		current.toggle(m.wirings[i])
-		presses, found := m.minimalButtonPressesRecursion(current, i+1)
+		presses, found := m.minimalButtonPressesToConfigureLights_recursion(current, i+1)
 		currentPresses := presses + 1
 		if found && currentPresses < minimalPresses {
 			minimalPresses = currentPresses
@@ -76,6 +82,31 @@ func (m machine) minimalButtonPressesRecursion(current lights, firstWiring int) 
 		return 0, false
 	}
 	return minimalPresses, true
+}
+
+// minimalButtonPressesToMatchJoltage calculates the minimal button presses needed to match the joltage requirement
+func (m machine) minimalButtonPressesToMatchJoltage() int {
+	lp := golp.NewLP(len(m.indicators), len(m.wirings))
+	for i, expectedJoltage := range m.joltage {
+		coefficients := make([]float64, len(m.wirings))
+		for j, wiring := range m.wirings {
+			coefficients[j] = float64(wiring[i])
+		}
+		lp.AddConstraint(coefficients, golp.EQ, float64(expectedJoltage))
+	}
+	for i := range m.wirings {
+		lp.SetInt(i, true)
+	}
+	objective := make([]float64, len(m.wirings))
+	for i := range objective {
+		objective[i] = 1
+	}
+	lp.SetObjFn(objective)
+	solution := lp.Solve()
+	if solution != golp.OPTIMAL {
+		panic("No optimal solution found")
+	}
+	return math.Round(lp.Objective())
 }
 
 // lights represents the indicator lights
@@ -124,6 +155,16 @@ func parseWiringLights(line string, numberOfLigths int) []lights {
 	return lights
 }
 
+// parseJoltage parse the joltage requirement from input string
+func parseJoltage(line string) lights {
+	parts := strings.Split(line, ",")
+	lights := make(lights, len(parts))
+	for i, part := range parts {
+		lights[i] = stringutils.Atoi(part)
+	}
+	return lights
+}
+
 // parseButton parses a single button's lights
 func parseButton(button string, numberOfLights int) lights {
 	lights := make(lights, numberOfLights)
@@ -138,11 +179,13 @@ func parseButton(button string, numberOfLights int) lights {
 // SolvePart1 solves part 1 of the puzzle
 func (s *Solver) SolvePart1(lines []string) string {
 	machines := s.parse(lines)
-	minimalPresses := slices.Map(machines, machine.minimalButtonPresses)
+	minimalPresses := slices.Map(machines, machine.minimalButtonPressesToConfigureLights)
 	return fmt.Sprintf("%d", slices.Sum(minimalPresses))
 }
 
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	machines := s.parse(lines)
+	minimalPresses := slices.Map(machines, machine.minimalButtonPressesToMatchJoltage)
+	return fmt.Sprintf("%d", slices.Sum(minimalPresses))
 }
