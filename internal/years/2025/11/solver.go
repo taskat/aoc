@@ -6,6 +6,7 @@ import (
 
 	"github.com/taskat/aoc/internal/years/2025/days"
 	"github.com/taskat/aoc/pkg/utils/graph"
+	"github.com/taskat/aoc/pkg/utils/slices"
 )
 
 // day is the day of the solver
@@ -51,7 +52,37 @@ func (s *Solver) SolvePart1(lines []string) string {
 	return fmt.Sprint(len(paths))
 }
 
+// getPossiblePaths returns the number of possible paths, by checking the nodes in the given order
+func getPossiblePaths(g *graph.Graph[string], ordering []string) int {
+	numberOfPaths := make(map[string]int, len(g.GetNodes()))
+	numberOfPaths[ordering[0]] = 1
+	for _, id := range ordering {
+		currentPaths := numberOfPaths[id]
+		node := g.GetNode(id)
+		for neighborId := range node.GetNeighbors() {
+			numberOfPaths[neighborId] += currentPaths
+		}
+	}
+	return numberOfPaths[ordering[len(ordering)-1]]
+}
+
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
-	return ""
+	g := s.parse(lines)
+	topologicalOrder := g.TopologicalOrder()
+	startNodeIndex := slices.FindIndex(topologicalOrder, func(id string) bool { return id == "svr" })
+	dacNodeIndex := slices.FindIndex(topologicalOrder, func(id string) bool { return id == "dac" })
+	fftNodeIndex := slices.FindIndex(topologicalOrder, func(id string) bool { return id == "fft" })
+	outNodeIndex := slices.FindIndex(topologicalOrder, func(id string) bool { return id == "out" })
+	firstWayPoint := dacNodeIndex
+	secondWayPoint := fftNodeIndex
+	if dacNodeIndex > fftNodeIndex {
+		firstWayPoint = fftNodeIndex
+		secondWayPoint = dacNodeIndex
+	}
+	numberOfPathsToFirstWayPoint := getPossiblePaths(g, topologicalOrder[startNodeIndex:firstWayPoint+1])
+	numberOfPathsToSecondWaypoint := getPossiblePaths(g, topologicalOrder[firstWayPoint:secondWayPoint+1])
+	numberOfPathsToOut := getPossiblePaths(g, topologicalOrder[secondWayPoint:outNodeIndex+1])
+	numberOfPaths := numberOfPathsToFirstWayPoint * numberOfPathsToSecondWaypoint * numberOfPathsToOut
+	return fmt.Sprint(numberOfPaths)
 }
