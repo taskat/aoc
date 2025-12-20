@@ -92,6 +92,18 @@ func (p Path[ID]) Cost() int {
 	return p.cost
 }
 
+func (p Path[ID]) Equals(other Path[ID]) bool {
+	if len(p.nodes) != len(other.nodes) || p.cost != other.cost {
+		return false
+	}
+	for i := range p.nodes {
+		if p.nodes[i] != other.nodes[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func (p Path[ID]) IsValid() bool {
 	return p.nodes != nil
 }

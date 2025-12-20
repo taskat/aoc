@@ -6,6 +6,31 @@ import (
 	"github.com/taskat/aoc/pkg/utils/containers/set"
 )
 
+// AllPaths finds all the paths from the start node to the end node
+func (g Graph[ID]) AllPaths(start Node[ID], goal func(ID) bool) []Path[ID] {
+	if goal(start.Id()) {
+		return []Path[ID]{NewPath([]ID{start.Id()}, 0)}
+	}
+	visited := set.New[ID]()
+	visited.Add(start.Id())
+	return g.allPaths(start, goal, visited, []ID{start.Id()}, 0, []Path[ID]{})
+}
+
+func (g Graph[ID]) allPaths(node Node[ID], goal func(ID) bool, visited set.Set[ID], currentPath []ID, cost int, paths []Path[ID]) []Path[ID] {
+	if goal(node.Id()) {
+		return append(paths, NewPath(currentPath, cost))
+	}
+	for neighbor, distance := range node.GetNeighbors() {
+		if visited.Contains(neighbor) {
+			continue
+		}
+		visited.Add(neighbor)
+		paths = g.allPaths(g.GetNode(neighbor), goal, visited, append(currentPath, neighbor), cost+distance, paths)
+		visited.Delete(neighbor)
+	}
+	return paths
+}
+
 // NodesOfBestPaths finds all the shortest paths from the start node to the end node
 func (g Graph[ID]) NodesOfBestPaths(start Node[ID], goal func(ID) bool) []ID {
 	if goal(start.Id()) {
