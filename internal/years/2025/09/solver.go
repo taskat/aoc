@@ -41,10 +41,9 @@ func findMaxRectangle(coords []coordinate.Coordinate2D[int]) int {
 	maxSize := 0
 	for i, c1 := range coords {
 		for _, c2 := range coords[i+1:] {
-			r := rectangle{c1: c1, c2: c2}
-			size := r.getSize()
-			if size > maxSize {
-				maxSize = size
+			r := newRectangle(c1, c2)
+			if r.size > maxSize {
+				maxSize = r.size
 			}
 		}
 	}
@@ -57,24 +56,30 @@ type rectangle struct {
 	size   int
 }
 
-// getSize computes the getSize of the rectangle
-func (r *rectangle) getSize() int {
-	if r.size != 0 {
-		return r.size
-	}
+// newRectangle creates a new rectangle
+func newRectangle(c1, c2 coordinate.Coordinate2D[int]) rectangle {
+	r := rectangle{c1: c1, c2: c2}
 	width := intutils.Abs(r.c1.X-r.c2.X) + 1
 	height := intutils.Abs(r.c1.Y-r.c2.Y) + 1
 	r.size = width * height
-	return r.size
+	return r
+}
+
+// compress compresses the rectangle coordinates
+func (r *rectangle) compress(compression *coordinate.Compression2D[int]) {
+	r.c1 = compression.Compress(r.c1)
+	r.c2 = compression.Compress(r.c2)
 }
 
 // createRectangles creates all rectangles from a list of coordinates
-func createRectangles(coords []coordinate.Coordinate2D[int], anomalies []coordinate.Coordinate2D[int]) []rectangle {
+func createRectangles(coords []coordinate.Coordinate2D[int], anomalies []coordinate.Coordinate2D[int], compression *coordinate.Compression2D[int]) []rectangle {
 	var rectangles []rectangle
 	if len(anomalies) == 0 {
 		for i, c1 := range coords {
 			for _, c2 := range coords[i+1:] {
-				rectangles = append(rectangles, rectangle{c1: c1, c2: c2})
+				r := newRectangle(c1, c2)
+				r.compress(compression)
+				rectangles = append(rectangles, r)
 			}
 		}
 		return rectangles
@@ -82,13 +87,16 @@ func createRectangles(coords []coordinate.Coordinate2D[int], anomalies []coordin
 	for _, anomaly := range anomalies {
 		for _, c := range coords {
 			if anomaly != c {
-				rectangles = append(rectangles, rectangle{c1: anomaly, c2: c})
+				r := newRectangle(anomaly, c)
+				r.compress(compression)
+				rectangles = append(rectangles, r)
 			}
 		}
 	}
 	return rectangles
 }
 
+// line represents a vertical or horizontal line segment
 type line struct {
 	from, to       int
 	otherDimension int
@@ -96,10 +104,11 @@ type line struct {
 
 // hasIntersection checks if two lines intersect
 func (l1 line) hasIntersection(l2 line) bool {
-	return l1.from < l2.otherDimension && l1.to > l2.otherDimension &&
-		l2.from < l1.otherDimension && l2.to > l1.otherDimension
+	return l1.from <= l2.otherDimension && l1.to >= l2.otherDimension &&
+		l2.from <= l1.otherDimension && l2.to >= l1.otherDimension
 }
 
+// edges represents a collection of horizontal and vertical edges
 type edges struct {
 	horizontal []line
 	vertical   []line
@@ -116,21 +125,40 @@ func newEdges() edges {
 // addEdge adds an edge coordinate to the edges
 func (e *edges) addEdge(c1, c2 coordinate.Coordinate2D[int]) {
 	if c1.X == c2.X {
-		fromY, toY := c1.Y, c2.Y
-		if fromY > toY {
-			fromY, toY = toY, fromY
-		}
-		e.vertical = append(e.vertical, line{from: fromY, to: toY, otherDimension: c1.X})
+		fromY, toY := increasing(c1.Y, c2.Y)
+		e.addVerticalEdge(c1.X, fromY, toY)
 		return
 	} else if c1.Y == c2.Y {
-		fromX, toX := c1.X, c2.X
-		if fromX > toX {
-			fromX, toX = toX, fromX
-		}
-		e.horizontal = append(e.horizontal, line{from: fromX, to: toX, otherDimension: c1.Y})
+		fromX, toX := increasing(c1.X, c2.X)
+		e.addHorizontalEdge(c1.Y, fromX, toX)
 		return
 	}
 	panic("coordinates are not aligned")
+}
+
+// addVerticalEdge adds a vertical edge
+func (e *edges) addVerticalEdge(x, fromY, toY int) {
+	e.vertical = append(e.vertical, line{from: fromY, to: toY, otherDimension: x})
+}
+
+// addHorizontalEdge adds a horizontal edge
+func (e *edges) addHorizontalEdge(y, fromX, toX int) {
+	e.horizontal = append(e.horizontal, line{from: fromX, to: toX, otherDimension: y})
+}
+
+// isPointOnEdge checks if a point is on any edge
+func (e *edges) isPointOnEdge(c coordinate.Coordinate2D[int]) bool {
+	for _, h := range e.horizontal {
+		if c.Y == h.otherDimension && c.X >= h.from && c.X <= h.to {
+			return true
+		}
+	}
+	for _, v := range e.vertical {
+		if c.X == v.otherDimension && c.Y >= v.from && c.Y <= v.to {
+			return true
+		}
+	}
+	return false
 }
 
 // getEdges returns the edge coordinates of the given coordinate list
@@ -144,76 +172,105 @@ func getEdges(coords []coordinate.Coordinate2D[int]) edges {
 	return edges
 }
 
-// hasIntersection checks if a line has an intersection with the edges
-func (e *edges) hasIntersection(c1, c2 coordinate.Coordinate2D[int]) bool {
-	if c1.X == c2.X {
-		l := line{}
-		fromY, toY := c1.Y, c2.Y
-		if fromY > toY {
-			fromY, toY = toY, fromY
+// isPointInside checks if a point is inside the lines
+func (e edges) isPointInside(c coordinate.Coordinate2D[int]) bool {
+	if e.isPointOnEdge(c) {
+		return true
+	}
+	intersections := 0
+	l := line{from: 0, to: c.X, otherDimension: c.Y}
+	for _, v := range e.vertical {
+		if v.hasIntersection(l) {
+			intersections++
 		}
-		l.from = fromY
-		l.to = toY
-		l.otherDimension = c1.X
-		for _, h := range e.horizontal {
-			if h.hasIntersection(l) {
-				return true
-			}
-		}
+	}
+	if intersections%2 == 1 {
+		return true
+	}
+	extraLine := e.getPossibleIntersectorLine(c)
+	if extraLine == nil {
 		return false
 	}
-	if c1.Y == c2.Y {
-		fromX, toX := c1.X, c2.X
-		if fromX > toX {
-			fromX, toX = toX, fromX
+	return extraLine.hasIntersection(l)
+}
+
+// getPossibleIntersectorLine returns a new line that is possibly an intersector
+// It is used when the intersecion counting could fail due to the point is aligned with an edge
+// but not on the edge. If no such line can be found, it returns nil
+func (e edges) getPossibleIntersectorLine(c coordinate.Coordinate2D[int]) *line {
+	x1, x2 := -1, -1
+	for _, h := range e.horizontal {
+		if h.otherDimension == c.Y && h.from < c.X {
+			x1 = h.from
+			x2 = h.to
+			break
 		}
-		l := line{from: fromX, to: toX, otherDimension: c1.Y}
-		for _, v := range e.vertical {
-			if v.hasIntersection(l) {
-				return true
+	}
+	if x1 == -1 && x2 == -1 {
+		return nil
+	}
+	y1, y2 := -1, -1
+	for _, v := range e.vertical {
+		if v.otherDimension == x1 {
+			if v.from == c.Y {
+				y1 = v.to
+			} else {
+				y1 = v.from
 			}
 		}
-		return false
+		if v.otherDimension == x2 {
+			if v.from == c.Y {
+				y2 = v.to
+			} else {
+				y2 = v.from
+			}
+		}
 	}
-	return false
+	if y1 == -1 || y2 == -1 {
+		panic("invalid edge configuration")
+	}
+	y_from, y_to := increasing(y1, y2)
+	extraLine := line{from: y_from, to: y_to, otherDimension: x1}
+	return &extraLine
+}
+
+// isPointInsideWithCache checks if a point is inside the lines with caching
+func (e edges) isPointInsideWithCache(c coordinate.Coordinate2D[int], cache map[coordinate.Coordinate2D[int]]bool) bool {
+	val, ok := cache[c]
+	if ok {
+		return val
+	}
+	val = e.isPointInside(c)
+	cache[c] = val
+	return val
 }
 
 // isRectangleInside checks if a rectangle is entirely inside the lines
-func isRectangleInside(r rectangle, edges edges) bool {
-	fromX, toX := r.c1.X, r.c2.X
-	if fromX > toX {
-		fromX, toX = toX, fromX
-	}
-	for x := fromX; x <= toX; x++ {
-		c1 := coordinate.NewCoordinate2D(x, r.c1.Y)
-		c2 := coordinate.NewCoordinate2D(x, r.c2.Y)
-		if edges.hasIntersection(c1, c2) {
+// It checks all four edges of the rectangle
+func (e edges) isRectangleInside(r rectangle, cache map[coordinate.Coordinate2D[int]]bool) bool {
+	xFrom, xTo := increasing(r.c1.X, r.c2.X)
+	yFrom, yTo := increasing(r.c1.Y, r.c2.Y)
+	for x := xFrom; x <= xTo; x++ {
+		if !e.isPointInsideWithCache(coordinate.NewCoordinate2D(x, yFrom), cache) ||
+			!e.isPointInsideWithCache(coordinate.NewCoordinate2D(x, yTo), cache) {
 			return false
 		}
 	}
-	fromY, toY := r.c1.Y, r.c2.Y
-	if fromY > toY {
-		fromY, toY = toY, fromY
-	}
-	for y := fromY; y <= toY; y++ {
-		c1 := coordinate.NewCoordinate2D(r.c1.X, y)
-		c2 := coordinate.NewCoordinate2D(r.c2.X, y)
-		if edges.hasIntersection(c1, c2) {
+	for y := yFrom; y <= yTo; y++ {
+		if !e.isPointInsideWithCache(coordinate.NewCoordinate2D(xFrom, y), cache) ||
+			!e.isPointInsideWithCache(coordinate.NewCoordinate2D(xTo, y), cache) {
 			return false
 		}
 	}
 	return true
 }
 
-// getMaxRectangleInside finds the maximum rectangle entirely inside the lines
-// It assumes that the rectangles are sorted by size in descending order
-func getMaxRectangleInside(rectangles []rectangle, edges edges) rectangle {
-	for _, r := range rectangles {
-		if isRectangleInside(r, edges) {
-			return r
-		}
+// increasing returns the two integers in increasing order
+func increasing(a, b int) (int, int) {
+	if a < b {
+		return a, b
 	}
-	panic("no rectangle found inside the lines")
+	return b, a
 }
 
 // getAnomalyCoordinates finds the coordinates of anomalies
@@ -223,15 +280,15 @@ func getAnomalyCoordinates(coords []coordinate.Coordinate2D[int]) []coordinate.C
 	for i, c1 := range coords {
 		nextIdx := (i + 1) % len(coords)
 		c2 := coords[nextIdx]
-		length := (&rectangle{c1: c1, c2: c2}).getSize()
+		length := newRectangle(c1, c2).size
 		if length > maxLength {
 			maxLength = length
 			maxIdx = i
 		}
 	}
-	line1 := rectangle{c1: coords[maxIdx], c2: coords[(maxIdx+1)%len(coords)]}
-	line2 := rectangle{c1: coords[(maxIdx+2)%len(coords)], c2: coords[(maxIdx+3)%len(coords)]}
-	if line1.getSize() > 1000 && line2.getSize() > 1000 {
+	line1 := newRectangle(coords[maxIdx], coords[(maxIdx+1)%len(coords)])
+	line2 := newRectangle(coords[(maxIdx+2)%len(coords)], coords[(maxIdx+3)%len(coords)])
+	if line1.size > 1000 && line2.size > 1000 {
 		return []coordinate.Coordinate2D[int]{line1.c2, line2.c1}
 	}
 	return nil
@@ -247,12 +304,14 @@ func (s *Solver) SolvePart1(lines []string) string {
 // SolvePart2 solves part 2 of the puzzle
 func (s *Solver) SolvePart2(lines []string) string {
 	coords := s.parse(lines)
-	edges := getEdges(coords)
+	compressedCoords, compression := coordinate.Compress2D(coords)
+	edges := getEdges(compressedCoords)
 	anomalies := getAnomalyCoordinates(coords)
-	rectangles := createRectangles(coords, anomalies)
-	sort.Slice(rectangles, func(i, j int) bool {
-		return rectangles[i].getSize() > rectangles[j].getSize()
+	rectangles := createRectangles(coords, anomalies, compression)
+	sort.Slice(rectangles, func(i, j int) bool { return rectangles[i].size > rectangles[j].size })
+	cache := make(map[coordinate.Coordinate2D[int]]bool)
+	rectangles = slices.Filter(rectangles, func(r rectangle) bool {
+		return edges.isRectangleInside(r, cache)
 	})
-	r := getMaxRectangleInside(rectangles, edges)
-	return fmt.Sprintf("%d", r.getSize())
+	return fmt.Sprintf("%d", rectangles[0].size)
 }

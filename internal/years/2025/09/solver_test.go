@@ -18,6 +18,7 @@ func Test_Day_09_Part1(t *testing.T) {
 		hyperParams   []string
 	}{
 		{"Test 1", config.TestInput(1), "50", nil},
+		{"Test 2", config.TestInput(2), "35", nil},
 		{"Real", config.RealInput{}, "4763932976", nil},
 	}
 	for _, tc := range testCases {
@@ -51,6 +52,7 @@ func Test_Day_09_Part2(t *testing.T) {
 		hyperParams   []string
 	}{
 		{"Test 1", config.TestInput(1), "24", nil},
+		{"Test 2", config.TestInput(2), "15", nil},
 		{"Real", config.RealInput{}, "1501292304", nil},
 	}
 	for _, tc := range testCases {
