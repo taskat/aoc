@@ -90,6 +90,46 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestDeleteIf(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName      string
+		s             Set[T]
+		f             func(T) bool
+		expectedSet   Set[T]
+		expectedCount int
+	}
+	testCases := []testCase[int]{
+		{"Empty set", New[int](), func(e int) bool { return e%2 == 0 }, New[int](), 0},
+		{"Non-empty set", Set[int](map[int]struct{}{1: {}, 2: {}, 3: {}}), func(e int) bool { return e%2 == 0 }, Set[int](map[int]struct{}{1: {}, 3: {}}), 1},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			count := tc.s.DeleteIf(tc.f)
+			assert.ElementsMatch(t, tc.expectedSet.ToSlice(), tc.s.ToSlice())
+			assert.Equal(t, tc.expectedCount, count)
+		})
+	}
+}
+
+func TestFilter(t *testing.T) {
+	type testCase[T comparable] struct {
+		testName    string
+		s           Set[T]
+		f           func(T) bool
+		expectedSet Set[T]
+	}
+	testCases := []testCase[int]{
+		{"Empty set", New[int](), func(e int) bool { return e%2 == 0 }, New[int]()},
+		{"Non-empty set", Set[int](map[int]struct{}{1: {}, 2: {}, 3: {}}), func(e int) bool { return e%2 == 0 }, Set[int](map[int]struct{}{2: {}})},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.testName, func(t *testing.T) {
+			filteredSet := Filter(tc.s, tc.f)
+			assert.ElementsMatch(t, tc.expectedSet.ToSlice(), filteredSet.ToSlice())
+		})
+	}
+}
+
 func TestLength(t *testing.T) {
 	type testCase[T comparable] struct {
 		testName    string

@@ -35,6 +35,30 @@ func (s Set[T]) Delete(e T) {
 	delete(s, e)
 }
 
+// DeleteIf deletes an element from the set if the predicate function returns true.
+// It returns the number of deleted elements.
+func (s Set[T]) DeleteIf(f func(T) bool) int {
+	count := 0
+	for k := range s {
+		if f(k) {
+			delete(s, k)
+			count++
+		}
+	}
+	return count
+}
+
+// Filter filters the set based on a predicate function.
+func Filter[T comparable](s Set[T], f func(T) bool) Set[T] {
+	filteredSet := New[T]()
+	for k := range s {
+		if f(k) {
+			filteredSet.Add(k)
+		}
+	}
+	return filteredSet
+}
+
 // Length returns the number of elements in the set.
 func (s Set[T]) Length() int {
 	return len(s)

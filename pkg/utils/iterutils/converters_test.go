@@ -99,6 +99,30 @@ func TestNewFromRepeat(t *testing.T) {
 	actual = ToSliceN(iter, 5)
 }
 
+func TestNewFromSet(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		set      map[T]struct{}
+		expected []T
+	}
+	testCases := []testCase[int]{
+		{"nil set", nil, []int{}},
+		{"empty set", map[int]struct{}{}, []int{}},
+		{"single element", map[int]struct{}{42: {}}, []int{42}},
+		{"multiple elements", map[int]struct{}{1: {}, 2: {}, 3: {}}, []int{1, 2, 3}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			iter := NewFromSet(tc.set)
+			actual := ToSlice(iter)
+			assert.ElementsMatch(t, tc.expected, actual)
+			// Read all elements
+			actual = ToSliceN(iter, uint(len(tc.expected)))
+			assert.ElementsMatch(t, tc.expected, actual)
+		})
+	}
+}
+
 func TestNewFromSlice(t *testing.T) {
 	type testCase[T any] struct {
 		name     string

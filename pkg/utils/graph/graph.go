@@ -30,6 +30,14 @@ func (g *Graph[ID]) AddEdge(a, b ID, weight int) {
 	g.nodes[b].AddNeighbor(g.nodes[a], weight)
 }
 
+func (g *Graph[ID]) Copy() *Graph[ID] {
+	newGraph := New[ID]()
+	for id, node := range g.nodes {
+		newGraph.nodes[id] = node.Copy()
+	}
+	return newGraph
+}
+
 func (g *Graph[ID]) GetNode(id ID) Node[ID] {
 	return g.nodes[id]
 }
@@ -48,6 +56,15 @@ func (g *Graph[ID]) RemoveNode(id ID) {
 	for _, node := range g.nodes {
 		node.RemoveNeighbor(id)
 	}
+}
+
+func (g *Graph[ID]) RemoveEdge(a, b ID) {
+	g.nodes[a].RemoveNeighbor(b)
+	g.nodes[b].RemoveNeighbor(a)
+}
+
+func (g *Graph[ID]) RemoveDirectedEdge(from, to ID) {
+	g.nodes[from].RemoveNeighbor(to)
 }
 
 // String returns a string representation of the graph
@@ -90,6 +107,18 @@ func (p Path[ID]) Copy() Path[ID] {
 
 func (p Path[ID]) Cost() int {
 	return p.cost
+}
+
+func (p Path[ID]) Equals(other Path[ID]) bool {
+	if len(p.nodes) != len(other.nodes) || p.cost != other.cost {
+		return false
+	}
+	for i := range p.nodes {
+		if p.nodes[i] != other.nodes[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func (p Path[ID]) IsValid() bool {

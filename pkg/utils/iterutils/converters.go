@@ -86,6 +86,18 @@ func NewFromRepeat[T any](value T, count int) iter.Seq[T] {
 	}
 }
 
+// NewFromSet returns a new iterator that yields the elements
+// of the given set.
+func NewFromSet[T comparable](s map[T]struct{}) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for k := range s {
+			if !yield(k) {
+				return
+			}
+		}
+	}
+}
+
 // NewFromSlice returns a new iterator that yields the elements
 // of the given slice.
 func NewFromSlice[T any](slice []T) iter.Seq[T] {

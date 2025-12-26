@@ -6,10 +6,14 @@ WORKDIR /workspaces/aoc
 
 # Install additional packages
 RUN apt-get update
-RUN apt-get install -y git-crypt
+RUN apt-get install -y git-crypt liblpsolve55-dev libsuitesparse-dev
 
 # Add a script to source the SSH agent environment automatically
 RUN echo 'export SSH_AUTH_SOCK=/root/.ssh/agent.sock' >> /root/.bashrc
 
 # Set AOC_HOME env var
 ENV AOC_HOME=/workspaces/aoc
+
+# Set CGO flags for lpsolve
+ENV CGO_CFLAGS="-I/usr/include/lpsolve"
+ENV CGO_LDFLAGS="-lm -lcolamd"

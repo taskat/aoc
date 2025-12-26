@@ -6,6 +6,31 @@ import (
 	"github.com/taskat/aoc/pkg/utils/containers/set"
 )
 
+// AllPaths finds all the paths from the start node to the end node
+func (g Graph[ID]) AllPaths(start Node[ID], goal func(ID) bool) []Path[ID] {
+	if goal(start.Id()) {
+		return []Path[ID]{NewPath([]ID{start.Id()}, 0)}
+	}
+	visited := set.New[ID]()
+	visited.Add(start.Id())
+	return g.allPaths(start, goal, visited, []ID{start.Id()}, 0, []Path[ID]{})
+}
+
+func (g Graph[ID]) allPaths(node Node[ID], goal func(ID) bool, visited set.Set[ID], currentPath []ID, cost int, paths []Path[ID]) []Path[ID] {
+	if goal(node.Id()) {
+		return append(paths, NewPath(currentPath, cost))
+	}
+	for neighbor, distance := range node.GetNeighbors() {
+		if visited.Contains(neighbor) {
+			continue
+		}
+		visited.Add(neighbor)
+		paths = g.allPaths(g.GetNode(neighbor), goal, visited, append(currentPath, neighbor), cost+distance, paths)
+		visited.Delete(neighbor)
+	}
+	return paths
+}
+
 // NodesOfBestPaths finds all the shortest paths from the start node to the end node
 func (g Graph[ID]) NodesOfBestPaths(start Node[ID], goal func(ID) bool) []ID {
 	if goal(start.Id()) {
@@ -199,4 +224,64 @@ func (g Graph[ID]) Dijkstra(start Node[ID], goal func(ID) bool) Path[ID] {
 		delete(neighbors, minNodeId)
 	}
 	return NoPath[ID]()
+}
+
+// HasDirectedCycle checks if the graph has a directed cycle
+func (g Graph[ID]) HasDirectedCycle(start Node[ID]) bool {
+	visited := set.New[ID]()
+	visited.Add(start.Id())
+	return g.hasDirectedCycle(start, visited)
+}
+
+func (g Graph[ID]) hasDirectedCycle(node Node[ID], visited set.Set[ID]) bool {
+	for neighbor := range node.GetNeighbors() {
+		if visited.Contains(neighbor) {
+			return true
+		}
+		visited.Add(neighbor)
+		hasCycle := g.hasDirectedCycle(g.GetNode(neighbor), visited)
+		if hasCycle {
+			return true
+		}
+		visited.Delete(neighbor)
+	}
+	return false
+}
+
+// StartNodes finds all nodes with no incoming edges
+func (g Graph[ID]) StartNodes() []ID {
+	possibles := set.New[ID]()
+	for id := range g.nodes {
+		possibles.Add(id)
+	}
+	for _, node := range g.nodes {
+		for neighbor := range node.GetNeighbors() {
+			possibles.Delete(neighbor)
+		}
+	}
+	return possibles.ToSlice()
+}
+
+// TopologicalOrder returns a topological ordering of the nodes, if exists
+func (g Graph[ID]) TopologicalOrder() []ID {
+	work := g.Copy()
+	order := make([]ID, 0, len(work.nodes))
+	startNodes := work.StartNodes()
+	for len(startNodes) != 0 {
+		nodeId := startNodes[0]
+		startNodes = startNodes[1:]
+		order = append(order, nodeId)
+		node := work.GetNode(nodeId)
+		for neighborId := range node.GetNeighbors() {
+			work.RemoveDirectedEdge(nodeId, neighborId)
+		}
+		work.RemoveNode(nodeId)
+		if len(startNodes) == 0 {
+			startNodes = work.StartNodes()
+		}
+	}
+	if len(work.GetNodes()) != 0 {
+		panic("Graph has cycles, no topological order exists")
+	}
+	return order
 }

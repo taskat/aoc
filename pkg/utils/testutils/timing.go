@@ -22,6 +22,9 @@ func (t *TimeRepeatedCalls) Call(startTime time.Time) {
 // Average returns the average time taken for each call
 func (t TimeRepeatedCalls) Average() time.Duration {
 	var sum time.Duration
+	if len(t.calls) == 0 {
+		return sum
+	}
 	for _, call := range t.calls {
 		sum += call
 	}
@@ -30,11 +33,17 @@ func (t TimeRepeatedCalls) Average() time.Duration {
 
 // Max returns the maximum time taken for a call
 func (t TimeRepeatedCalls) Max() time.Duration {
+	if len(t.calls) == 0 {
+		return 0
+	}
 	return slices.Max(t.calls)
 }
 
 // Min returns the minimum time taken for a call
 func (t TimeRepeatedCalls) Min() time.Duration {
+	if len(t.calls) == 0 {
+		return 0
+	}
 	return slices.Min(t.calls)
 }
 
@@ -46,6 +55,7 @@ func (t TimeRepeatedCalls) Sum() time.Duration {
 // PrintStats prints the average, max, min and sum time taken for each call
 func (t TimeRepeatedCalls) PrintStats() {
 	fmt.Println("Average time taken: ", t.Average())
+	fmt.Println("Number of calls: ", len(t.calls))
 	fmt.Println("Max time taken: ", t.Max())
 	fmt.Println("Min time taken: ", t.Min())
 	fmt.Println("Sum time taken: ", t.Sum())

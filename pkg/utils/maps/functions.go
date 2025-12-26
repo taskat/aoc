@@ -1,6 +1,10 @@
 package maps
 
-import "github.com/taskat/aoc/pkg/utils/types"
+import (
+	"maps"
+
+	"github.com/taskat/aoc/pkg/utils/types"
+)
 
 // Append appends the element to the slice in the map. If the key is not present,
 // a new slice is created. If the key is present, the element is appended to the
@@ -19,6 +23,11 @@ func Append[K comparable, V any](m map[K][]V, k K, v V) {
 func Contains[K comparable, V any](m map[K]V, k K) bool {
 	_, ok := m[k]
 	return ok
+}
+
+// Copy copies the contents of a map into another map.
+func Copy[K comparable, V any](dst, src map[K]V) {
+	maps.Copy(dst, src)
 }
 
 // Filter filters the values of a map.
