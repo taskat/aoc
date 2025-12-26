@@ -33,10 +33,12 @@ runs:
         go-version: '1.25'
 
     - name: Install dependencies
+      shell: bash
       run: |
        sudo apt-get install -y liblpsolve55-dev libsuitesparse-dev
 
     - name: Set environment variables
+      shell: bash
       run: |
         echo "CGO_CFLAGS=-I/usr/include/lpsolve" >> $GITHUB_ENV
         echo "CGO_LDFLAGS=-lm -lcolamd" >> $GITHUB_ENV
