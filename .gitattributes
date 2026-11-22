@@ -1,1 +1,5 @@
 **/inputs/** filter=git-crypt diff=git-crypt
+
+# exclusion
+cmd/add/templates/day/inputs/real.txt !filter !diff
+cmd/add/templates/day/inputs/test-1.txt !filter !diff
