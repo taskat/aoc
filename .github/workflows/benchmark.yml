@@ -138,11 +138,17 @@ jobs:
             tar -xf prev/artifact.tar -C site
           fi
 
-      - name: Restore benchmark history for this branch
+      - name: Restore benchmark history
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          if [ -f "site/branches/$BRANCH/benchmark.json" ]; then
-            cp "site/branches/$BRANCH/benchmark.json" benchmark.json
-          fi
+          for src in "site/branches/$BRANCH/benchmark.json" "site/branches/$DEFAULT_BRANCH/benchmark.json"; do
+            if [ -f "$src" ]; then
+              cp "$src" benchmark.json
+              echo "Seeded from $src"
+              break
+            fi
+          done
 
       - name: Benchmark
         run: |
