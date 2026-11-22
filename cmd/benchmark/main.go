@@ -44,7 +44,7 @@ func instantiateFile(src, dest string, values templateValues) {
 }
 
 func main() {
-	fmt.Println("Generating README.md")
+	fmt.Println("Benchmarking")
 	root := os.Getenv("AOC_HOME")
 	existingFile := filepath.Join(root, "benchmark.json")
 	existing := FromFile(existingFile)
@@ -54,8 +54,8 @@ func main() {
 	existing.saveToFile(existingFile)
 	fmt.Println("Saved updated results to benchmark.json")
 	values := newTemplateValues(existing)
-	templatePath := filepath.Join(root, "cmd/readme-generator/templates/readme.md.tmpl")
-	destinationPath := filepath.Join(root, "README.md")
+	templatePath := filepath.Join(root, "cmd/benchmark/templates/benchmark.md.tmpl")
+	destinationPath := filepath.Join(root, "benchmark.md")
 	instantiateFile(templatePath, destinationPath, values)
 	fmt.Println("Done")
 }

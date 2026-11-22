@@ -27,13 +27,13 @@ jobs:
 
       - name: Build
         shell: bash
-        run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator
+        run: go build -o ./cmd/benchmark/benchmark ./cmd/benchmark
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: readme-generator
-          path: ./cmd/readme-generator/readme-generator
+          name: benchmark
+          path: ./cmd/benchmark/benchmark
           retention-days: 1
 
   Test-and-benchmark:
@@ -116,8 +116,8 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v5
         with:
-          name: readme-generator
-          path: ./cmd/readme-generator
+          name: benchmark
+          path: ./cmd/benchmark
 
       - name: Download benchmark results
         uses: actions/download-artifact@v5
@@ -144,16 +144,16 @@ jobs:
             cp "site/branches/$BRANCH/benchmark.json" benchmark.json
           fi
 
-      - name: Generate README
+      - name: Benchmark
         run: |
-          chmod +x ./cmd/readme-generator/readme-generator
-          ./cmd/readme-generator/readme-generator
+          chmod +x ./cmd/rbenchmark/benchmark
+          ./cmd/benchmark/benchmark
 
             - name: Add to site
         run: |
           d=site/branches/$BRANCH
           mkdir -p $d
-          cp README.md benchmark.json /tmp/aoc/benchmark-results.txt $d/
+          cp benchmark.md benchmark.json /tmp/aoc/benchmark-results.txt $d/
           cp .github/pages/index.html $d/index.html
           touch site/.nojekyll
 

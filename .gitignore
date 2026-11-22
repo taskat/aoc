@@ -33,4 +33,4 @@ go.work.sum
 !**/Dockerfile
 
 # Ignore generated files
-cmd/readme-generator/generated/**
+cmd/benchmark/generated/**
