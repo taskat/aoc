@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { background: #0f0f23; color: #cccccc; font-family: monospace; max-width: 900px; margin: 2em auto; padding: 0 1em; }
+  a { color: #00cc00; }
+  h1, h2, h3 { color: #ffff66; }
+  pre, code { background: #10101a; }
+  table { border-collapse: collapse; }
+  th, td { border: 1px solid #333340; padding: 4px 8px; }
+</style>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>fetch('README.md').then(r => r.text()).then(t => document.body.innerHTML = marked.parse(t))</script>

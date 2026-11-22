@@ -149,16 +149,12 @@ jobs:
           chmod +x ./cmd/readme-generator/readme-generator
           ./cmd/readme-generator/readme-generator
 
-      - name: Add to site
+            - name: Add to site
         run: |
           d=site/branches/$BRANCH
           mkdir -p $d
           cp README.md benchmark.json /tmp/aoc/benchmark-results.txt $d/
-          cat > $d/index.html <<'EOF'
-          <!doctype html><meta charset="utf-8">
-          <body><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-          <script>fetch('README.md').then(r => r.text()).then(t => document.body.innerHTML = marked.parse(t))</script>
-          EOF
+          cp .github/pages/index.html $d/index.html
           touch site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
