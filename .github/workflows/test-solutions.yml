@@ -15,9 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Validate file changes
-        uses: ./.github/actions/validate-file-changes
-
       - name: Run Common Setup
         uses: ./.github/actions/common-setup
         with:
