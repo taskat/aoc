@@ -1,4 +1,4 @@
-module taskat/aoc/cmd/readme-generator
+module taskat/aoc/cmd/benchmark
 
 go 1.25.0
 

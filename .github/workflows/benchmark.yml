@@ -1,4 +1,4 @@
-name: Generate README
+name: Benchmark
 
 on:
   push:
@@ -27,19 +27,19 @@ jobs:
 
       - name: Build
         shell: bash
-        run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator
+        run: go build -o ./cmd/benchmark/benchmark ./cmd/benchmark
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: readme-generator
-          path: ./cmd/readme-generator/readme-generator
+          name: benchmark
+          path: ./cmd/benchmark/benchmark
           retention-days: 1
 
   Test-and-benchmark:
     runs-on: ubuntu-latest
     outputs:
-      generate_readme: ${{ steps.benchmark.outputs.generate_readme }}
+      benchmarked: ${{ steps.benchmark.outputs.benchmarked }}
     steps:
       - uses: actions/checkout@v5
 
@@ -80,40 +80,44 @@ jobs:
           mkdir -p /tmp/aoc
           if [ -z "$PACKAGES_TO_TEST" ]; then
             echo "No packages to benchmark"
-            touch /tmp/aoc/benchmark-results.txt
-            echo "generate_readme=false" >> $GITHUB_OUTPUT
+            echo "benchmarked=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           echo "Running benchmarks for packages: $PACKAGES_TO_TEST"
           go test -bench . -v -skip Test -count 3 -cpu 1 $PACKAGES_TO_TEST > /tmp/aoc/benchmark-results.txt
-          echo "generate_readme=true" >> $GITHUB_OUTPUT
+          echo "benchmarked=true" >> $GITHUB_OUTPUT
 
       - name: Upload benchmark results
+        if: steps.benchmark.outputs.benchmarked == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
           path: /tmp/aoc/benchmark-results.txt
           retention-days: 1
 
-  Generate-README:
+  Generate-and-publish:
     needs: [Build-generator, Test-and-benchmark]
-    if: needs.Test-and-benchmark.outputs.generate_readme == 'true'
+    if: needs.Test-and-benchmark.outputs.benchmarked == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.25'
 
       - name: Download build artifact
         uses: actions/download-artifact@v5
         with:
-          name: readme-generator
-          path: ./cmd/readme-generator
+          name: benchmark
+          path: ./cmd/benchmark
 
       - name: Download benchmark results
         uses: actions/download-artifact@v5
@@ -121,21 +125,48 @@ jobs:
           name: benchmark-results
           path: /tmp/aoc
 
-      - name: Generate README
-        shell: bash
+      - name: Carry over previous site
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          chmod +x ./cmd/readme-generator/readme-generator
-          ./cmd/readme-generator/readme-generator
-
-      - name: Commit changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git add benchmark.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Update README.md and benchmark.json with automated script [skip ci]"
-            git push
+          echo "BRANCH=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+          mkdir -p site prev
+          id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=github-pages&per_page=20" \
+            -q '[.artifacts[] | select(.expired == false)][0].workflow_run.id')
+          if [ -n "$id" ] && [ "$id" != "null" ]; then
+            gh run download "$id" -R "$GITHUB_REPOSITORY" -n github-pages -D prev
+            tar -xf prev/artifact.tar -C site
           fi
+
+      - name: Restore benchmark history
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          for src in "site/branches/$BRANCH/benchmark.json" "site/branches/$DEFAULT_BRANCH/benchmark.json"; do
+            if [ -f "$src" ]; then
+              cp "$src" benchmark.json
+              echo "Seeded from $src"
+              break
+            fi
+          done
+
+      - name: Benchmark
+        run: |
+          chmod +x ./cmd/benchmark/benchmark
+          ./cmd/benchmark/benchmark
+
+      - name: Add to site
+        run: |
+          d=site/branches/$BRANCH
+          mkdir -p $d
+          cp benchmark.md benchmark.json /tmp/aoc/benchmark-results.txt $d/
+          cp .github/pages/index.html $d/index.html
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+          retention-days: 90
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
