@@ -1,6 +1,6 @@
 module taskat/aoc/cmd/add
 
-go 1.25
+go 1.27
 
 toolchain go1.23.11
 

@@ -1,6 +1,6 @@
 module taskat/aoc/cmd/benchmark
 
-go 1.25.0
+go 1.27
 
 require github.com/taskat/aoc v0.0.0
 
