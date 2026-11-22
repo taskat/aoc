@@ -149,7 +149,7 @@ jobs:
           chmod +x ./cmd/rbenchmark/benchmark
           ./cmd/benchmark/benchmark
 
-            - name: Add to site
+      - name: Add to site
         run: |
           d=site/branches/$BRANCH
           mkdir -p $d
