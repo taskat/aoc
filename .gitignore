@@ -32,5 +32,8 @@ go.work.sum
 !*.*
 !**/Dockerfile
 
+## Deprecated files
+benchmark.json
+
 # Ignore generated files
 cmd/benchmark/generated/**
