@@ -15,6 +15,27 @@ env:
 
 jobs:
 
+  Build-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: Build
+        shell: bash
+        run: go build -o ./cmd/readme-generator/readme-generator ./cmd/readme-generator
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator/readme-generator
+          retention-days: 1
+
   Test-and-benchmark:
     runs-on: ubuntu-latest
     outputs:
@@ -74,8 +95,8 @@ jobs:
           path: /tmp/aoc/benchmark-results.txt
           retention-days: 1
 
-  Publish-pages:
-    needs: Test-and-benchmark
+  Generate-and-publish:
+    needs: [Build-generator, Test-and-benchmark]
     if: needs.Test-and-benchmark.outputs.benchmarked == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -90,16 +111,25 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v5
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: readme-generator
+          path: ./cmd/readme-generator
+
       - name: Download benchmark results
         uses: actions/download-artifact@v5
         with:
           name: benchmark-results
-          path: new
+          path: /tmp/aoc
 
       - name: Carry over previous site
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          echo "BRANCH=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
           mkdir -p site prev
           id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=github-pages&per_page=20" \
             -q '[.artifacts[] | select(.expired == false)][0].workflow_run.id')
@@ -108,11 +138,27 @@ jobs:
             tar -xf prev/artifact.tar -C site
           fi
 
-      - name: Add this branch's results
+      - name: Restore benchmark history for this branch
         run: |
-          b=${GITHUB_REF_NAME//\//-}
-          mkdir -p site/branches/$b
-          cp new/benchmark-results.txt site/branches/$b/
+          if [ -f "site/branches/$BRANCH/benchmark.json" ]; then
+            cp "site/branches/$BRANCH/benchmark.json" benchmark.json
+          fi
+
+      - name: Generate README
+        run: |
+          chmod +x ./cmd/readme-generator/readme-generator
+          ./cmd/readme-generator/readme-generator
+
+      - name: Add to site
+        run: |
+          d=site/branches/$BRANCH
+          mkdir -p $d
+          cp README.md benchmark.json /tmp/aoc/benchmark-results.txt $d/
+          cat > $d/index.html <<'EOF'
+          <!doctype html><meta charset="utf-8">
+          <body><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+          <script>fetch('README.md').then(r => r.text()).then(t => document.body.innerHTML = marked.parse(t))</script>
+          EOF
           touch site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3
