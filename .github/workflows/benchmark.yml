@@ -146,7 +146,7 @@ jobs:
 
       - name: Benchmark
         run: |
-          chmod +x ./cmd/rbenchmark/benchmark
+          chmod +x ./cmd/benchmark/benchmark
           ./cmd/benchmark/benchmark
 
       - name: Add to site
