@@ -37,7 +37,7 @@ func (s *Solver) SolvePart1(lines []string) string {
 }
 
 // getCalibrationValue returns the calibration value for a line
-// based on the possible digitsa
+// based on the possible digits
 func getCalibrationValue(line string, possibleDigits map[string]int) int {
 	digits := getDigits(line, possibleDigits)
 	firstDigit := digits[0]

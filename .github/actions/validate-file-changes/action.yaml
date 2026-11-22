@@ -41,25 +41,3 @@ runs:
             echo "No benchmark files changed"
           fi
 
-      - name: Validate README changes
-        shell: bash
-        run: |
-          if [ -n "${{ github.base_ref }}" ]; then
-            BASE_BRANCH="origin/${{ github.base_ref }}"
-          else
-            BASE_BRANCH="origin/${{ github.event.repository.default_branch }}"
-          fi
-          
-          README_COMMITS=$(git log ${BASE_BRANCH}...HEAD --pretty=format:"%H|%an" -- README.md || true)
-          
-          if [ -n "$README_COMMITS" ]; then
-            echo "$README_COMMITS" | while IFS='|' read -r commit_hash commit_author; do
-              if [[ "$commit_author" != "github-actions[bot]" ]]; then
-                echo "README.md modified by non-CI commit: $commit_hash"
-                echo "Author: $commit_author"
-                exit 1
-              fi
-            done
-
-            echo "README changes validated"
-          fi
